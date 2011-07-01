@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:nargila="http://nargila.org/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:layout_weight=".5">
+
+	<LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent" android:layout_marginBottom="1px"
+			android:layout_height="fill_parent" android:layout_weight="1">
+	
+		<FrameLayout android:layout_weight="1"
+			android:layout_height="fill_parent" android:layout_width="fill_parent"
+			android:background="#000000" android:layout_marginRight="1px"
+			android:id="@+id/speed_meter_container">
+			<LinearLayout android:layout_height="fill_parent"
+				android:orientation="vertical" android:layout_width="fill_parent"
+				android:background="#000000" android:id="@+id/speed_meter">
+	
+				<LinearLayout 
+					android:orientation="horizontal" android:layout_weight="1"
+					android:layout_width="fill_parent" android:layout_height="fill_parent">
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView
+						nargila:maxTextSize="48.0"
+						android:text="0:00"
+						android:textColor="#ffffff" android:gravity="top"
+						android:layout_width="fill_parent" android:layout_weight="1"
+						android:layout_height="fill_parent" android:paddingLeft="10dp"
+						android:textSize="32dp" android:id="@+id/speed_avg" android:tag="extraView"/>
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView
+						android:gravity="center" android:layout_width="fill_parent"
+						android:layout_height="fill_parent" android:layout_weight=".4"
+						android:id="@+id/speed" android:text="0:00" android:textStyle="bold"
+						android:textColor="#ffffff" android:textSize="62dp" />
+				</LinearLayout>
+				
+	
+				<LinearLayout android:id="@+id/LinearLayout06"
+					android:layout_height="wrap_content" android:layout_width="fill_parent"
+					android:tag="accuracyHighlighter">
+					<TextView android:id="@+id/TextView01" android:layout_width="wrap_content"
+						android:layout_height="wrap_content" android:text="Avg" android:tag="extraLabel" android:layout_marginLeft="5dp"/>
+					<TextView android:layout_height="wrap_content" android:id="@+id/speed_lable"
+						android:text="/500m" android:gravity="right" android:textSize="14dp"
+						android:layout_width="fill_parent" android:layout_marginRight="5dp"/>
+				</LinearLayout>
+			</LinearLayout>
+		</FrameLayout>
+		<FrameLayout android:layout_weight="1"
+			android:layout_height="fill_parent"
+			android:layout_width="fill_parent" android:background="#000000"
+			android:layout_marginLeft="1px" android:id="@+id/spm_meter_container">
+			<LinearLayout android:layout_height="fill_parent"
+				android:orientation="vertical" android:layout_width="fill_parent"
+				android:background="#000000" android:id="@+id/spm_meter">
+			
+						
+		
+						<LinearLayout android:id="@+id/LinearLayout03"
+							android:orientation="horizontal" android:layout_weight="1"
+							android:layout_width="fill_parent" android:layout_height="fill_parent">
+							<org.nargila.robostroke.android.common.AutoFontSizeTextView
+								nargila:maxTextSize="48.0"
+								android:text="00"
+								android:textColor="#ffffff" android:gravity="top"
+								android:layout_width="fill_parent" android:layout_weight="1"
+								android:layout_height="fill_parent" android:paddingLeft="10dp"
+								android:textSize="32dp" android:id="@+id/spm_avg" android:tag="extraView"/>
+							<org.nargila.robostroke.android.common.AutoFontSizeTextView
+								android:layout_width="fill_parent" android:layout_height="fill_parent"
+								android:id="@+id/spm" android:textStyle="bold" android:textColor="#ffffff"
+								android:textSize="62dp" android:text="00" android:gravity="center"
+								android:layout_weight=".4" />
+						</LinearLayout>
+						
+						
+			<LinearLayout android:id="@+id/LinearLayout05" android:layout_height="wrap_content" android:layout_weight="0" android:layout_width="fill_parent"><TextView android:layout_height="wrap_content" android:gravity="left" android:layout_width="wrap_content" android:layout_gravity="left" android:text="Avg" android:tag="extraLabel" android:layout_marginLeft="5dp"></TextView><TextView android:layout_height="wrap_content" android:text="SPM" android:gravity="right" android:textSize="14dp" android:layout_gravity="right" android:layout_width="fill_parent" android:layout_marginRight="5dp"/>
+</LinearLayout>
+</LinearLayout>
+		</FrameLayout>
+
+	</LinearLayout>
+	<LinearLayout android:orientation="horizontal"
+		android:layout_width="fill_parent" android:layout_marginTop="1px"
+		android:background="#ffffff" android:layout_height="fill_parent"
+		android:layout_weight="1">
+		<FrameLayout android:layout_weight="1"
+			android:layout_height="fill_parent"
+			android:layout_width="fill_parent" android:background="#000000"
+			android:layout_marginRight="1px" android:id="@+id/distance_meter_container">
+			<LinearLayout 
+				android:layout_height="fill_parent" android:orientation="vertical"
+				android:layout_width="fill_parent" android:background="#000000"
+				android:id="@+id/distance_meter">
+	
+				<LinearLayout 
+					android:orientation="horizontal" android:layout_weight="1"
+					android:layout_width="fill_parent" android:layout_height="fill_parent">
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView
+						nargila:maxTextSize="48.0"
+						android:textColor="#ffffff" android:gravity="top"
+						android:layout_width="fill_parent" android:layout_weight="1"
+						android:layout_height="fill_parent" android:paddingLeft="10dp"
+						android:textSize="32dp" android:text="0" android:tag="extraView" android:id="@+id/distance_sub"/>
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView 
+						android:layout_width="fill_parent"
+						android:layout_height="fill_parent" android:layout_weight=".4"
+						android:textStyle="bold"
+						android:textColor="#ffffff" android:textSize="62dp"
+						android:text="0" android:gravity="center" android:id="@+id/distance_main"/>
+				</LinearLayout>
+
+				<FrameLayout android:layout_height="wrap_content"
+					android:layout_width="fill_parent" android:id="@+id/record_play_state_highlighter">
+					<LinearLayout android:layout_height="wrap_content"
+						android:background="#000000"
+						android:layout_width="fill_parent" android:id="@+id/distance_label_bar">
+						<TextView android:layout_height="wrap_content" android:text="Total"
+							android:tag="extraLabel" android:layout_width="wrap_content"
+							android:layout_marginRight="15dp" android:layout_marginLeft="5dp"/>
+						<TextView android:layout_width="fill_parent"
+							android:layout_height="wrap_content" android:text="m"
+							android:gravity="right" android:textSize="14dp" android:layout_marginRight="5dp"/>
+						
+				
+
+
+</LinearLayout></FrameLayout>
+			</LinearLayout>
+		</FrameLayout>
+		<FrameLayout android:layout_weight="1"
+			android:layout_height="fill_parent"
+			android:layout_width="fill_parent" android:background="#000000"
+			android:layout_marginLeft="1px" android:id="@+id/time_meter_container">
+			<LinearLayout 
+				android:layout_height="fill_parent" android:orientation="vertical"
+				android:layout_width="fill_parent" android:background="#000000"
+				android:id="@+id/time_meter">
+
+				<LinearLayout android:id="@+id/LinearLayout01"
+					android:orientation="horizontal" android:layout_height="fill_parent"
+					android:layout_weight="1" android:layout_width="fill_parent">
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView
+						nargila:maxTextSize="48.0"
+						android:layout_height="fill_parent" android:id="@+id/stroke_count"
+						android:textColor="#ffffff"
+						android:paddingLeft="10dp"
+						android:layout_width="fill_parent" android:layout_weight="1" android:text="0" android:textSize="32dp" android:gravity="top" android:tag="extraView"/>
+					<org.nargila.robostroke.android.common.AutoFontSizeTextView
+						android:gravity="center" android:layout_width="fill_parent"
+						android:layout_height="fill_parent" android:id="@+id/split_time"
+						android:text="0:00" android:textColor="#ffffff" android:textSize="48dp"
+						android:textStyle="bold" android:layout_weight=".4" />
+				</LinearLayout>
+				<LinearLayout android:id="@+id/LinearLayout02"
+					android:orientation="horizontal" android:layout_width="fill_parent"
+					android:layout_height="wrap_content" android:layout_weight="0">
+					<TextView android:id="@+id/TextView02" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Strokes" android:tag="extraLabel" android:layout_marginLeft="5dp"></TextView><TextView android:text="0:00:00" android:id="@+id/time"
+						android:layout_height="wrap_content" android:layout_width="wrap_content"
+						android:layout_weight="1" android:gravity="center"
+						android:textSize="18dp" />
+					<TextView android:layout_height="wrap_content"
+						android:text="Time" android:gravity="right" android:layout_width="wrap_content"
+						android:layout_weight="0" android:textSize="14dp" android:layout_marginRight="5dp"/>
+				
+
+</LinearLayout>
+	
+			
+</LinearLayout>
+	   </FrameLayout>
+	</LinearLayout>
+</LinearLayout>

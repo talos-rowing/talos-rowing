@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="replay">Replay</string>
+    <string name="turn_off">Turn Off</string>
+    <string name="turn_on">Turn On</string>
+    <string name="record">Record</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="play">Play</string>
+    <string name="app_name">Talos Rowing</string>
+    <string name="preference_reset_dialog_message">Would you like to reset your old Talos Rowing settings (recommended)?</string>
+    <string name="tilt_freeze_warning">Tilt freeze will stop dynamic device orientation detection. You should only continue if your device
+    is hard-attached onto the boat and you have properly leveled it. The adjustment itself will take ${CALIBRATION_SECONDS} seconds, during which the boat should not be touched.</string>
+    <string name="about_text">
+    	Talos Rowing is a rowing application for Android mobile devices.
+    	\n
+		\nSee http://nargila.org/trac/robostroke for more info.
+		\n
+    	\nVersion ${VERSION}
+    	\nThe software has been released for testing.
+    	\n
+    	\nCopyright (C) 2010 Tal Shalif (http://nargila.org/trac/robostroke)\n
+    	\nUse at your own risk.</string>
+    <string name="default_session_record_dispatch_address">tshalif+talos-rowing@gmail.com</string>
+    <string name="session_record_upload_size_too_large">File too large. Please record sessions shorter than %d minutes in length</string>
+    <string name="file_too_large">File Too Large</string>
+    
+</resources>

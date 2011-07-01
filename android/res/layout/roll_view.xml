@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  	xmlns:nargila="http://nargila.org/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:background="#000000" android:orientation="vertical">
+	<TextView android:text="Stroke" android:id="@+id/roll_type_text"
+		android:typeface="monospace" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" />
+	<LinearLayout android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:orientation="horizontal">
+	
+	
+		
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="fill_parent" android:orientation="vertical">
+			<TextView
+			 	android:text="0.0" android:id="@+id/roll_text_primary" 
+				android:typeface="monospace" 
+				android:textSize="20dp" 				
+				android:layout_width="wrap_content" 
+				android:gravity="center_vertical" 
+				android:layout_weight="1" 
+				android:layout_height="fill_parent" />
+			<TextView android:text="0.0" 
+				android:id="@+id/roll_text_secondary"
+				android:typeface="monospace"
+				android:textSize="18dp" android:layout_width="wrap_content"
+				android:gravity="center_vertical"
+				android:layout_weight="1"
+				android:layout_height="fill_parent"/>
+			
+		</LinearLayout>
+		<FrameLayout android:id="@+id/roll_canvas_frame"
+			android:layout_weight="1" android:layout_width="fill_parent"
+			android:layout_height="fill_parent"/>
+	</LinearLayout>
+			
+	
+
+</LinearLayout>

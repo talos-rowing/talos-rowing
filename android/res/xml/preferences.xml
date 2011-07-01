@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen 
+	xmlns:nargila="http://nargila.org/android"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="GPS">
+		<org.nargila.robostroke.android.common.SeekBarPreference
+			android:title="Min Distance"
+			android:key="org.nargila.talos.rowing.gps.minDistance"
+			android:persistent="true"
+			nargila:displayFormat="%.0fm"
+			nargila:minValue="10"
+			nargila:maxValue="100"
+			android:defaultValue="20"
+			nargila:seekRange="9"
+			nargila:valueType="INTEGER"
+			android:summary="Report GPS distance every so many meters - the larger, the more accurate" />
+	</PreferenceCategory>
+	<PreferenceCategory android:title="Stroke">
+		<org.nargila.robostroke.android.common.SeekBarPreference
+			android:title="Graph Smoothing"
+			android:key="org.nargila.talos.rowing.stroke.power.amplitudeFilterFactor"
+			android:persistent="true" 
+			nargila:displayFormat="%.01f"
+			nargila:minValue="0.1" 
+			nargila:maxValue="1.0" 
+			android:defaultValue="0.5"
+			nargila:seekRange="9"
+			android:summary="shows a more visually appealing smooth stroke curve in power graph" />
+	</PreferenceCategory>
+	<PreferenceCategory android:title="Split Rowing">
+		<ListPreference android:title="Activation Mode"
+			android:key="org.nargila.talos.rowing.stroke.detector.startMode"
+			android:persistent="true"
+			android:defaultValue="SEMI_AUTO"
+			android:summary="Split time activation mode"
+			android:entries="@array/split_mode_display"
+			android:entryValues="@array/split_mode_values"/>
+		<CheckBoxPreference 
+			android:key="org.nargila.talos.rowing.stroke.detector.straightLineMode" 
+			android:title="Straight Line" 
+			android:defaultValue="false" 
+			android:summary="For split measures on a straight course, this can improve split distance accuracy" 
+			android:persistent="true"/>
+		<CheckBoxPreference 
+			android:key="org.nargila.talos.rowing.android.stroke.detector.resetOnStart" 
+			android:title="Reset on Start" 
+			android:defaultValue="true" 
+			android:summary="Reset split timer, distance, speed values to zero when split timer starts start" 
+			android:persistent="true"/>
+		<org.nargila.robostroke.android.common.SeekBarPreference
+			android:title="Detection Sensitivity"
+			android:key="org.nargila.talos.rowing.stroke.detector.minAmplitude"
+			android:persistent="true"
+			nargila:displayFormat="%.02f"
+			nargila:minValue="0.05"
+			nargila:maxValue="2.0"
+			nargila:seekRange="39"
+			android:defaultValue="1.0"
+			android:summary="Determines minimum stroke power required to activate the rowing detector - higher means less sensitive"/>
+		<org.nargila.robostroke.android.common.SeekBarPreference
+			android:title="Rowing Timeout"
+			android:key="org.nargila.talos.rowing.stroke.detector.stopTimeout"
+			android:persistent="true"
+			nargila:displayFormat="%.0fs"
+			nargila:minValue="1"
+			nargila:maxValue="10"
+			android:defaultValue="5"
+			nargila:seekRange="9"
+			nargila:valueType="INTEGER"
+			android:summary="Stop rowing timers after these many seconds of no further strokes events"/>
+		<org.nargila.robostroke.android.common.SeekBarPreference
+			android:title="Restart Wait Time"
+			android:key="org.nargila.talos.rowing.stroke.detector.restartWaitTime"
+			android:persistent="true"
+			nargila:displayFormat="%.0fs"
+			nargila:minValue="1"
+			nargila:maxValue="10"
+			android:defaultValue="5"
+			nargila:seekRange="9"
+			nargila:valueType="INTEGER"
+			android:summary="Period of 'cool down' time in seconds to disable rowing restart"/>
+	
+	</PreferenceCategory>				
+	<PreferenceCategory android:title="Misc">
+		<CheckBoxPreference
+			android:title="Enable Zephyr HRM"
+			android:persistent="true" 
+			android:defaultValue="false"
+			android:summary="For using the unsupported Zephyr bluetooth heart monitor (requires 'Talos Heart' from this application's home page)" 
+			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
+		<CheckBoxPreference
+			android:title="Reset settings"
+			android:persistent="true" 
+			android:defaultValue="false"
+			android:summary="If selected, you will be given the option to reset your settings next time you start the application" 
+			android:key="org.nargila.talos.rowing.android.preferences.reset"/>
+	</PreferenceCategory>
+	<PreferenceCategory android:title="Advanced">
+		<PreferenceScreen android:title="Advanced Settings" android:summary="Don't touch these unless you know what you are doing!">
+			<PreferenceCategory android:title="Sensors">
+				<org.nargila.robostroke.android.common.SeekBarPreference 
+					android:title="Orientation Filter"
+					android:key="org.nargila.talos.rowing.sensor.orientationDampFactor"
+					android:persistent="true"
+					nargila:minValue="0.001"
+					nargila:maxValue="0.1"
+					android:defaultValue="0.01"
+					android:summary="Device orientation up/down stabalizing factor - the smaller, the more stable"/>
+			</PreferenceCategory>
+			<PreferenceCategory android:title="Stroke">
+				<org.nargila.robostroke.android.common.SeekBarPreference  
+					android:title="Smoothing Factor"
+					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeFilterFactor"
+					android:persistent="true"
+					nargila:displayFormat="%.02f"
+					nargila:minValue="0.01"
+					nargila:maxValue="0.25"
+					android:defaultValue="0.05"
+					android:summary="Raw acceleration value lowpass filtering factor - removes 'noise' from rowing graph for ease of rate detection" />
+				<org.nargila.robostroke.android.common.SeekBarPreference
+					android:title="Min Amplitude"
+					android:key="org.nargila.talos.rowing.stroke.rate.minAmplitude"
+					android:persistent="true"
+					nargila:displayFormat="%.02f"
+					nargila:minValue="0.01"
+					nargila:maxValue="0.2"
+					android:defaultValue="0.02"
+					android:summary="Minimum amplitude of acceleration/deceleration wave for acceptance/rejection by the stroke detector"/>
+				<org.nargila.robostroke.android.common.SeekBarPreference
+					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeChangeAcceptFactor"
+					android:title="Amplitude Accept"
+					android:persistent="true"
+					nargila:displayFormat="%.01f"
+					nargila:minValue="0.2"
+					nargila:maxValue="0.7"
+					android:defaultValue="0.5"
+					nargila:seekRange="5"
+					android:summary="Amplitude change accept factor - current stroke amplitude must be above this much or previous values to be valid"/>
+				<org.nargila.robostroke.android.common.SeekBarPreference
+					android:title="Amplitude Stabalizer"
+					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor"
+					android:persistent="true"
+					nargila:displayFormat="%.01f"
+					nargila:minValue="0.2"
+					nargila:maxValue="0.8"
+					android:defaultValue="0.5"
+					nargila:seekRange="6"
+					android:summary="Amplitude change damper lowpass filter factor - reduces errors due to erratic power change"/>
+			</PreferenceCategory>
+			<PreferenceCategory android:title="Power">
+				<org.nargila.robostroke.android.common.SeekBarPreference
+					android:title="Min Acceptable Power"
+					android:key="org.nargila.talos.rowing.stroke.power.minPower"
+					android:persistent="true"
+					nargila:displayFormat="%.0f"
+					nargila:minValue="1.0"
+					nargila:maxValue="10.0"
+					android:defaultValue="5.0"
+					nargila:seekRange="9"
+					android:summary="total power sum (as seen in power bar graph) must acceed this value for a valid stroke"/>
+			</PreferenceCategory>
+		</PreferenceScreen>
+	</PreferenceCategory>
+</PreferenceScreen>

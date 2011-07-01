@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/menu_record_start" 
+		android:icon="@drawable/menu_record"
+		android:title="Record"/>
+	<item android:id="@+id/menu_replay_start" 
+		android:icon="@drawable/menu_replay_start"
+		android:title="Replay"/>
+	<item android:id="@+id/menu_replay_stop" 
+		android:icon="@drawable/menu_replay_stop"
+		android:visible="false"
+		android:title="Stop"/>
+	<item android:id="@+id/menu_replay_share" 
+		android:icon="@android:drawable/ic_menu_share"
+		android:visible="false"
+		android:title="Share"/>
+	<item android:id="@+id/menu_settings" 
+		android:icon="@android:drawable/ic_menu_preferences"
+		  android:title="Settings"/>
+	<item android:id="@+id/menu_about"
+		android:icon="@android:drawable/ic_menu_info_details"
+		android:title="About"/>
+</menu>

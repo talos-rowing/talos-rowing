@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:orientation="vertical"
+  android:layout_height="fill_parent">
+	<TextView android:text="Type" android:id="@+id/roll_type_lable"
+		android:gravity="center"
+		android:textStyle="bold"
+		android:background="#000000"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"/>
+	<LinearLayout android:id="@+id/LinearLayout01"
+		android:layout_width="fill_parent" 
+		android:orientation="horizontal"
+		android:background="#ffffff"
+		android:layout_height="fill_parent">
+		
+		<include android:id="@+id/roll_secondary_view" android:layout_width="fill_parent"
+			android:layout_weight="1"
+			layout="@layout/roll_view"
+			android:layout_height="fill_parent"/>
+		<include android:id="@+id/roll_primary_view" android:layout_width="fill_parent"
+			android:layout_weight="1"
+			layout="@layout/roll_view"
+			android:layout_height="fill_parent"/>
+	</LinearLayout>
+</LinearLayout>

@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <bookinfo>
+    <title>Talos Rowing</title>
+
+    <author>
+      <firstname>Tal</firstname>
+
+      <surname>Shalif</surname>
+    </author>
+
+    <abstract>
+      <para>Talos Rowing is an Android application for Rowing. An Android
+      device installed with Talos and attached to your boat will monitor your
+      stroke rate, boat speed and can also be used for split timing, avarage
+      speed and rowing quality analysis.</para>
+    </abstract>
+  </bookinfo>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <screenshot>
+      <screeninfo>Talos Rowing - Split Rowing expanded view</screeninfo>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/device.png" />
+        </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <section>
+      <title>Features</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Stroke rate</para>
+        </listitem>
+
+        <listitem>
+          <para>Speed</para>
+        </listitem>
+
+        <listitem>
+          <para>Distance</para>
+        </listitem>
+
+        <listitem>
+          <para>Elapsed time</para>
+        </listitem>
+
+        <listitem>
+          <para>Split time</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>auto/manual start/stop</para>
+            </listitem>
+
+            <listitem>
+              <para>accumulated/reset values</para>
+            </listitem>
+
+            <listitem>
+              <para>aggregated values</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>avg speed</para>
+                </listitem>
+
+                <listitem>
+                  <para>avg stroke rate</para>
+                </listitem>
+
+                <listitem>
+                  <para>stroke count</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para>Graphs/Views</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Current/Stroke/Recovery roll bar graph</para>
+            </listitem>
+
+            <listitem>
+              <para>Stroke power bar graph</para>
+            </listitem>
+
+            <listitem>
+              <para>Current stroke zoom graph</para>
+            </listitem>
+
+            <listitem>
+              <para>Stroke analysis graph</para>
+            </listitem>
+
+            <listitem>
+              <para>Continuous stroke graph</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Device compatibility</title>
+
+      <para>Any Android device with accelerometer/orientation and GPS sensors,
+      running Android 1.5 or later may be used. The application has only been
+      tested on the Nexus One, though.</para>
+    </section>
+
+    <section>
+      <title>Limitations</title>
+
+      <para>Talos Rowing performance and precision may depend on the strength
+      and specs of the Android device it runs on. In addition, some of the
+      graphs/views may not be viewable during an outdoors rowing session,
+      unless the device has an exceptionally bright/large screen. Speed and
+      distance related figures shown by the application are susceptible to the
+      quality of the GPS signal.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>How to use</title>
+
+    <section>
+      <title>Device Tilt</title>
+
+      <para>The device must be attached to the boat facing the rower, with the
+      screen tilted slightly upwards and back. The application will not work
+      with a forward tilt, nor with a more than 180 degree tilt
+      backward.</para>
+    </section>
+
+    <section>
+      <title>Distance/Speed precision</title>
+
+      <screenshot>
+        <screeninfo>Distance view</screeninfo>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/distance2-view.png" />
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+
+      <screenshot>
+        <screeninfo>Speed view</screeninfo>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/speed2-view.png" />
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+
+      <para>The application is programmed to update the distance and speed
+      values by increments of 40m. Depending on the GPS reception quality, the
+      figures shown may be anything between 'quite precise' to 'very
+      inprecise'. The colour of the bar underneath the speed display will be
+      coloured green for best precision, red for worst.</para>
+    </section>
+
+    <section>
+      <title>Graph Zooming</title>
+
+      <para>Due to device screen size limitations, not all graphs may be
+      viewed at the same time. Currently up to 3 graph views may display
+      simultaneously. Toggling the number of graphs is done by double tapping
+      on any graph.</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/graph-zoom2.png" />
+        </imageobject>
+      </mediaobject>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/graph-zoom3.png" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Graph Switching</title>
+
+      <para>An upward fling on a graph will replace it with another graph not
+      currently shown.</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/graph-switch1.png" />
+        </imageobject>
+
+        <imageobject>
+          <imagedata fileref="images/graph-switch2.png" />
+        </imageobject>
+
+        <imageobject>
+          <imagedata fileref="images/graph-switch3.png" />
+        </imageobject>
+      </mediaobject>
+    </section>
+
+    <section>
+      <title>Recording/Replaying</title>
+
+      <para>It is possible to record a rowing session for later
+      replay/analysis.</para>
+
+      <section>
+        <title>Recording</title>
+
+        <para>Session recording can be started/stopped either via the menu, or
+        by pressing the distance meter.</para>
+
+        <screenshot>
+          <screeninfo>Start recording via menu</screeninfo>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/menu-record.png" />
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+
+        <screenshot>
+          <screeninfo>Start/stop recording by pressing the distance
+          meter</screeninfo>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/record-toggle.png" />
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+
+        <para></para>
+      </section>
+
+      <section>
+        <title>Replaying</title>
+
+        <para>To replay a previously recorded file, go to the context menu and
+        choose a previously recorded file for replay. Fast forward/rewind is
+        possible during replay by right/left flinging motion inside any of the
+        graph areas.</para>
+
+        <screenshot>
+          <screeninfo>Start playing</screeninfo>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/menu-replay.png" />
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+
+        <screenshot>
+          <screeninfo>Choose session record file</screeninfo>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/replay-list.png" />
+            </imageobject>
+          </mediaobject>
+        </screenshot>
+
+        <para></para>
+      </section>
+    </section>
+
+    <section>
+      <title>Stroke analysis graphs</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>continuous stroke/recovery/roll graph</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/realtime-stroke-graph.png" />
+            </imageobject>
+          </mediaobject>
+        </listitem>
+
+        <listitem>
+          <para>last stroke/recovery analysis graph</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/stroke-analysis-graph.png" />
+            </imageobject>
+          </mediaobject>
+        </listitem>
+
+        <listitem>
+          <para>Stroke power bars</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/power-bar-graph.png" />
+            </imageobject>
+          </mediaobject>
+        </listitem>
+
+        <listitem>
+          <para>Stroke power curve</para>
+        </listitem>
+
+        <listitem>
+          <para>stroke/recovery roll bars</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/roll-bar-graph.png" />
+            </imageobject>
+          </mediaobject>
+
+          <para>It is further possible to toggle the display of the roll view
+          by a single tap:</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/roll-view-switch1.png" />
+            </imageobject>
+
+            <imageobject>
+              <imagedata fileref="images/roll-view-switch2.png" />
+            </imageobject>
+          </mediaobject>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Split Time Rowing</title>
+
+    <screenshot>
+      <screeninfo>Running</screeninfo>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/split-time-0.png" />
+        </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <screenshot>
+      <screeninfo>Stopped</screeninfo>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/split-time-1.png" />
+        </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <screenshot>
+      <screeninfo>Start Pending</screeninfo>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/split-time-2.png" />
+        </imageobject>
+      </mediaobject>
+    </screenshot>
+
+    <section>
+      <title>Activation Modes</title>
+
+      <screenshot>
+        <screeninfo>Starting/Activating split timing</screeninfo>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/split-time-press.png" />
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Automatically</emphasis></para>
+
+          <para>Starts automatically when rowing activity has been detected -
+          no need to press timer.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Semi-automatically</emphasis></para>
+
+          <para>the rower needs to press the split-timer screen once before
+          activation</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Manually</emphasis></para>
+
+          <para>the rower needs to press the split-timer screen to immediately
+          start the timer, and again to stop it</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Always on</emphasis></para>
+
+          <para>the timer is always on</para>
+        </listitem>
+      </itemizedlist>
+
+      <section>
+        <title>Stopping the split timer</title>
+
+        <para>When the split timer activation mode is either <emphasis
+        role="bold">automatic</emphasis> or <emphasis
+        role="bold">semi-automatic</emphasis>, the timer will stop itself
+        after about 5 seconds of rowing inactivity. Once stopped, the elapsed
+        time will be then adjusted to subtract that additional time.</para>
+
+        <para>When in manual mode, a press on the split-timer screen will
+        force the timer to stop. When in continuous mode, the timer can not be
+        stopped.</para>
+      </section>
+
+      <section>
+        <title>Resetting values</title>
+
+        <para>Split rowing values can be reset by a long press on the
+        split-timer screen. If the <emphasis role="bold">Reset on
+        Start</emphasis> preference is selected in the application's settings,
+        values will be automatically reset on each split timer start.</para>
+      </section>
+
+      <section>
+        <title>Straight Line Mode</title>
+
+        <para>Straight-line mode can be toggled on/off via the <emphasis
+        role="bold">Straight Line</emphasis> preference. When doing split-time
+        testing on a straight rowing course, average speed and distance
+        measuring accuracy should improve if using this mode. This is because
+        the distance calculation is done between first, last location only, so
+        it eliminates the GPS inaccuracy of all the points in between.
+        Doubling-back in the middle of a straight line measurement will give
+        negative distance.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Toggling split-time expanded view</title>
+
+      <para>When reducing the number of graph slots to 1, the meters layout
+      will expand to show split-time specific values, such as average speed,
+      stroke rate and stroke count. How to change the graph slot count is
+      described in the previous chapter.</para>
+
+      <screenshot>
+        <screeninfo>Expanded view</screeninfo>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/device.png" />
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+
+      <para></para>
+    </section>
+  </chapter>
+</book>
