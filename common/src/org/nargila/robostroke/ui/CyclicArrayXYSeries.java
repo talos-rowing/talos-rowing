@@ -34,7 +34,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.android.graph;
+package org.nargila.robostroke.ui;
 
 import java.io.Serializable;
 
@@ -80,8 +80,8 @@ public class CyclicArrayXYSeries implements XYSeries, Serializable {
 	 * @param title
 	 *            the series title.
 	 */
-	public CyclicArrayXYSeries(XMode xMode) {
-		this.renderer = new Renderer();
+	public CyclicArrayXYSeries(XMode xMode, Renderer renderer) {
+		this.renderer = renderer;
 		this.xMode = xMode;
 	}
 

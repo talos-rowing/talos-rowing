@@ -34,9 +34,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.android.graph;
-
-import android.graphics.Paint;
+package org.nargila.robostroke.ui;
 
 public interface XYSeries {
 
@@ -47,26 +45,29 @@ public interface XYSeries {
 	}
 	
 	public class Renderer {
-		public Paint strokePaint;
-		public Paint fillPaint;
+		public RSPaint strokePaint;
+		public RSPaint fillPaint;
 
-		public Renderer() {
-			this(new Paint() {
-				{
-					setARGB(0xff, 0xff, 0xff, 0xff);
-					setStyle(Style.STROKE);
-					setAntiAlias(false);
-					setStrokeWidth(2);
-				}
-			}, null);
+		public Renderer(RSPaint strokePaintIns) {
+			this(initPaint(strokePaintIns), null);
 		}
-
-		public Renderer(Paint strokePaint, Paint fillPaint) {
+		
+		private static RSPaint initPaint(RSPaint strokePaintInst) {
+			strokePaintInst.setARGB(0xff, 0xff, 0xff, 0xff);
+			strokePaintInst.setStyle(PaintStyle.STROKE);
+			strokePaintInst.setAntiAlias(false);
+			strokePaintInst.setStrokeWidth(2f);
+			
+			return strokePaintInst;
+			
+		}
+		public Renderer(RSPaint strokePaint, RSPaint fillPaint) {
 			this.strokePaint = strokePaint;
 			this.fillPaint = fillPaint;
 		}
 	}
 
+	
 	/**
 	 * Adds a new value to the series.
 	 * 

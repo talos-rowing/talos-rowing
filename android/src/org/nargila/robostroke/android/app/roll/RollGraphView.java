@@ -37,145 +37,99 @@
 
 package org.nargila.robostroke.android.app.roll;
 
-import org.nargila.robostroke.android.graph.CyclicArrayXYSeries;
-import org.nargila.robostroke.android.graph.LineGraphView;
-import org.nargila.robostroke.android.graph.XYSeries;
-import org.nargila.robostroke.android.graph.XYSeries.XMode;
-import org.nargila.robostroke.common.filter.LowpassFilter;
-import org.nargila.robostroke.input.DataIdx;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.android.graph.RSPaintProxy;
+import org.nargila.robostroke.android.graph.RSPathProxy;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSPath;
+import org.nargila.robostroke.ui.RSRect;
+import org.nargila.robostroke.ui.RollGraph;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
+import android.view.View;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class RollGraphView extends LineGraphView implements SensorDataSink {
-	private static final float Y_RANGE = 10f;
-	private static final float INCR = 1f;
-	private final  XYSeries bothSeries;
-	
-	private final int rollAccumSize = 3;
-	private int rollAccumCount;
-	private float rollAccum;
-	
-	private final LowpassFilter filter = new LowpassFilter(.5f);
-	
+public class RollGraphView extends View {
 
-	private long rollAccumTimestamp;
-	
-	private final CyclicArrayXYSeries panelSeries = new CyclicArrayXYSeries(XMode.ROLLING);
-	private boolean disableUpdate;	
+	private class RollGraphImpl extends RollGraph {
 
-	public RollGraphView(Context context, final double xRange) 
-	{ 
-		super(context, xRange, XYSeries.XMode.ROLLING, Y_RANGE, INCR);
-		
-		setyRangeMax(Y_RANGE);
-		
-		bothSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING));
-		
-		panelSeries.setxRange(xRange);
-	}
+		public RollGraphImpl(double xRange) {
+			super(xRange);
+		}
 
-	@Override
-	protected void drawCentreLine(Canvas canvas, Rect rect) {
-	}
-	
-	@Override
-	public void setXRange(double val) {
-		panelSeries.setxRange(val);
-		super.setXRange(val);
-	}
+		@Override
+		protected int getRedColor() {
+			return Color.RED;
+		}
 
-	@Override
-	protected void drawGraph(Canvas canvas, Rect rect, double xAxisSize,
-			double yAxisSize) {
+		@Override
+		protected int getGreenColor() {
+			return Color.GREEN;
+		}
 
-		drawRollPanels(canvas, rect, xAxisSize);
+		@Override
+		protected void drawRect(Object canvas, float left, int top,
+				float right, int bottom, RSPaint paint) {
 
-		super.drawGraph(canvas, rect, xAxisSize, yAxisSize);
-	}
+			((Canvas)canvas).drawRect(left, top, right, bottom, (Paint) paint);
+		}
 
-	private void drawRollPanels(Canvas canvas, Rect rect, double xAxisSize) {
-		XYSeries ser = panelSeries;
+		@Override
+		protected RSPaint createPaint() {
+			return new RSPaintProxy();
+		}
 
+		@Override
+		protected RSPath createPath() {
+			return new RSPathProxy();
+		}
 
-		final int red = Color.RED;
-		final int green = Color.GREEN;
+		@Override
+		protected RSRect getClipBounds(Object canvas) {
+			Rect r = ((Canvas)canvas).getClipBounds();
+			RSRect res = new RSRect();
+			res.bottom = r.bottom;
+			res.top = r.top;
+			res.right = r.right;
+			res.left = r.left;
+			
+			return res;
+		}
 
-		Paint paint = new Paint() {
-			{
-				setStyle(Style.FILL);
-				setAntiAlias(false);
-				setStrokeWidth(0);				
-			}
-		};
+		@Override
+		protected void drawPath(Object canvas, RSPath path, RSPaint strokePaint) {
+			((Canvas)canvas).drawPath((Path)path, (Paint)strokePaint);
+		}
 
-		final double maxYValue = Y_RANGE / 2;
-		final double scaleX = rect.width() / xAxisSize;
+		@Override
+		protected void drawLine(Object canvas, int left, float y, int right,
+				float y2, RSPaint gridPaint) {
+			((Canvas)canvas).drawLine(left, y, right, y2, (Paint) gridPaint);
+			
+		}
 
-		final double minX = multySeries.getMinX();
-		final int len = ser.getItemCount();
-
-		for (int i = 0; i < len - 1; ++i) {
-
-			double startX = ser.getX(i);
-			double stopX = ser.getX(i + 1);
-
-			double avgY = Math.min(ser.getY(i), maxYValue);
-
-			int color = avgY > 0 ? green : red;
-			int alpha = (int) ((avgY / maxYValue) * 255);
-
-			paint.setColor(color);
-			paint.setAlpha(Math.abs(alpha));
-
-			float left = (float) ((startX - minX) * scaleX);
-			float right = (float) (((stopX - minX) * scaleX));
-
-			canvas.drawRect(left, rect.top, right, rect.bottom, paint);
+		@Override
+		public void repaint() {
+			postInvalidate();			
 		}
 	}
 	
-	@Override
+	private final RollGraphImpl impl;
+	
+	public RollGraphView(Context context, final double xRange) { 
+		super(context);
+		
+		impl = new RollGraphImpl(xRange);
+
+	}
+
 	public void reset() {
-		synchronized (multySeries) {
-			resetRollAccum();
-			super.reset();
-		}
-	}
-
-	private void resetRollAccum() {
-		rollAccum = 0;
-		rollAccumCount = 0;
-	}
-	@Override
-	public void onSensorData(long timestamp, Object value) {
-		synchronized (multySeries) {
-			float[] values = (float[]) value;
-
-			float y = filter.filter(new float[] {values[DataIdx.ORIENT_ROLL]})[0];
-
-
-			rollAccum += y;
-
-			if (rollAccumCount++ == 0) {
-				rollAccumTimestamp = timestamp;
-			} else if (rollAccumCount == rollAccumSize) {
-				panelSeries.add(rollAccumTimestamp, rollAccum / rollAccumSize);
-				resetRollAccum();
-			}
-
-			bothSeries.add(timestamp, y);
-		}
-	}
-
-	public void disableUpdate(boolean update) {
-		disableUpdate = update;		
+		impl.reset();
 	}
 }

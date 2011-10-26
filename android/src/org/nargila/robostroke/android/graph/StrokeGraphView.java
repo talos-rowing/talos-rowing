@@ -35,71 +35,62 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.android.app;
+package org.nargila.robostroke.android.graph;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.android.graph.CyclicArrayXYSeries;
-import org.nargila.robostroke.android.graph.LineGraphView;
-import org.nargila.robostroke.android.graph.XYSeries;
-import org.nargila.robostroke.android.graph.XYSeries.XMode;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.ui.CyclicArrayXYSeries;
+import org.nargila.robostroke.ui.DataUpdatable;
+import org.nargila.robostroke.ui.XYSeries;
+import org.nargila.robostroke.ui.XYSeries.XMode;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.view.View;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class StrokeGraphView extends LineGraphView implements DataUpdatable {
-	private static final float Y_RANGE = 4f;
-	private static final float INCR = 1f;
-	private final XYSeries strokeSeries;
-	private final RoboStroke roboStroke;
-	private final SensorDataSink privateStrokeAccelDataSink = new SensorDataSink() {
-		
-		@Override
-		public void onSensorData(long timestamp, Object value) {
-			float[] values = (float[]) value;
-			strokeSeries.add(timestamp, values[0]);
-		}
-	};
-	private boolean disabled = true;
+public class StrokeGraphView extends View implements DataUpdatable {
+	
+	private final StrokeGraphImpl impl;
 	
 	public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) 
 	{ 
-		super(context, xRange, XYSeries.XMode.ROLLING, Y_RANGE, INCR);
+		super(context);
 		
-		this.roboStroke = roboStroke;
-		strokeSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING));
+		impl = new StrokeGraphImpl(this, xRange, roboStroke);
 	}
 
 
+	protected void onDraw(Canvas canvas) {
+		impl.draw(canvas);
+	}
+
 	@Override
 	protected void onAttachedToWindow() {
-		disableUpdate(false);
+		impl.disableUpdate(false);
 		super.onAttachedToWindow();
 	}
 	
 	@Override
 	protected void onDetachedFromWindow() {
-		disableUpdate(true);
+		impl.disableUpdate(true);
 		super.onDetachedFromWindow();
 	}
 	
 	@Override
 	public boolean isDisabled() {
-		return disabled;		
+		return impl.isDisabled();		
 	}
 	
+	@Override
 	public void disableUpdate(boolean disable) {
-		if (this.disabled != disable) {
-			if (!disable) {
-				roboStroke.getStrokeRateScanner().addSensorDataSink(privateStrokeAccelDataSink);
-			} else {
-				reset();
-				roboStroke.getStrokeRateScanner().removeSensorDataSink(privateStrokeAccelDataSink);			
-			}
-
-			this.disabled = disable;
-		}
+		impl.disableUpdate(disable);				
+	}
+	
+	@Override
+	public void reset() {
+		impl.reset();
 	}
 }

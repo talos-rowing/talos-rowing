@@ -34,7 +34,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.android.app;
+package org.nargila.robostroke.ui;
 
 public interface DataUpdatable {
 	public boolean isDisabled();

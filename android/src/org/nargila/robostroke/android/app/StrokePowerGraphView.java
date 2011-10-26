@@ -42,13 +42,14 @@ import java.util.concurrent.TimeUnit;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.StrokeEvent;
 import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.android.graph.CyclicArrayXYSeries;
 import org.nargila.robostroke.android.graph.LineGraphView;
-import org.nargila.robostroke.android.graph.XYSeries;
-import org.nargila.robostroke.android.graph.XYSeries.XMode;
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.ui.CyclicArrayXYSeries;
+import org.nargila.robostroke.ui.DataUpdatable;
+import org.nargila.robostroke.ui.XYSeries;
+import org.nargila.robostroke.ui.XYSeries.XMode;
 
 import android.content.Context;
 

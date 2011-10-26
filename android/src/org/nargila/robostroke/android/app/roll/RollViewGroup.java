@@ -39,10 +39,10 @@ package org.nargila.robostroke.android.app.roll;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.StrokeEvent;
 import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.android.app.DataUpdatable;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.ui.DataUpdatable;
 
 import android.content.Context;
 import android.graphics.Color;

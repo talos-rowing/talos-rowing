@@ -67,6 +67,8 @@ import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.PreviewFrameLayout;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
+import org.nargila.robostroke.android.graph.AccellGraphView;
+import org.nargila.robostroke.android.graph.StrokeGraphView;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.input.ErrorListener;
@@ -74,6 +76,7 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
+import org.nargila.robostroke.ui.DataUpdatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
