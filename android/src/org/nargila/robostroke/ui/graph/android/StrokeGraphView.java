@@ -35,14 +35,11 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.android.graph;
+package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.ui.CyclicArrayXYSeries;
-import org.nargila.robostroke.ui.DataUpdatable;
-import org.nargila.robostroke.ui.XYSeries;
-import org.nargila.robostroke.ui.XYSeries.XMode;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.StrokeGraph;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -53,18 +50,19 @@ import android.view.View;
  */
 public class StrokeGraphView extends View implements DataUpdatable {
 	
-	private final StrokeGraphImpl impl;
+	private final StrokeGraph impl;
 	
 	public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) 
 	{ 
 		super(context);
 		
-		impl = new StrokeGraphImpl(this, xRange, roboStroke);
+		impl = new StrokeGraph(new UILiaisonViewImpl(this), xRange, roboStroke);
 	}
 
 
+	@Override
 	protected void onDraw(Canvas canvas) {
-		impl.draw(canvas);
+		impl.draw(new RSCanvasImpl(canvas));
 	}
 
 	@Override

@@ -3,7 +3,7 @@
 	package="org.nargila.robostroke.android.app" android:versionCode="144"
 	android:versionName="0.9.3.144">
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
-		android:name="MyApp" android:debuggable="false">
+		android:name=".MyApp" android:debuggable="false">
 		<activity android:name=".RoboStrokeActivity"
 			android:launchMode="singleInstance" android:screenOrientation="nosensor"
 			android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
@@ -21,7 +21,7 @@
 
 		</activity>
 
-		<activity android:name="Preferences" android:configChanges="orientation|keyboardHidden"
+		<activity android:name=".Preferences" android:configChanges="orientation|keyboardHidden"
 			android:excludeFromRecents="true" android:taskAffinity=""
 			android:label="Preferences" />
 	</application>

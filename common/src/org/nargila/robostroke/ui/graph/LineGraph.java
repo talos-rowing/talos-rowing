@@ -35,9 +35,14 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.common.NumberHelper;
+import org.nargila.robostroke.ui.RSCanvas;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSPath;
+import org.nargila.robostroke.ui.RSRect;
+import org.nargila.robostroke.ui.UILiaison;
 
 /**
  * Simple line graph plot view.
@@ -45,13 +50,14 @@ import org.nargila.robostroke.common.NumberHelper;
  * @author tshalif
  * 
  */
-public abstract class LineGraph implements DataUpdatable {
+public class LineGraph implements DataUpdatable {
 	protected MultiXYSeries multySeries;
+	protected final UILiaison uiLiaison;
 	private double yRangeMin;
 	private double yRangeMax = Double.MAX_VALUE;
 	private final double incr;
 
-	private boolean disabled;
+	protected boolean disabled;
 	
 	private final GraphMargines margines = new GraphMargines();
 
@@ -64,32 +70,30 @@ public abstract class LineGraph implements DataUpdatable {
 	public GraphMargines getMargines() {
 		return margines;
 	}
-
-	public LineGraph(double xRange, XYSeries.XMode xMode, double yScale,
+	
+	public LineGraph(final UILiaison uiLiaison, double xRange, XYSeries.XMode xMode, double yScale,
 			double yGridInterval) {
-		this(yScale, yGridInterval,  null);
+		this(uiLiaison, yScale, yGridInterval,  null);
 		
 		multySeries = new MultiXYSeries(xRange, xMode) {
 			@Override
 			protected void onAdd(double x, double y, XYSeries series) {
-				repaint();
+				uiLiaison.repaint();
 			}
 
 			@Override
 			protected void onRemove(int index, XYSeries series) {
-				repaint();
+				uiLiaison.repaint();
 			}
 
 			@Override
 			public void clear() {
 				super.clear();
-				repaint();
+				uiLiaison.repaint();
 			}
 		};
 
 	}
-
-	protected abstract RSPaint createPaint();
 
 	/**
 	 * constructor with standard View context, attributes, data window size, y
@@ -106,27 +110,31 @@ public abstract class LineGraph implements DataUpdatable {
 	 * @param incr
 	 *            y data tic mark gap
 	 */
-	public LineGraph(double yRange,
+	public LineGraph(UILiaison uiLiaison, double yRange,
 			double yGridInterval, MultiXYSeries multiSeries) {
 		
+		this.uiLiaison = uiLiaison;
 		this.yRangeMin = yRange;
 		this.incr = yGridInterval;
 		this.multySeries = multiSeries;
 		
-		gridPaint = createPaint();
+		gridPaint = uiLiaison.createPaint();
 		gridPaint.setARGB(0xff, 0x55, 0x55, 0x55);
 		gridPaint.setStrokeWidth(0f);
-		centreLinePaint = createPaint();
-		centreLinePaint.setARGB(0xff, 0x55, 0x55, 0x55);
-		centreLinePaint.setStrokeWidth(0f);
+		centreLinePaint = uiLiaison.createPaint();
+		centreLinePaint.setColor(uiLiaison.getRedColor());
+		centreLinePaint.setStrokeWidth(1f);
 	}
 
-
-	public void draw(Object canvas) {
+	public UILiaison getUiLiaison() {
+		return uiLiaison;
+	}
+	
+	public void draw(RSCanvas canvas) {
 
 		synchronized (multySeries) {
 
-			RSRect rect = getClipBounds(canvas);
+			RSRect rect = canvas.getClipBounds();
 
 			rect.top += margines.top;
 			rect.bottom -= margines.bottom;
@@ -142,12 +150,21 @@ public abstract class LineGraph implements DataUpdatable {
 		}
 	}
 
-	protected void drawGraph(Object canvas, RSRect rect, double xAxisSize,
+	public MultiXYSeries getSeries() {
+		return multySeries;
+	}
+	
+	protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize,
 			double yAxisSize) {
 
 		drawGrid(canvas, yAxisSize, rect);
 		drawCentreLine(canvas, rect);
 
+		drawAllSeries(canvas, rect, xAxisSize, yAxisSize);
+	}
+
+	private void drawAllSeries(RSCanvas canvas, RSRect rect, double xAxisSize,
+			double yAxisSize) {
 		for (XYSeries series : multySeries.getSeries()) {
 			double seriesYAxisSize = series.getyAxisSize();
 			drawSeries(canvas, rect, xAxisSize,
@@ -162,16 +179,7 @@ public abstract class LineGraph implements DataUpdatable {
 		return positiveOnly ? res / 2 : res;
 	}
 
-	protected abstract int getRedColor();
-	protected abstract int getGreenColor();
-	protected abstract RSPath createPath();
-	protected abstract void drawRect(Object canvas, float left, int top, float right, int bottom, RSPaint paint);
-	protected abstract RSRect getClipBounds(Object canvas);
-	protected abstract void drawPath(Object canvas, RSPath path, RSPaint strokePaint);
-	protected abstract void drawLine(Object canvas, int left, float y, int right, float y2, RSPaint gridPaint);
-
-	
-	protected void drawSeries(Object canvas, RSRect rect, double xAxisSize,
+	protected void drawSeries(RSCanvas canvas, RSRect rect, double xAxisSize,
 			double yAxisSize, XYSeries series) {
 
 		final int len = series.getItemCount();
@@ -181,7 +189,7 @@ public abstract class LineGraph implements DataUpdatable {
 			double scaleX = rect.width() / xAxisSize;
 			final int height = rect.height();
 			double scaleY = height / yAxisSize;
-			RSPath path = createPath();
+			RSPath path = uiLiaison.createPath();
 			final int bottom = rect.bottom;
 			final int hHalf = height / 2;
 			double minX = multySeries.getMinX();
@@ -214,38 +222,38 @@ public abstract class LineGraph implements DataUpdatable {
 				prevYVal = yVal;
 			}
 
-			drawPath(canvas, path, series.getRenderer().strokePaint);
+			canvas.drawPath(path, series.getRenderer().strokePaint);
 		}
 	}
 
 	
-	protected void drawGrid(Object canvas, double yAxisSize, RSRect rect) {
+	protected void drawGrid(RSCanvas canvas, double yAxisSize, RSRect rect) {
 		float y;
 		final int top = rect.top;
 		final int height = rect.height();
 
 		for (double j = incr; j < yAxisSize; j += incr) {
 			y = (float) ((j * height / yAxisSize) + top);
-			drawLine(canvas, rect.left, y, rect.right, y, gridPaint);
+			canvas.drawLine(rect.left, y, rect.right, y, gridPaint);
 		}
 	}
 
-	protected void drawLine(Object canvas, double yAxisSize, RSRect rect) {
+	protected void drawLine(RSCanvas canvas, double yAxisSize, RSRect rect) {
 		float y;
 		final int top = rect.top;
 		final int height = rect.height();
 
 		for (double j = incr; j < yAxisSize; j += incr) {
 			y = (float) ((j * height / yAxisSize) + top);
-			drawLine(canvas, rect.left, y, rect.right, y, gridPaint);
+			canvas.drawLine(rect.left, y, rect.right, y, gridPaint);
 		}
 	}
 	
-	protected void drawCentreLine(Object canvas, RSRect rect) {
+	protected void drawCentreLine(RSCanvas canvas, RSRect rect) {
 		final int yCenter = rect.top + rect.height() / 2;
 
 		if (!positiveOnly) {
-			drawLine(canvas, 0, yCenter, rect.width(), yCenter, centreLinePaint);
+			canvas.drawLine(0, yCenter, rect.width(), yCenter, centreLinePaint);
 		}
 	}
 
@@ -253,10 +261,6 @@ public abstract class LineGraph implements DataUpdatable {
 	public void reset() {
 		multySeries.clear();
 	}
-
-	public abstract void repaint(); /* {
-		postInvalidate();
-	} */
 
 	public double getyRangeMax() {
 		return yRangeMax;

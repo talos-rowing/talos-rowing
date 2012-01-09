@@ -35,10 +35,12 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.android.graph;
+package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.ui.MultiXYSeries;
-import org.nargila.robostroke.ui.XYSeries;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.LineGraph;
+import org.nargila.robostroke.ui.graph.MultiXYSeries;
+import org.nargila.robostroke.ui.graph.XYSeries;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -50,10 +52,10 @@ import android.view.View;
  * @author tshalif
  * 
  */
-public class LineGraphView extends View {
+public class LineGraphView extends View implements DataUpdatable {
 		
 
-	private final LineGraphImpl impl;
+	private final LineGraph impl;
 
 	public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
 			double yGridInterval) {
@@ -79,7 +81,7 @@ public class LineGraphView extends View {
 			double yGridInterval, MultiXYSeries multiSeries) {
 		super(context);
 		
-		impl = new LineGraphImpl(this, yRange, yGridInterval, multiSeries);
+		impl = new LineGraph(new UILiaisonViewImpl(this), yRange, yGridInterval, multiSeries);
 
 	}
 
@@ -87,7 +89,7 @@ public class LineGraphView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		impl.draw(canvas);
+		impl.draw(new RSCanvasImpl(canvas));
 	}
 
 	public void reset() {
@@ -106,4 +108,27 @@ public class LineGraphView extends View {
 	public void setXRange(double val) {		
 		impl.setXRange(val);
 	}	
+	
+	@Override
+	protected void onAttachedToWindow() {
+		impl.disableUpdate(false);
+		super.onAttachedToWindow();
+	}
+	
+	@Override
+	protected void onDetachedFromWindow() {
+		impl.disableUpdate(true);
+		super.onDetachedFromWindow();
+	}
+
+	@Override
+	public void disableUpdate(boolean disable) {
+		impl.disableUpdate(disable);		
+	}
+
+	@Override
+	public boolean isDisabled() {
+		return impl.isDisabled();
+	}
+
 }

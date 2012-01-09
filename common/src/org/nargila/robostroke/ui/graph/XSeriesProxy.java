@@ -35,7 +35,7 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph;
 
 
 abstract class XSeriesProxy implements XYSeries {

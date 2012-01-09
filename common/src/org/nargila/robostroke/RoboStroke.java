@@ -37,6 +37,7 @@ import org.nargila.robostroke.stroke.RowingDetector;
 import org.nargila.robostroke.stroke.StrokePowerScanner;
 import org.nargila.robostroke.stroke.StrokeRateScanner;
 import org.nargila.robostroke.way.DistanceResolver;
+import org.nargila.robostroke.way.DistanceResolverDefault;
 import org.nargila.robostroke.way.GPSDataFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +113,13 @@ public class RoboStroke {
 	 * data/event logger when recording is on
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
+	
+	/**
+	 * constructor with the <code>DistanceResolverDefault</code>
+	 */
+	public RoboStroke() {
+		this(new DistanceResolverDefault());
+	}
 	
 	/**
 	 * constructor with the <code>DistanceResolver</code> implementation.

@@ -39,7 +39,7 @@ package org.nargila.robostroke.android.app;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.StrokeEvent;
 import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.ui.DataUpdatable;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
 import android.os.Handler;

@@ -35,101 +35,58 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.android.app.roll;
+package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.android.graph.RSPaintProxy;
-import org.nargila.robostroke.android.graph.RSPathProxy;
-import org.nargila.robostroke.ui.RSPaint;
-import org.nargila.robostroke.ui.RSPath;
-import org.nargila.robostroke.ui.RSRect;
-import org.nargila.robostroke.ui.RollGraph;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.RollGraph;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
 import android.view.View;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class RollGraphView extends View {
+public class RollGraphView extends View implements DataUpdatable {
 
-	private class RollGraphImpl extends RollGraph {
-
-		public RollGraphImpl(double xRange) {
-			super(xRange);
-		}
-
-		@Override
-		protected int getRedColor() {
-			return Color.RED;
-		}
-
-		@Override
-		protected int getGreenColor() {
-			return Color.GREEN;
-		}
-
-		@Override
-		protected void drawRect(Object canvas, float left, int top,
-				float right, int bottom, RSPaint paint) {
-
-			((Canvas)canvas).drawRect(left, top, right, bottom, (Paint) paint);
-		}
-
-		@Override
-		protected RSPaint createPaint() {
-			return new RSPaintProxy();
-		}
-
-		@Override
-		protected RSPath createPath() {
-			return new RSPathProxy();
-		}
-
-		@Override
-		protected RSRect getClipBounds(Object canvas) {
-			Rect r = ((Canvas)canvas).getClipBounds();
-			RSRect res = new RSRect();
-			res.bottom = r.bottom;
-			res.top = r.top;
-			res.right = r.right;
-			res.left = r.left;
-			
-			return res;
-		}
-
-		@Override
-		protected void drawPath(Object canvas, RSPath path, RSPaint strokePaint) {
-			((Canvas)canvas).drawPath((Path)path, (Paint)strokePaint);
-		}
-
-		@Override
-		protected void drawLine(Object canvas, int left, float y, int right,
-				float y2, RSPaint gridPaint) {
-			((Canvas)canvas).drawLine(left, y, right, y2, (Paint) gridPaint);
-			
-		}
-
-		@Override
-		public void repaint() {
-			postInvalidate();			
-		}
-	}
-	
-	private final RollGraphImpl impl;
+	private final RollGraph impl;
 	
 	public RollGraphView(Context context, final double xRange) { 
 		super(context);
 		
-		impl = new RollGraphImpl(xRange);
+		impl = new RollGraph(new UILiaisonViewImpl(this), xRange);
 
 	}
 
+	@Override
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		impl.draw(new RSCanvasImpl(canvas));
+	}
+	
 	public void reset() {
 		impl.reset();
 	}
+	
+	@Override
+	protected void onAttachedToWindow() {
+		impl.disableUpdate(false);
+		super.onAttachedToWindow();
+	}
+	
+	@Override
+	protected void onDetachedFromWindow() {
+		impl.disableUpdate(true);
+		super.onDetachedFromWindow();
+	}
+
+	@Override
+	public void disableUpdate(boolean disable) {
+		impl.disableUpdate(disable);		
+	}
+
+	@Override
+	public boolean isDisabled() {
+		return impl.isDisabled();
+	}	
 }

@@ -34,7 +34,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph;
+
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSPaint;
 
 public interface XYSeries {
 

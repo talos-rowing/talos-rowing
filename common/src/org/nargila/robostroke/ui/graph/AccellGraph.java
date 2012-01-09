@@ -35,21 +35,23 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.ui.CyclicArrayXYSeries;
-import org.nargila.robostroke.ui.MultiXYSeries;
-import org.nargila.robostroke.ui.XYSeries;
-import org.nargila.robostroke.ui.XYSeries.XMode;
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSCanvas;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSRect;
+import org.nargila.robostroke.ui.UILiaison;
+import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public abstract class AccellGraph extends LineGraph  {
+public class AccellGraph extends LineGraph  {
 	/**
 	 * subclass of LineGraphView for setting stroke specific parameters
 	 */
@@ -68,7 +70,7 @@ public abstract class AccellGraph extends LineGraph  {
 
 		private final MultiXYSeries multySeries;
 		private final XYSeries rollSeries;
-		private final CyclicArrayXYSeries rollPanelSeries = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(createPaint()));
+		private final CyclicArrayXYSeries rollPanelSeries;
 		private final RSPaint rollGraphPaint;
 		
 		private final RSPaint rollBackgroundPaint;
@@ -77,21 +79,22 @@ public abstract class AccellGraph extends LineGraph  {
 
 		RollGraphOverlay(double xRange, MultiXYSeries multySeries) {
 
+			rollPanelSeries = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint()));
 			rollPanelSeries.setxRange(xRange);
 
 			this.multySeries = multySeries;
 			
 			{
-				rollBackgroundPaint = createPaint();
+				rollBackgroundPaint = uiLiaison.createPaint();
 				rollBackgroundPaint.setStyle(PaintStyle.FILL);
 				rollBackgroundPaint.setAntiAlias(false);
 				rollBackgroundPaint.setStrokeWidth(0);
 			}
 
 			{
-				rollGraphPaint = createPaint(); 
+				rollGraphPaint = uiLiaison.createPaint(); 
 				rollGraphPaint.setStyle(PaintStyle.STROKE);
-				rollGraphPaint.setColor(getYellowColor());
+				rollGraphPaint.setColor(uiLiaison.getYellowColor());
 				rollGraphPaint.setAlpha(170);
 			}
 			
@@ -108,14 +111,14 @@ public abstract class AccellGraph extends LineGraph  {
 			rollPanelSeries.setxRange(val);
 		}
 
-		void drawRollPanels(Object canvas, RSRect rect, double xAxisSize) {
+		void drawRollPanels(RSCanvas canvas, RSRect rect, double xAxisSize) {
 			XYSeries ser = rollPanelSeries;
 
 			final int len = ser.getItemCount();
 
 			if (len > 0) {
-				final int red = getRedColor();
-				final int green = getGreenColor();
+				final int red = uiLiaison.getRedColor();
+				final int green = uiLiaison.getGreenColor();
 
 				final double maxYValue = Y_RANGE / 2;
 				final double scaleX = rect.width() / xAxisSize;
@@ -139,7 +142,7 @@ public abstract class AccellGraph extends LineGraph  {
 					float left = (float) ((startX - minX) * scaleX);
 					float right = (float) (((stopX - minX) * scaleX));
 
-					drawRect(canvas, left, rect.top, right, rect.bottom, rollBackgroundPaint);
+					canvas.drawRect((int)left, rect.top, (int)right, rect.bottom, rollBackgroundPaint);
 				}
 			}
 		}
@@ -194,20 +197,19 @@ public abstract class AccellGraph extends LineGraph  {
 			accelSeries.add(timestamp, values[0]);
 		}
 	};
-	private boolean disabled = true;
 
-	public AccellGraph(float xRange, RoboStroke roboStroke) {
-		super(xRange, XYSeries.XMode.ROLLING, Y_SCALE, INCR);
+	public AccellGraph(UILiaison factory, float xRange, RoboStroke roboStroke) {
+		super(factory, xRange, XYSeries.XMode.ROLLING, Y_SCALE, INCR);
 
 		this.roboStroke = roboStroke;
 		
-		accelSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(createPaint())));
+		accelSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint())));
 
 		rollGraph = new RollGraphOverlay(xRange, multySeries);
+		
+		attachSensors();
 	}
 
-	protected abstract int getYellowColor();
-	
 	@Override
 	public void setXRange(double val) {
 		rollGraph.setXRange(val);
@@ -215,7 +217,7 @@ public abstract class AccellGraph extends LineGraph  {
 	}
 
 	@Override
-	protected void drawGraph(Object canvas, RSRect rect, double xAxisSize,
+	protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize,
 			double yAxisSize) {
 
 		rollGraph.drawRollPanels(canvas, rect, xAxisSize);
@@ -233,18 +235,27 @@ public abstract class AccellGraph extends LineGraph  {
 	}
 
 	
+	@Override
 	public void disableUpdate(boolean disable) {
 		if (this.disabled != disable) {
 			if (disable) {
-				roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccellDataSink);
-				roboStroke.getRollScanner().removeSensorDataSink(rollGraph);
+				detachSensors();
 			} else {
 				reset();
-				roboStroke.getAccelerationFilter().addSensorDataSink(privateAccellDataSink);
-				roboStroke.getRollScanner().addSensorDataSink(rollGraph);
+				attachSensors();
 			}
 
 			this.disabled = disable;
 		}
+	}
+
+	private void detachSensors() {
+		roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccellDataSink);
+		roboStroke.getRollScanner().removeSensorDataSink(rollGraph);
+	}
+
+	private void attachSensors() {
+		roboStroke.getAccelerationFilter().addSensorDataSink(privateAccellDataSink);
+		roboStroke.getRollScanner().addSensorDataSink(rollGraph);
 	}
 }

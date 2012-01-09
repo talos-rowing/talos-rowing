@@ -35,17 +35,21 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.ui.XYSeries;
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSCanvas;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSRect;
+import org.nargila.robostroke.ui.UILiaison;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public abstract class RollGraph extends LineGraph implements SensorDataSink {
+public class RollGraph extends LineGraph implements SensorDataSink {
 	private static final float Y_RANGE = 10f;
 	private static final float INCR = 1f;
 	private final  XYSeries bothSeries;
@@ -60,7 +64,7 @@ public abstract class RollGraph extends LineGraph implements SensorDataSink {
 	private long rollAccumTimestamp;
 	
 	
-	private final CyclicArrayXYSeries panelSeries = new CyclicArrayXYSeries(XYSeries.XMode.ROLLING, new XYSeries.Renderer(createPaint())) {
+	private final CyclicArrayXYSeries panelSeries = new CyclicArrayXYSeries(XYSeries.XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint())) {
 		
 		@Override
 		public void setyAxisSize(double yAxisSize) {
@@ -183,18 +187,18 @@ public abstract class RollGraph extends LineGraph implements SensorDataSink {
 		}
 	};
 	
-	public RollGraph(final double xRange) { 
-		super(xRange, XYSeries.XMode.ROLLING, Y_RANGE, INCR);
+	public RollGraph(UILiaison uiLiaison, final double xRange) { 
+		super(uiLiaison, xRange, XYSeries.XMode.ROLLING, Y_RANGE, INCR);
 		
 		setyRangeMax(Y_RANGE);
 		
-		bothSeries = multySeries.addSeries(new CyclicArrayXYSeries(XYSeries.XMode.ROLLING, new XYSeries.Renderer(createPaint())));
+		bothSeries = multySeries.addSeries(new CyclicArrayXYSeries(XYSeries.XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint())));
 		
 		panelSeries.setxRange(xRange);
 	}
 
 	@Override
-	protected void drawCentreLine(Object canvas, RSRect rect) {
+	protected void drawCentreLine(RSCanvas canvas, RSRect rect) {
 	}
 	
 	@Override
@@ -204,7 +208,7 @@ public abstract class RollGraph extends LineGraph implements SensorDataSink {
 	}
 
 	@Override
-	protected void drawGraph(Object canvas, RSRect rect, double xAxisSize,
+	protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize,
 			double yAxisSize) {
 
 		drawRollPanels(canvas, rect, xAxisSize);
@@ -212,14 +216,14 @@ public abstract class RollGraph extends LineGraph implements SensorDataSink {
 		super.drawGraph(canvas, rect, xAxisSize, yAxisSize);
 	}
 	
-	private void drawRollPanels(Object canvas, RSRect rect, double xAxisSize) {
+	private void drawRollPanels(RSCanvas canvas, RSRect rect, double xAxisSize) {
 		XYSeries ser = panelSeries;
 
 
-		final int red = getRedColor();
-		final int green = getGreenColor();
+		final int red = uiLiaison.getRedColor();
+		final int green = uiLiaison.getGreenColor();
 
-		RSPaint paint = createPaint();
+		RSPaint paint = uiLiaison.createPaint();
 		paint.setStyle(PaintStyle.FILL);
 		paint.setAntiAlias(false);
 		paint.setStrokeWidth(0);				
@@ -246,7 +250,7 @@ public abstract class RollGraph extends LineGraph implements SensorDataSink {
 			float left = (float) ((startX - minX) * scaleX);
 			float right = (float) (((stopX - minX) * scaleX));
 
-			drawRect(canvas, left, rect.top, right, rect.bottom, paint);
+			canvas.drawRect((int)left, rect.top, (int)right, rect.bottom, paint);
 		}
 	}
 	

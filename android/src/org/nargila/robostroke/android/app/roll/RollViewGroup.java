@@ -42,7 +42,7 @@ import org.nargila.robostroke.StrokeListener;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.ui.DataUpdatable;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
 import android.graphics.Color;

@@ -35,10 +35,11 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.android.graph;
+package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.DataUpdatable;
+import org.nargila.robostroke.ui.graph.AccellGraph;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -49,18 +50,18 @@ import android.view.View;
  */
 public class AccellGraphView extends View implements  DataUpdatable  {
 	
-	private final AccellGraphImpl impl;
+	private final AccellGraph impl;
 	
 	public AccellGraphView(Context context, float xRange, RoboStroke roboStroke) {
 		super(context);
 		
-		impl = new AccellGraphImpl(this, xRange, roboStroke);
+		impl = new AccellGraph(new UILiaisonViewImpl(this), xRange, roboStroke);
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {			
 		super.onDraw(canvas);
-		impl.draw(canvas);
+		impl.draw(new RSCanvasImpl(canvas));
 	}
 	
 	@Override
