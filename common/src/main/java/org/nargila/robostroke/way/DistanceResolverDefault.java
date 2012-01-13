@@ -32,7 +32,7 @@ public class DistanceResolverDefault implements DistanceResolver {
 	@Override
 	public float calcDistance(double[] loc1, double[] loc2) {		
 		
-		return (float) LocationUtil.distSphericalEarth(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG], 
+		return (float) LocationUtil.distVincenty(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG], 
 				loc2[DataIdx.GPS_LAT], loc2[DataIdx.GPS_LONG]);
 		
 	}
