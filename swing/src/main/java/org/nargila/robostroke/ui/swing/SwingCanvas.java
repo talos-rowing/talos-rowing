@@ -1,9 +1,14 @@
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+
+import org.nargila.robostroke.ui.RSCanvas;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSPath;
+import org.nargila.robostroke.ui.RSRect;
 
 public class SwingCanvas implements RSCanvas {
 

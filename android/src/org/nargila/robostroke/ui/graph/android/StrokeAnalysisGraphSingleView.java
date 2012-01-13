@@ -35,49 +35,23 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
-
-import java.util.concurrent.TimeUnit;
+package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.AccellGraph;
+import org.nargila.robostroke.ui.graph.StrokeAnalysisGraphSingle;
+
+import android.content.Context;
 
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class AccellGraphView extends SwingViewBase {
-	private static final long serialVersionUID = 1L;
+public class StrokeAnalysisGraphSingleView extends AndroidGraphViewBase<StrokeAnalysisGraphSingle> {
 
-	private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
-
-	final AccellGraph impl;
 	
-	public AccellGraphView(RoboStroke roboStroke) {
-		this(XRANGE, roboStroke);
-	}
-	
-	public AccellGraphView(float xRange, RoboStroke roboStroke) {
+	public StrokeAnalysisGraphSingleView(Context context, RoboStroke roboStroke) {
+		super(context);
 		
-		impl = new AccellGraph(new SwingUILiaison(this), xRange, roboStroke);
-	}
-
-	@Override
-	public void onDraw(SwingCanvas canvas) {
-		impl.draw(canvas);
-	}
-
-	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);
-	}
-
-	public boolean isDisabled() {
-		return impl.isDisabled();
-	}
-	
-	
-	@Override
-	public void reset() {
-		impl.reset();		
+		setGraph(new StrokeAnalysisGraphSingle(new UILiaisonViewImpl(this), roboStroke));
 	}
 }

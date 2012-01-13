@@ -35,17 +35,11 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-
-import javax.swing.JComponent;
-
-import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.LineGraph;
+import org.nargila.robostroke.ui.graph.MultiXYSeries;
+import org.nargila.robostroke.ui.graph.XYSeries;
 
 
 /**
@@ -54,38 +48,51 @@ import org.nargila.robostroke.ui.graph.DataUpdatable;
  * @author tshalif
  * 
  */
-public abstract class SwingViewBase extends JComponent implements DataUpdatable {
+public class LineGraphView extends SwingGraphViewBase<LineGraph> {
 		
 
 	private static final long serialVersionUID = 1L;
 
-	public SwingViewBase() {
-		
-		addComponentListener(new ComponentListener() {
-			
-			public void componentShown(ComponentEvent e) {
-				disableUpdate(false);
-			}
-			
-			public void componentResized(ComponentEvent e) {
-			}
-			
-			public void componentMoved(ComponentEvent e) {
-			}
-			
-			public void componentHidden(ComponentEvent e) {
-				disableUpdate(true);
-			}
-		});
-	}
 
-	@Override
-	public final void paint(Graphics g) {
-		Rectangle r = getBounds();
-		g.setColor(Color.BLACK);
-		g.fillRect(r.x, r.y, r.width, r.height);
-		onDraw(new SwingCanvas(this, g));
+	public LineGraphView(double xRange, XYSeries.XMode xMode, double yScale,
+			double yGridInterval) {
+		setGraph(new LineGraph(new SwingUILiaison(this), xRange, xMode, yScale, yGridInterval));
 	}
 	
-	protected abstract void onDraw(SwingCanvas swingCanvas);
+	/**
+	 * constructor with standard View context, attributes, data window size, y
+	 * scale and y data tic mark gap
+	 * 
+	 * @param context
+	 *            the Android Activity
+	 * @param attrs
+	 *            layout and other common View attributes
+	 * @param windowSize
+	 *            size of data array to plot
+	 * @param yScale
+	 *            y value to pixel scale
+	 * @param incr
+	 *            y data tic mark gap
+	 */
+	public LineGraphView(double yRange,
+			double yGridInterval, MultiXYSeries multiSeries) {
+		setGraph(new LineGraph(new SwingUILiaison(this), yRange, yGridInterval, multiSeries));
+	}
+
+
+	public XYSeries addSeries(XYSeries series) {
+		return graph.getSeries().addSeries(series);
+	}	
+
+	public void setyRangeMax(double yRangeMax) {
+		graph.setyRangeMax(yRangeMax);
+	}
+
+	public void setyRangeMin(double yRangeMin) {
+		graph.setyRangeMin(yRangeMin);
+	}
+
+	public void setXRange(double val) {		
+		graph.setXRange(val);
+	}	
 }

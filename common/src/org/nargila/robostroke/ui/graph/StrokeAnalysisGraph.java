@@ -1,164 +1,236 @@
+/*
+ * Copyright (c) 2011 Tal Shalif
+ * 
+ * This file is part of Talos-Rowing.
+ * 
+ * Talos-Rowing is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Talos-Rowing is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/*
+ * Copyright (c) 2011 Tal Shalif
+ * 
+ * This file is part of Talos-Rowing.
+ * 
+ * Talos-Rowing is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Talos-Rowing is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.nargila.robostroke.ui.graph;
 
-import java.util.concurrent.TimeUnit;
-
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.StrokeEvent;
+import org.nargila.robostroke.StrokeListener;
 import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSCanvas;
-import org.nargila.robostroke.ui.RSPaint;
-import org.nargila.robostroke.ui.RSRect;
 import org.nargila.robostroke.ui.UILiaison;
-import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 
 /**
- * subclass of LineGraphView for setting stroke specific parameters
+ * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class StrokeAnalysisGraph extends LineGraph {
+public class StrokeAnalysisGraph implements UpdatableGraphBase {
 	
-	private static final long MAX_TIME_CAPTURE = TimeUnit.SECONDS.toNanos(10);
-	private long timeCaptureStart;
-	private final RollOverlayType rollOverlayType = RollOverlayType.TOP;
+	private static final int MIN_STROKE_RATE = 10;
 	
+	private int cur = 0;
+	private int next = 1;
 	
-	private static final float Y_SCALE = 8f;
-	private static final float INCR = 1f;
-	private final CyclicArrayXYSeries accelSeries = new CyclicArrayXYSeries(XMode.GROWING, new XYSeries.Renderer(uiLiaison.createPaint()));
-	private final CyclicArrayXYSeries rollPanelSeries = new CyclicArrayXYSeries(XMode.GROWING, new XYSeries.Renderer(uiLiaison.createPaint())) {
-		{
-			setIndependantYAxis(true);				
-		}
-	};
-	
-	private final RSPaint rollGraphPaint = uiLiaison.createPaint();
-	
-	
-	private final CyclicArrayXYSeries rollSeries;
-	
-	private final RollGraphOverlay rollGraph;
-	private final int next = 1;
-	
-	public StrokeAnalysisGraph(UILiaison factory) {
-		super(factory, Y_SCALE, INCR, null);
+	private final StrokeAnalysisGraphSingle[] graphs;
 
-		rollGraphPaint.setStyle(PaintStyle.STROKE);
-		rollGraphPaint.setColor(uiLiaison.getYellowColor());
-		rollGraphPaint.setAlpha(170);
+	private boolean aboveStrokeRateTreshold;
 
-		rollSeries = new CyclicArrayXYSeries(XMode.GROWING, new XYSeries.Renderer(rollGraphPaint)) {
-			{
-				setIndependantYAxis(true);
-				setyAxisSize(Y_SCALE);
-				setxRange(0);
-			}
+	private final RoboStroke roboStroke;
+	
+	private final UILiaison uiLiaision;
+	
+	public StrokeAnalysisGraph(UILiaison uiLiaision, RoboStroke roboStroke, StrokeAnalysisGraphSingle g1, StrokeAnalysisGraphSingle g2) {
+		
+		this.uiLiaision = uiLiaision;
+
+		this.roboStroke = roboStroke;
+		
+		graphs = new StrokeAnalysisGraphSingle[] {
+				g1,
+				g2
 		};
+				
+		graphs[next].setVisible(false);
 
-		multySeries = new MultiXYSeries(0, XYSeries.XMode.GROWING) {
-			@Override
-			public double getxRange() {
-				return accelSeries.getMaxX() - accelSeries.getMinX();
+	}
+
+	private final SensorDataSink privateRollDataSink = new SensorDataSink() {
+		
+		@Override
+		public void onSensorData(long timestamp, Object value) {
+			if (aboveStrokeRateTreshold) {
+				synchronized (graphs) {
+					graphs[next].getRollSink().onSensorData(timestamp, value);
+				}
 			}
-		};			
-
-		multySeries.addSeries(rollPanelSeries, false);
-		multySeries.addSeries(accelSeries, false);
-		multySeries.addSeries(rollSeries, false);
-
-		rollGraph = new RollGraphOverlay(factory, multySeries);
-	}
-
-	@Override
-	public void setXRange(double val) {
-		// disable external call to setXRange()
-	}
-	
-	
-	@Override
-	protected void drawSeries(RSCanvas canvas, RSRect rect, double xAxisSize,
-			double yAxisSize, XYSeries series) {
-		
-		if (series != rollPanelSeries) { 
-			super.drawSeries(canvas, rect, xAxisSize, yAxisSize, series);
 		}
+	};
+
+	private final SensorDataSink privateAccelDataSink = new SensorDataSink() {
 		
-	}
-	
-	@Override
-	protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize, double yAxisSize) {
-		
-		RSRect rollBarsRect = new RSRect(rect);
-		
-		int rollBarsHeight = (int) (rollOverlayType.clipHeightPercent * rect.height());
-		
-		switch (rollOverlayType) {
-		case BACKGROUND:
-			// nothing to do
-			break;
-		case BOTTOM:
-			rollBarsRect.top = rollBarsRect.bottom - rollBarsHeight;
-			rect.bottom -= rollBarsHeight;
-			break;
-		case TOP:
-			rollBarsRect.bottom = rollBarsRect.top + rollBarsHeight;
-			rect.top += rollBarsHeight;
-			break;
+		@Override
+		public void onSensorData(long timestamp, Object value) {
+			if (aboveStrokeRateTreshold) {
+				synchronized (graphs) {
+					graphs[next].getAccelSink().onSensorData(timestamp, value);
+				}
+			}
 		}
-		
-		rollGraph.drawRollPanels(canvas, rollBarsRect, xAxisSize);
-		
-		super.drawGraph(canvas, rect, xAxisSize, yAxisSize);
-	}
+	};
+
+	protected boolean needReset;
+
 	
-	
-	@Override
+	private final StrokeListener privateBusListener = new StrokeListener() {
+		
+		@Override
+		public void onStrokeEvent(StrokeEvent event) {
+			switch (event.type) {
+			case STROKE_RATE:
+				aboveStrokeRateTreshold =  (Integer)event.data > MIN_STROKE_RATE;
+				break;
+			case STROKE_POWER_END:
+				boolean hasPower = (Float)event.data > 0;
+				
+				if (!hasPower) {
+					resetNext();					
+				}
+				
+				if (aboveStrokeRateTreshold) {
+					if (!needReset) {
+						synchronized (graphs) {
+
+
+							graphs[cur].reset();
+
+							if (cur == 0) {
+								cur = 1;
+								next = 0;
+							} else {
+								cur = 0;
+								next = 1;
+							}
+
+							graphs[next].setVisible(false);
+							graphs[cur].setVisible(true);
+							graphs[cur].repaint();
+							
+						}
+					}
+
+					needReset = false;
+				}
+			}
+		}
+	};
+
+	private boolean disabled = true;
+
+	private boolean attached;
+
 	public void reset() {
-		synchronized (multySeries) {
-			rollGraph.reset();
-			timeCaptureStart = 0;
-			super.reset();
-		}
+		graphs[cur].reset();
+		graphs[next].reset();
 	}
-	
-	private boolean checkCaptureTimeInRange(long timestamp) {
-		
-		if (timeCaptureStart == 0) {
-			timeCaptureStart = timestamp;
-			return true;
-		} 
-		
-		return (Math.abs(timestamp - timeCaptureStart) < MAX_TIME_CAPTURE);
-	}
-	
-	SensorDataSink rollSink = new SensorDataSink() {
-		
-		@Override
-		public void onSensorData(long timestamp, Object value) {
-			if (!checkCaptureTimeInRange(timestamp)) {
-				return;
-			}
-			
-			rollGraph.onSensorData(timestamp, value);
-		}
-		
-	};
-	
-	
-	public SensorDataSink getRollSink() {
-		return rollSink;
-	}
-	
-	SensorDataSink accelSink = new SensorDataSink() {
-		
-		@Override
-		public void onSensorData(long timestamp, Object value) {
-			if (!checkCaptureTimeInRange(timestamp)) {
-				return;
-			}
-			float[] values = (float[]) value;
-			accelSeries.add(timestamp, values[0]);
-		}
-	};
 
-	public SensorDataSink getAccelSink() {
-		return accelSink;
+
+
+	
+	@Override
+	public boolean isDisabled() {
+		return disabled;		
+	}
+	
+	@Override
+	public synchronized void disableUpdate(boolean disable) {
+		if (this.disabled != disable) {
+			if (!disable) {
+				attachSensors();
+			} else {
+				resetNext();
+				detachSensors();
+			}	
+
+			this.disabled = disable;
+		}
+	}
+
+
+
+
+	private void detachSensors() {
+		
+		if (attached) {
+			roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccelDataSink);
+			roboStroke.getRollScanner().removeSensorDataSink(privateRollDataSink);
+			roboStroke.getBus().removeStrokeListener(privateBusListener);
+			attached = false;
+		}
+	}
+
+
+
+
+	private void attachSensors() {
+		if (!attached) {
+			roboStroke.getBus().addStrokeListener(privateBusListener);
+			roboStroke.getAccelerationFilter().addSensorDataSink(privateAccelDataSink);
+			roboStroke.getRollScanner().addSensorDataSink(privateRollDataSink);
+			
+			attached = true;
+		}
+	}
+
+
+	private void resetNext() {
+		needReset = true;
+		graphs[next].reset();
+	}
+
+
+
+
+	@Override
+	public void draw(RSCanvas canvas) {
+		
+	}
+
+
+
+
+	@Override
+	public void setVisible(boolean visible) {
+		uiLiaision.setVisible(visible);
+	}
+
+
+
+
+	@Override
+	public void repaint() {
+		uiLiaision.repaint();
 	}
 }

@@ -5,12 +5,14 @@ import org.nargila.robostroke.ui.RSPath;
 import org.nargila.robostroke.ui.UILiaison;
 
 import android.graphics.Color;
+import android.os.Handler;
 import android.view.View;
 
 public class UILiaisonViewImpl implements UILiaison {
 
 	private final View owner;
-	
+	private final Handler mainHanlder = new Handler();
+
 	
 	public UILiaisonViewImpl(View owner) {
 		this.owner = owner;
@@ -51,5 +53,16 @@ public class UILiaisonViewImpl implements UILiaison {
 	@Override
 	public Object getComponent() {
 		return owner;
+	}
+	
+	@Override
+	public void setVisible(final boolean visible) {
+		mainHanlder.post(new Runnable() {
+			
+			@Override
+			public void run() {
+				owner.setVisibility(visible ? View.VISIBLE : View.GONE);		
+			}
+		});
 	}
 }

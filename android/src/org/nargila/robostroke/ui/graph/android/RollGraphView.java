@@ -37,56 +37,20 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.RollGraph;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.view.View;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class RollGraphView extends View implements DataUpdatable {
+public class RollGraphView extends AndroidGraphViewBase<RollGraph> {
 
-	private final RollGraph impl;
 	
 	public RollGraphView(Context context, final double xRange) { 
 		super(context);
 		
-		impl = new RollGraph(new UILiaisonViewImpl(this), xRange);
+		setGraph(new RollGraph(new UILiaisonViewImpl(this), xRange));
 
 	}
-
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		impl.draw(new RSCanvasImpl(canvas));
-	}
-	
-	public void reset() {
-		impl.reset();
-	}
-	
-	@Override
-	protected void onAttachedToWindow() {
-		impl.disableUpdate(false);
-		super.onAttachedToWindow();
-	}
-	
-	@Override
-	protected void onDetachedFromWindow() {
-		impl.disableUpdate(true);
-		super.onDetachedFromWindow();
-	}
-
-	@Override
-	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);		
-	}
-
-	@Override
-	public boolean isDisabled() {
-		return impl.isDisabled();
-	}	
 }

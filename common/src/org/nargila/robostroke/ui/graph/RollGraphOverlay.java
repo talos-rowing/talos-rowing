@@ -37,7 +37,7 @@ public class RollGraphOverlay implements SensorDataSink {
     public RollGraphOverlay(UILiaison uiFactory, MultiXYSeries multySeries) {
 
     	this.uiFactory = uiFactory;
-        rollPanelSeries = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiFactory.createPaint()));
+        rollPanelSeries = new CyclicArrayXYSeries(multySeries.xMode, new XYSeries.Renderer(uiFactory.createPaint()));
         rollPanelSeries.setxRange(multySeries.getxRange());
 
         this.multySeries = multySeries;
@@ -95,7 +95,7 @@ public class RollGraphOverlay implements SensorDataSink {
                 int alpha = (int) ((avgY / maxYValue) * 255 * ROLL_PANNEL_DIM_FACTOR);
 
                 rollBackgroundPaint.setColor(color);
-                rollBackgroundPaint.setAlpha(Math.abs(alpha));
+                rollBackgroundPaint.setAlpha(Math.min(Math.abs(alpha), 255));
 
                 float left = (float) ((startX - minX) * scaleX);
                 float right = (float) (((stopX - minX) * scaleX));

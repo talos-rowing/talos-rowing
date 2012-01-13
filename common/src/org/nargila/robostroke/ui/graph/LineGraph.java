@@ -39,6 +39,7 @@ package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.ui.RSCanvas;
+import org.nargila.robostroke.ui.RSDrawable;
 import org.nargila.robostroke.ui.RSPaint;
 import org.nargila.robostroke.ui.RSPath;
 import org.nargila.robostroke.ui.RSRect;
@@ -50,14 +51,14 @@ import org.nargila.robostroke.ui.UILiaison;
  * @author tshalif
  * 
  */
-public class LineGraph implements DataUpdatable {
+public class LineGraph implements UpdatableGraphBase {
 	protected MultiXYSeries multySeries;
 	protected final UILiaison uiLiaison;
 	private double yRangeMin;
 	private double yRangeMax = Double.MAX_VALUE;
 	private final double incr;
 
-	protected boolean disabled;
+	protected boolean disabled = true;
 	
 	private final GraphMargines margines = new GraphMargines();
 
@@ -130,6 +131,7 @@ public class LineGraph implements DataUpdatable {
 		return uiLiaison;
 	}
 	
+	@Override
 	public void draw(RSCanvas canvas) {
 
 		synchronized (multySeries) {
@@ -294,5 +296,15 @@ public class LineGraph implements DataUpdatable {
 	@Override
 	public void disableUpdate(boolean disabled) {
 		this.disabled = disabled;
+	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		uiLiaison.setVisible(visible);
+	}
+	
+	@Override
+	public void repaint() {
+		uiLiaison.repaint();
 	}
 }

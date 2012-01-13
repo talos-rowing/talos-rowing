@@ -1,7 +1,11 @@
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
 import java.awt.Color;
 import java.awt.Component;
+
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSPath;
+import org.nargila.robostroke.ui.UILiaison;
 
 public class SwingUILiaison implements UILiaison {
 
@@ -38,5 +42,10 @@ public class SwingUILiaison implements UILiaison {
 
 	public void repaint() {
 		canvas.repaint();
+	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		canvas.setVisible(visible);		
 	}
 }

@@ -1,8 +1,11 @@
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
+
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSPaint;
 
 public class SwingPaint implements RSPaint {
 
@@ -15,6 +18,11 @@ public class SwingPaint implements RSPaint {
 	PaintStyle paintStyle;
 	
 	public void setARGB(int a, int r, int g, int b) {
+		
+		if (a < 0 || a > 255) {
+			throw new IllegalArgumentException("HDIGH!");			
+		}
+		
 		color = new Color(r, g, b, a);		
 	}
 

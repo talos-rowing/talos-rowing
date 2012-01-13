@@ -37,45 +37,61 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.ui.graph.LineGraph;
-import org.nargila.robostroke.ui.graph.MultiXYSeries;
-import org.nargila.robostroke.ui.graph.XYSeries;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
 
 import android.content.Context;
+import android.widget.FrameLayout;
+
 
 /**
- * Simple line graph plot view.
- * 
- * @author tshalif
- * 
+ * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class LineGraphView extends AndroidGraphViewBase<LineGraph> {
-		
-	public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
-			double yGridInterval) {
-		this(context, yScale, yGridInterval,  null);
-	}
+public class StrokeAnalysisGraphView extends FrameLayout implements DataUpdatable {
+
+	private final StrokeAnalysisGraph graph;
 	
-	/**
-	 * constructor with standard View context, attributes, data window size, y
-	 * scale and y data tic mark gap
-	 * 
-	 * @param context
-	 *            the Android Activity
-	 * @param attrs
-	 *            layout and other common View attributes
-	 * @param windowSize
-	 *            size of data array to plot
-	 * @param yScale
-	 *            y value to pixel scale
-	 * @param incr
-	 *            y data tic mark gap
-	 */
-	public LineGraphView(Context context, double yRange,
-			double yGridInterval, MultiXYSeries multiSeries) {
+	public StrokeAnalysisGraphView(Context context, RoboStroke roboStroke) {
+		
 		super(context);
 		
-		setGraph(new LineGraph(new UILiaisonViewImpl(this), yRange, yGridInterval, multiSeries));
+		StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(context, roboStroke);
+		StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(context, roboStroke);
+		
+		LayoutParams layoutParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 
+		addView(g1, layoutParams);
+		addView(g2, layoutParams);
+		
+		graph = new StrokeAnalysisGraph(new UILiaisonViewImpl(this), roboStroke, g1.graph, g2.graph);
+		
 	}
+
+	@Override
+	public boolean isDisabled() {
+		return graph.isDisabled();
+	}
+
+	@Override
+	public void disableUpdate(boolean disable) {
+		graph.disableUpdate(disable);
+	}
+
+	@Override
+	public void reset() {
+		graph.reset();
+	}
+	
+	@Override
+	protected void onAttachedToWindow() {
+		disableUpdate(false);
+		super.onAttachedToWindow();
+	}
+	
+	@Override
+	protected void onDetachedFromWindow() {
+		disableUpdate(true);
+		super.onDetachedFromWindow();
+	}	
 }

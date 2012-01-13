@@ -37,7 +37,9 @@
 
 package org.nargila.robostroke.ui.graph;
 
+import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 
 /**
@@ -47,6 +49,16 @@ public class StrokeGraph extends SensorGraphBase {
 	private static final float Y_RANGE = 4f;
 
 	public StrokeGraph(UILiaison factory, float xRange, RoboStroke roboStroke)	{ 
-		super(factory, xRange, Y_RANGE, roboStroke);
+		super(factory, XMode.ROLLING, xRange, Y_RANGE, roboStroke);
+	}
+	
+	@Override
+	protected synchronized void attachSensors(SensorDataSink lineDataSink) {
+		roboStroke.getStrokeRateScanner().addSensorDataSink(lineDataSink);
+	}
+	
+	@Override
+	protected void detachSensors(SensorDataSink lineDataSink) {
+		roboStroke.getStrokeRateScanner().removeSensorDataSink(lineDataSink);
 	}
 }

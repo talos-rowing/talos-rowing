@@ -13,6 +13,8 @@ public interface UILiaison {
 
 	abstract RSPath createPath();
 	
+	public void setVisible(boolean visible);
+	
 	public void repaint(); /* {
 	view.postInvalidate();
 } */

@@ -76,6 +76,7 @@ import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.android.AccellGraphView;
+import org.nargila.robostroke.ui.graph.android.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.android.StrokeGraphView;
 import org.nargila.robostroke.ui.graph.android.StrokePowerGraphView;
 import org.slf4j.Logger;
@@ -1009,7 +1010,11 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					graph.disableUpdate(true);
 				} else {
 					graph.reset();
-					graph.disableUpdate(restoreStates[i++]);
+					try {
+						graph.disableUpdate(restoreStates[i++]);
+					} catch (Throwable e) {
+						boolean bula = true;
+					}
 				}
 			} else {				
 				graph.reset();

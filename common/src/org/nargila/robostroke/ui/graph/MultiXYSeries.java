@@ -38,13 +38,16 @@ package org.nargila.robostroke.ui.graph;
 
 import java.util.LinkedList;
 
+import org.nargila.robostroke.common.DoubleGenerator;
+
 public class MultiXYSeries {
 
 	private final LinkedList<XYSeries> seriesList = new LinkedList<XYSeries>();
 	
 	private double xRange = 0; // -n: stop at range, n: cyclical range, 0: grow
 	final XYSeries.XMode xMode;
-
+	private DoubleGenerator xRangeGenerator;
+	
 	public MultiXYSeries(double xRange, XYSeries.XMode xMode) {
 		this.xMode = xMode;
 		setxRange(xRange);
@@ -68,6 +71,10 @@ public class MultiXYSeries {
 		return res;
 	}
 
+	public void setxRangeGenerator(DoubleGenerator xRangeGenerator) {
+		this.xRangeGenerator = xRangeGenerator;
+	}
+	
 	public synchronized double getMinX() {
 		double res = Double.MAX_VALUE;
 		
@@ -105,8 +112,8 @@ public class MultiXYSeries {
 	}
 
 
-	public double getxRange() {
-		return xRange;
+	public double getxRange() {				
+		return xRangeGenerator == null ? xRange : xRangeGenerator.get();
 	}
 
 

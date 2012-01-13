@@ -45,35 +45,46 @@ import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class SensorGraphBase extends LineGraph {
+public abstract class SensorGraphBase extends LineGraph {
+	
 	private static final float INCR = 1f;
-	private final XYSeries strokeSeries;
-	private final RoboStroke roboStroke;
-	private final SensorDataSink privateStrokeAccelDataSink = new SensorDataSink() {
+	protected final XYSeries accelSeries;
+	protected final RoboStroke roboStroke;
+	
+	private boolean attached;
+	
+	protected final SensorDataSink accelDataSink = new SensorDataSink() {
 		
 		@Override
 		public void onSensorData(long timestamp, Object value) {
 			float[] values = (float[]) value;
-			strokeSeries.add(timestamp, values[0]);
+			accelSeries.add(timestamp, values[0]);
 		}
 	};
 		
-	public SensorGraphBase(UILiaison factory, float xRange, float yRange, RoboStroke roboStroke)	{ 
-		super(factory, xRange, XYSeries.XMode.ROLLING, yRange, INCR);
+	public SensorGraphBase(UILiaison factory, XYSeries.XMode xMode, float xRange, float yRange, RoboStroke roboStroke)	{ 
+		super(factory, xRange, xMode, yRange, INCR);
 		
 		this.roboStroke = roboStroke;
-		strokeSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING,  new XYSeries.Renderer(uiLiaison.createPaint())));
+		accelSeries = multySeries.addSeries(new CyclicArrayXYSeries(xMode,  new XYSeries.Renderer(uiLiaison.createPaint())));
 	}
 
 
 	@Override
-	public void disableUpdate(boolean disable) {
+	public synchronized void disableUpdate(boolean disable) {
 		if (isDisabled() != disable) {
 			if (!disable) {
-				attachSensors();
+				if (!attached) {
+					attachSensors();
+					attached = true;
+				}
 			} else {
 				reset();
-				detachSensors();			
+				
+				if (attached) {
+					detachSensors();
+					attached = false;
+				}
 			}
 
 			super.disableUpdate(disable);
@@ -81,12 +92,18 @@ public class SensorGraphBase extends LineGraph {
 	}
 
 
-	protected void detachSensors() {
-		roboStroke.getStrokeRateScanner().removeSensorDataSink(privateStrokeAccelDataSink);
-	}
-
-
 	protected void attachSensors() {
-		roboStroke.getStrokeRateScanner().addSensorDataSink(privateStrokeAccelDataSink);
+		attachSensors(accelDataSink);
 	}
+
+	protected void detachSensors() {
+		detachSensors(accelDataSink);
+	}
+
+	
+	protected abstract void detachSensors(SensorDataSink lineDataSink);
+
+
+	protected abstract void attachSensors(SensorDataSink lineDataSink);
+	
 }

@@ -35,47 +35,27 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.graph.android;
+package org.nargila.robostroke.ui.swing;
 
-import org.nargila.robostroke.ui.graph.LineGraph;
-import org.nargila.robostroke.ui.graph.MultiXYSeries;
-import org.nargila.robostroke.ui.graph.XYSeries;
+import java.util.concurrent.TimeUnit;
 
-import android.content.Context;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.graph.StrokeGraph;
+
 
 /**
- * Simple line graph plot view.
- * 
- * @author tshalif
- * 
+ * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class LineGraphView extends AndroidGraphViewBase<LineGraph> {
-		
-	public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
-			double yGridInterval) {
-		this(context, yScale, yGridInterval,  null);
+public class StrokeGraphView extends SwingGraphViewBase<StrokeGraph> {
+	private static final long serialVersionUID = 1L;
+
+	private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
+	
+	public StrokeGraphView(RoboStroke roboStroke) {
+		this(XRANGE, roboStroke);
 	}
 	
-	/**
-	 * constructor with standard View context, attributes, data window size, y
-	 * scale and y data tic mark gap
-	 * 
-	 * @param context
-	 *            the Android Activity
-	 * @param attrs
-	 *            layout and other common View attributes
-	 * @param windowSize
-	 *            size of data array to plot
-	 * @param yScale
-	 *            y value to pixel scale
-	 * @param incr
-	 *            y data tic mark gap
-	 */
-	public LineGraphView(Context context, double yRange,
-			double yGridInterval, MultiXYSeries multiSeries) {
-		super(context);
-		
-		setGraph(new LineGraph(new UILiaisonViewImpl(this), yRange, yGridInterval, multiSeries));
-
+	public StrokeGraphView(float xRange, RoboStroke roboStroke) {
+		setGraph(new StrokeGraph(new SwingUILiaison(this), XRANGE, roboStroke));
 	}
 }

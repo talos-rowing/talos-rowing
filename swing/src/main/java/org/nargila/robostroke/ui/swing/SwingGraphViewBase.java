@@ -35,11 +35,19 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
-import org.nargila.robostroke.ui.graph.LineGraph;
-import org.nargila.robostroke.ui.graph.MultiXYSeries;
-import org.nargila.robostroke.ui.graph.XYSeries;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
 
 
 /**
@@ -48,74 +56,68 @@ import org.nargila.robostroke.ui.graph.XYSeries;
  * @author tshalif
  * 
  */
-public class LineGraphView extends SwingViewBase {
+public abstract class SwingGraphViewBase<T extends UpdatableGraphBase> extends JPanel implements DataUpdatable {
 		
 
 	private static final long serialVersionUID = 1L;
 
-	private final LineGraph impl;
-
-	public LineGraphView(double xRange, XYSeries.XMode xMode, double yScale,
-			double yGridInterval) {
-		impl = new LineGraph(new SwingUILiaison(this), xRange, xMode, yScale, yGridInterval);
+	protected T graph;
+	
+	private final boolean selfPaint;
+	
+	public SwingGraphViewBase() {
+		this(true);
 	}
 	
-	/**
-	 * constructor with standard View context, attributes, data window size, y
-	 * scale and y data tic mark gap
-	 * 
-	 * @param context
-	 *            the Android Activity
-	 * @param attrs
-	 *            layout and other common View attributes
-	 * @param windowSize
-	 *            size of data array to plot
-	 * @param yScale
-	 *            y value to pixel scale
-	 * @param incr
-	 *            y data tic mark gap
-	 */
-	public LineGraphView(double yRange,
-			double yGridInterval, MultiXYSeries multiSeries) {
+	public SwingGraphViewBase(boolean selfPaint) {
+		this.selfPaint = selfPaint;
+	}
+	
+	protected void setGraph(T _graph) {
 		
-		impl = new LineGraph(new SwingUILiaison(this), yRange, yGridInterval, multiSeries);
+		this.graph = _graph;
+		
+		addComponentListener(new ComponentListener() {
+			
+			public void componentShown(ComponentEvent e) {
+				graph.disableUpdate(false);
+			}
+			
+			public void componentResized(ComponentEvent e) {
+			}
+			
+			public void componentMoved(ComponentEvent e) {
+			}
+			
+			public void componentHidden(ComponentEvent e) {
+				graph.disableUpdate(true);
+			}
+		});
 	}
 
 	@Override
-	protected void onDraw(SwingCanvas swingCanvas) {
-		impl.draw(swingCanvas);			
+	public final void paint(Graphics g) {
+		
+		if (selfPaint) {
+			Rectangle r = getBounds();
+			g.setColor(Color.BLACK);
+			g.fillRect(r.x, r.y, r.width, r.height);
+			graph.draw(new SwingCanvas(this, g));
+		} else {
+			super.paint(g);
+		}
 	}
 	
-
-	public XYSeries addSeries(XYSeries series) {
-		return impl.getSeries().addSeries(series);
-	}
 	
-	@Override
-	public void reset() {
-		impl.reset();
-	}
-
-
-	public void setyRangeMax(double yRangeMax) {
-		impl.setyRangeMax(yRangeMax);
-	}
-
-	public void setyRangeMin(double yRangeMin) {
-		impl.setyRangeMin(yRangeMin);
-	}
-
-	public void setXRange(double val) {		
-		impl.setXRange(val);
-	}	
-
-	@Override
-	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);		
-	}
-
-	@Override
 	public boolean isDisabled() {
-		return impl.isDisabled();
+		return graph.isDisabled();
+	}
+
+	public void disableUpdate(boolean disable) {
+		graph.disableUpdate(disable);
+	}
+
+	public void reset() {
+		graph.reset();
 	}
 }

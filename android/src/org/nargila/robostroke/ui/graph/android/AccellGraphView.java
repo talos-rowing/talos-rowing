@@ -39,54 +39,17 @@ package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.AccellGraph;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.view.View;
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class AccellGraphView extends View implements  DataUpdatable  {
-	
-	private final AccellGraph impl;
-	
+public class AccellGraphView extends AndroidGraphViewBase<AccellGraph>  {
+		
 	public AccellGraphView(Context context, float xRange, RoboStroke roboStroke) {
 		super(context);
 		
-		impl = new AccellGraph(new UILiaisonViewImpl(this), xRange, roboStroke);
-	}
-
-	@Override
-	protected void onDraw(Canvas canvas) {			
-		super.onDraw(canvas);
-		impl.draw(new RSCanvasImpl(canvas));
-	}
-	
-	@Override
-	protected void onAttachedToWindow() {
-		disableUpdate(false);
-		super.onAttachedToWindow();
-	}
-	
-	@Override
-	protected void onDetachedFromWindow() {
-		disableUpdate(true);
-		super.onDetachedFromWindow();
-	}
-
-	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);
-	}
-
-	public boolean isDisabled() {
-		return impl.isDisabled();
-	}
-	
-	
-	@Override
-	public void reset() {
-		impl.reset();		
+		setGraph(new AccellGraph(new UILiaisonViewImpl(this), xRange, roboStroke));
 	}
 }

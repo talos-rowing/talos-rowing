@@ -35,41 +35,69 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.view.View;
 
 
 /**
- * subclass of LineGraphView for setting acceleration specific parameters
+ * Simple line graph plot view.
+ * 
+ * @author tshalif
+ * 
  */
-public class StrokeAnalysisGraphView extends SwingViewBase {
-	private static final long serialVersionUID = 1L;
-
-	final StrokeAnalysisGraph impl;
-	
-	public StrokeAnalysisGraphView(RoboStroke roboStroke) {
+public abstract class AndroidGraphViewBase<T extends UpdatableGraphBase> extends View implements DataUpdatable {
 		
-		impl = new StrokeAnalysisGraph(new SwingUILiaison(this));
+
+	protected T graph;
+	
+	public AndroidGraphViewBase(Context context) {
+		
+		super(context);
+	}
+	
+	@Override
+	protected void onAttachedToWindow() {
+		
+		graph.disableUpdate(false);
+		
+		super.onAttachedToWindow();
+	}
+	
+	@Override
+	protected void onDetachedFromWindow() {
+		
+		graph.disableUpdate(true);
+
+		super.onDetachedFromWindow();
+	}
+	
+	protected void setGraph(T _graph) {
+		
+		this.graph = _graph;
+		
 	}
 
 	@Override
-	public void onDraw(SwingCanvas canvas) {
-		impl.draw(canvas);
+	protected void onDraw(Canvas canvas) {
+		super.onDraw(canvas);
+		graph.draw(new RSCanvasImpl(canvas));
+	}
+		
+	public boolean isDisabled() {
+		return graph.isDisabled();
 	}
 
 	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);
+		graph.disableUpdate(disable);
 	}
 
-	public boolean isDisabled() {
-		return impl.isDisabled();
-	}
-	
-	
-	@Override
 	public void reset() {
-		impl.reset();		
+		graph.reset();
 	}
 }

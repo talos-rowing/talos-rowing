@@ -38,57 +38,20 @@
 package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.StrokeGraph;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.view.View;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
  */
-public class StrokeGraphView extends View implements DataUpdatable {
+public class StrokeGraphView extends AndroidGraphViewBase<StrokeGraph> {
 	
-	private final StrokeGraph impl;
 	
-	public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) 
-	{ 
+	public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) {
+		
 		super(context);
 		
-		impl = new StrokeGraph(new UILiaisonViewImpl(this), xRange, roboStroke);
-	}
-
-
-	@Override
-	protected void onDraw(Canvas canvas) {
-		impl.draw(new RSCanvasImpl(canvas));
-	}
-
-	@Override
-	protected void onAttachedToWindow() {
-		impl.disableUpdate(false);
-		super.onAttachedToWindow();
-	}
-	
-	@Override
-	protected void onDetachedFromWindow() {
-		impl.disableUpdate(true);
-		super.onDetachedFromWindow();
-	}
-	
-	@Override
-	public boolean isDisabled() {
-		return impl.isDisabled();		
-	}
-	
-	@Override
-	public void disableUpdate(boolean disable) {
-		impl.disableUpdate(disable);				
-	}
-	
-	@Override
-	public void reset() {
-		impl.reset();
+		setGraph(new StrokeGraph(new UILiaisonViewImpl(this), xRange, roboStroke));
 	}
 }

@@ -51,7 +51,7 @@ import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class AccellGraph extends LineGraph  {
+public class AccellGraph extends SensorGraphBase  {
 	/**
 	 * subclass of LineGraphView for setting stroke specific parameters
 	 */
@@ -185,29 +185,12 @@ public class AccellGraph extends LineGraph  {
 	}
 
 	private static final float Y_SCALE = 8f;
-	private static final float INCR = 1f;
-	private final XYSeries accelSeries;
 	private final RollGraphOverlay rollGraph;
-	private final RoboStroke roboStroke;
-
-	private final SensorDataSink privateAccellDataSink = new SensorDataSink() {		
-		@Override
-		public void onSensorData(long timestamp, Object value) {
-			float[] values = (float[]) value;
-			accelSeries.add(timestamp, values[0]);
-		}
-	};
 
 	public AccellGraph(UILiaison factory, float xRange, RoboStroke roboStroke) {
-		super(factory, xRange, XYSeries.XMode.ROLLING, Y_SCALE, INCR);
-
-		this.roboStroke = roboStroke;
-		
-		accelSeries = multySeries.addSeries(new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint())));
+		super(factory, XMode.ROLLING, xRange, Y_SCALE, roboStroke);
 
 		rollGraph = new RollGraphOverlay(xRange, multySeries);
-		
-		attachSensors();
 	}
 
 	@Override
@@ -234,28 +217,15 @@ public class AccellGraph extends LineGraph  {
 		}
 	}
 
-	
 	@Override
-	public void disableUpdate(boolean disable) {
-		if (this.disabled != disable) {
-			if (disable) {
-				detachSensors();
-			} else {
-				reset();
-				attachSensors();
-			}
-
-			this.disabled = disable;
-		}
-	}
-
-	private void detachSensors() {
-		roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccellDataSink);
+	protected void detachSensors(SensorDataSink lineDataSink) {
+		roboStroke.getAccelerationFilter().removeSensorDataSink(lineDataSink);
 		roboStroke.getRollScanner().removeSensorDataSink(rollGraph);
 	}
 
-	private void attachSensors() {
-		roboStroke.getAccelerationFilter().addSensorDataSink(privateAccellDataSink);
+	@Override
+	protected void attachSensors(SensorDataSink lineDataSink) {
+		roboStroke.getAccelerationFilter().addSensorDataSink(lineDataSink);
 		roboStroke.getRollScanner().addSensorDataSink(rollGraph);
 	}
 }

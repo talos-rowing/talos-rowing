@@ -35,47 +35,20 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.graph.android;
+package org.nargila.robostroke.ui.swing;
 
-import org.nargila.robostroke.ui.graph.LineGraph;
-import org.nargila.robostroke.ui.graph.MultiXYSeries;
-import org.nargila.robostroke.ui.graph.XYSeries;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.graph.StrokeAnalysisGraphSingle;
 
-import android.content.Context;
 
 /**
- * Simple line graph plot view.
- * 
- * @author tshalif
- * 
+ * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class LineGraphView extends AndroidGraphViewBase<LineGraph> {
-		
-	public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
-			double yGridInterval) {
-		this(context, yScale, yGridInterval,  null);
-	}
-	
-	/**
-	 * constructor with standard View context, attributes, data window size, y
-	 * scale and y data tic mark gap
-	 * 
-	 * @param context
-	 *            the Android Activity
-	 * @param attrs
-	 *            layout and other common View attributes
-	 * @param windowSize
-	 *            size of data array to plot
-	 * @param yScale
-	 *            y value to pixel scale
-	 * @param incr
-	 *            y data tic mark gap
-	 */
-	public LineGraphView(Context context, double yRange,
-			double yGridInterval, MultiXYSeries multiSeries) {
-		super(context);
-		
-		setGraph(new LineGraph(new UILiaisonViewImpl(this), yRange, yGridInterval, multiSeries));
+public class StrokeAnalysisGraphSingleView extends SwingGraphViewBase<StrokeAnalysisGraphSingle> {
+	private static final long serialVersionUID = 1L;
 
+	
+	public StrokeAnalysisGraphSingleView(RoboStroke roboStroke) {
+		setGraph(new StrokeAnalysisGraphSingle(new SwingUILiaison(this), roboStroke));
 	}
 }

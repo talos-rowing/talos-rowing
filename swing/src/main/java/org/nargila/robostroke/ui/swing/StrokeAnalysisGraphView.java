@@ -35,22 +35,70 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.graph.android;
+package org.nargila.robostroke.ui.swing;
+
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+
+import javax.swing.OverlayLayout;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.StrokePowerGraph;
+import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
 
-import android.content.Context;
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class StrokePowerGraphView extends AndroidGraphViewBase<StrokePowerGraph> {
-		
-	public StrokePowerGraphView(Context context, RoboStroke roboStroke) { 
-		super(context);
-		
-		setGraph(new StrokePowerGraph(new UILiaisonViewImpl(this), roboStroke));
+public class StrokeAnalysisGraphView extends SwingGraphViewBase<StrokeAnalysisGraph>  {
 
+	private static final long serialVersionUID = 1L;
+	private final StrokeAnalysisGraph graph;
+	
+	public StrokeAnalysisGraphView(RoboStroke roboStroke) {
+		
+		super(false);
+		
+		setLayout(new OverlayLayout(this));
+		
+		
+		StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(roboStroke);
+		StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(roboStroke);
+		
+		add(g1);
+		add(g2);
+		
+		graph = new StrokeAnalysisGraph(new SwingUILiaison(this), roboStroke, g1.graph, g2.graph);
+		
+		addComponentListener(new ComponentListener() {
+			
+			public void componentShown(ComponentEvent e) {
+				graph.disableUpdate(false);
+			}
+			
+			public void componentResized(ComponentEvent e) {
+			}
+			
+			public void componentMoved(ComponentEvent e) {
+			}
+			
+			public void componentHidden(ComponentEvent e) {
+				graph.disableUpdate(true);
+			}
+		});
+	}
+
+	@Override
+	public boolean isDisabled() {
+		return graph.isDisabled();
+	}
+
+	@Override
+	public void disableUpdate(boolean disable) {
+		graph.disableUpdate(disable);
+	}
+
+	@Override
+	public void reset() {
+		graph.reset();
 	}
 }

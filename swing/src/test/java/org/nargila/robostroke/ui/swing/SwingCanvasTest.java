@@ -1,4 +1,4 @@
-package org.nargila.robostroke.ui;
+package org.nargila.robostroke.ui.swing;
 
 
 import java.awt.Canvas;
@@ -10,6 +10,15 @@ import javax.swing.JFrame;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSPaint;
+import org.nargila.robostroke.ui.RSPath;
+import org.nargila.robostroke.ui.RSRect;
+import org.nargila.robostroke.ui.UILiaison;
+import org.nargila.robostroke.ui.swing.SwingCanvas;
+import org.nargila.robostroke.ui.swing.SwingPaint;
+import org.nargila.robostroke.ui.swing.SwingPath;
+import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
 public class SwingCanvasTest {
 
