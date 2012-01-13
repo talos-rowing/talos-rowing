@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.nargila.robostroke</groupId>
-  <artifactId>robostroke-swing</artifactId>
+  <artifactId>robostroke-common</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
 
-  <name>robostroke-swing</name>
+  <name>robostroke-common</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -15,12 +15,6 @@
   </properties>
 
   <dependencies>
-
-    <dependency>
-  	  <groupId>org.nargila.robostroke</groupId>
-  	  <version>1.0</version>
-      <artifactId>robostroke-common</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -42,6 +36,8 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+
   <build>    
     <plugins>
       <plugin>
