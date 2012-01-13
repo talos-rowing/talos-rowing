@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tal Shalif
+ * Copyright (c) 2012 Tal Shalif
  * 
  * This file is part of Talos-Rowing.
  * 
@@ -16,28 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.nargila.robostroke.ui.android;
 
-package org.nargila.robostroke.ui.swing;
+import org.nargila.robostroke.ui.PaintStyle;
+import org.nargila.robostroke.ui.RSPaint;
 
-import java.util.concurrent.TimeUnit;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
 
-import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.StrokeGraph;
+public class AndroidPaint extends Paint implements RSPaint {
 
-
-/**
- * subclass of LineGraphView for setting acceleration specific parameters
- */
-public class StrokeGraphView extends SwingGraphViewBase<StrokeGraph> {
-	private static final long serialVersionUID = 1L;
-
-	private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
-	
-	public StrokeGraphView(RoboStroke roboStroke) {
-		this(XRANGE, roboStroke);
-	}
-	
-	public StrokeGraphView(float xRange, RoboStroke roboStroke) {
-		setGraph(new StrokeGraph(new SwingUILiaison(this), XRANGE, roboStroke));
+	@Override
+	public void setStyle(PaintStyle style) {
+		Style s = Style.valueOf(style.name());
+		super.setStyle(s);			
 	}
 }

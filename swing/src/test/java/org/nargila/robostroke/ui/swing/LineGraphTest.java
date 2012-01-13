@@ -26,6 +26,7 @@ import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.graph.CyclicArrayXYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;
+import org.nargila.robostroke.ui.graph.swing.LineGraphView;
 
 public class LineGraphTest extends GraphTestBase<LineGraphView> {
 

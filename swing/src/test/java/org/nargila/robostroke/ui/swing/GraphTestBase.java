@@ -29,6 +29,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
+import org.nargila.robostroke.ui.graph.swing.SwingGraphViewBase;
 
 public abstract class GraphTestBase<T extends SwingGraphViewBase<? extends UpdatableGraphBase>> {
 

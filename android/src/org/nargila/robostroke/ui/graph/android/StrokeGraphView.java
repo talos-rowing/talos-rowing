@@ -20,6 +20,7 @@
 package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.StrokeGraph;
 
 import android.content.Context;
@@ -34,6 +35,6 @@ public class StrokeGraphView extends AndroidGraphViewBase<StrokeGraph> {
 		
 		super(context);
 		
-		setGraph(new StrokeGraph(new UILiaisonViewImpl(this), xRange, roboStroke));
+		setGraph(new StrokeGraph(new AndroidUILiaison(this), xRange, roboStroke));
 	}
 }

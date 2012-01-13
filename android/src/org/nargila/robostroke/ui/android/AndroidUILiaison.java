@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.ui.graph.android;
+package org.nargila.robostroke.ui.android;
 
 import org.nargila.robostroke.ui.RSPaint;
 import org.nargila.robostroke.ui.RSPath;
@@ -26,20 +26,20 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.view.View;
 
-public class UILiaisonViewImpl implements UILiaison {
+public class AndroidUILiaison implements UILiaison {
 
 	private final View owner;
 	private final Handler mainHanlder = new Handler();
 
 	
-	public UILiaisonViewImpl(View owner) {
+	public AndroidUILiaison(View owner) {
 		this.owner = owner;
 	}
 
 
 	@Override
 	public RSPath createPath() {
-		return new RSPathImpl();
+		return new AndroidPath();
 	}
 
 	
@@ -50,7 +50,7 @@ public class UILiaisonViewImpl implements UILiaison {
 
 	@Override
 	public RSPaint createPaint() {
-		return new RSPaintImpl();
+		return new AndroidPaint();
 	}	
 	
 	@Override

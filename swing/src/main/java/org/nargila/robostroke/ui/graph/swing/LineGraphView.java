@@ -17,11 +17,12 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.swing;
+package org.nargila.robostroke.ui.graph.swing;
 
 import org.nargila.robostroke.ui.graph.LineGraph;
 import org.nargila.robostroke.ui.graph.MultiXYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries;
+import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
 
 /**

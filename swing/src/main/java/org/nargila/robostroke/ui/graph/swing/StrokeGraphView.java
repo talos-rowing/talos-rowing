@@ -17,27 +17,28 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.swing;
+package org.nargila.robostroke.ui.graph.swing;
 
 import java.util.concurrent.TimeUnit;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.ui.graph.AccellGraph;
+import org.nargila.robostroke.ui.graph.StrokeGraph;
+import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class AccellGraphView extends SwingGraphViewBase<AccellGraph> {
+public class StrokeGraphView extends SwingGraphViewBase<StrokeGraph> {
 	private static final long serialVersionUID = 1L;
 
 	private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
 	
-	public AccellGraphView(RoboStroke roboStroke) {
+	public StrokeGraphView(RoboStroke roboStroke) {
 		this(XRANGE, roboStroke);
 	}
 	
-	public AccellGraphView(float xRange, RoboStroke roboStroke) {
-		setGraph(new AccellGraph(new SwingUILiaison(this), xRange, roboStroke));
+	public StrokeGraphView(float xRange, RoboStroke roboStroke) {
+		setGraph(new StrokeGraph(new SwingUILiaison(this), XRANGE, roboStroke));
 	}
 }

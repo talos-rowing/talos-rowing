@@ -20,6 +20,7 @@
 package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
 
@@ -46,7 +47,7 @@ public class StrokeAnalysisGraphView extends FrameLayout implements DataUpdatabl
 		addView(g1, layoutParams);
 		addView(g2, layoutParams);
 		
-		graph = new StrokeAnalysisGraph(new UILiaisonViewImpl(this), roboStroke, g1.graph, g2.graph);
+		graph = new StrokeAnalysisGraph(new AndroidUILiaison(this), roboStroke, g1.graph, g2.graph);
 		
 	}
 

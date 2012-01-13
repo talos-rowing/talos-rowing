@@ -19,6 +19,7 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.LineGraph;
 import org.nargila.robostroke.ui.graph.MultiXYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries;
@@ -57,7 +58,7 @@ public class LineGraphView extends AndroidGraphViewBase<LineGraph> {
 			double yGridInterval, MultiXYSeries multiSeries) {
 		super(context);
 		
-		setGraph(new LineGraph(new UILiaisonViewImpl(this), yRange, yGridInterval, multiSeries));
+		setGraph(new LineGraph(new AndroidUILiaison(this), yRange, yGridInterval, multiSeries));
 
 	}
 }

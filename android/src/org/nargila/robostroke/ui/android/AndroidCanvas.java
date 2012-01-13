@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.ui.graph.android;
+package org.nargila.robostroke.ui.android;
 
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.RSPaint;
@@ -28,12 +28,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 
-public class RSCanvasImpl implements RSCanvas {
+public class AndroidCanvas implements RSCanvas {
 
 	private final Canvas canvas;
 	
 	
-	public RSCanvasImpl(Canvas canvas) {
+	public AndroidCanvas(Canvas canvas) {
 		this.canvas = canvas;
 	}
 

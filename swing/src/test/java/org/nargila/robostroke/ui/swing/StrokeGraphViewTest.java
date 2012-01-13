@@ -20,6 +20,7 @@ package org.nargila.robostroke.ui.swing;
 
 
 import org.junit.Test;
+import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
 
 public class StrokeGraphViewTest extends GraphTestBase<StrokeGraphView> {
 

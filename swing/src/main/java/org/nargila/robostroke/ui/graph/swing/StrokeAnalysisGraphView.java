@@ -17,7 +17,7 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.swing;
+package org.nargila.robostroke.ui.graph.swing;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -26,6 +26,7 @@ import javax.swing.OverlayLayout;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
+import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
 
 /**

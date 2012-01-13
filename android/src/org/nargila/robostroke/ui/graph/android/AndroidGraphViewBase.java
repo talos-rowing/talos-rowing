@@ -19,6 +19,7 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import org.nargila.robostroke.ui.android.AndroidCanvas;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
 
@@ -68,7 +69,7 @@ public abstract class AndroidGraphViewBase<T extends UpdatableGraphBase> extends
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		graph.draw(new RSCanvasImpl(canvas));
+		graph.draw(new AndroidCanvas(canvas));
 	}
 		
 	public boolean isDisabled() {

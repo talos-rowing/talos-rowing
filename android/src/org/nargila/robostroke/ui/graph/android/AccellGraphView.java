@@ -20,6 +20,7 @@
 package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.AccellGraph;
 
 import android.content.Context;
@@ -32,6 +33,6 @@ public class AccellGraphView extends AndroidGraphViewBase<AccellGraph>  {
 	public AccellGraphView(Context context, float xRange, RoboStroke roboStroke) {
 		super(context);
 		
-		setGraph(new AccellGraph(new UILiaisonViewImpl(this), xRange, roboStroke));
+		setGraph(new AccellGraph(new AndroidUILiaison(this), xRange, roboStroke));
 	}
 }

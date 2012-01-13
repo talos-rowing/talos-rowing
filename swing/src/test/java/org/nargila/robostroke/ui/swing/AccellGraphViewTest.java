@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 
 public class AccellGraphViewTest extends GraphTestBase<AccellGraphView> {
 

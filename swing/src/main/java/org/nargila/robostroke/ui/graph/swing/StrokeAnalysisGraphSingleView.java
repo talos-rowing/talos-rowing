@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Tal Shalif
+ * Copyright (c) 2011 Tal Shalif
  * 
  * This file is part of Talos-Rowing.
  * 
@@ -16,21 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.ui.RSPath;
+package org.nargila.robostroke.ui.graph.swing;
 
-import android.graphics.Path;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.graph.StrokeAnalysisGraphSingle;
+import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
-public class RSPathImpl extends Path implements RSPath {
-		
-	@Override
-	public void moveTo(float x, float y) {
-		super.moveTo(x, y);
-	}
+
+/**
+ * subclass of LineGraphView for setting acceleration specific parameters
+ */
+public class StrokeAnalysisGraphSingleView extends SwingGraphViewBase<StrokeAnalysisGraphSingle> {
+	private static final long serialVersionUID = 1L;
+
 	
-	@Override
-	public void lineTo(float x, float y) {
-		super.lineTo(x, y);
+	public StrokeAnalysisGraphSingleView(RoboStroke roboStroke) {
+		setGraph(new StrokeAnalysisGraphSingle(new SwingUILiaison(this), roboStroke));
 	}
 }

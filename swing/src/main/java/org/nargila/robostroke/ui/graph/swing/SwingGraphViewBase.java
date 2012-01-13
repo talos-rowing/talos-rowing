@@ -17,7 +17,7 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.ui.swing;
+package org.nargila.robostroke.ui.graph.swing;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
+import org.nargila.robostroke.ui.swing.SwingCanvas;
 
 
 /**

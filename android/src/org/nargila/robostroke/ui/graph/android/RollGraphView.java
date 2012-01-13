@@ -19,6 +19,7 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.RollGraph;
 
 import android.content.Context;
@@ -32,7 +33,7 @@ public class RollGraphView extends AndroidGraphViewBase<RollGraph> {
 	public RollGraphView(Context context, final double xRange) { 
 		super(context);
 		
-		setGraph(new RollGraph(new UILiaisonViewImpl(this), xRange));
+		setGraph(new RollGraph(new AndroidUILiaison(this), xRange));
 
 	}
 }

@@ -20,6 +20,7 @@
 package org.nargila.robostroke.ui.graph.android;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.StrokePowerGraph;
 
 import android.content.Context;
@@ -32,7 +33,7 @@ public class StrokePowerGraphView extends AndroidGraphViewBase<StrokePowerGraph>
 	public StrokePowerGraphView(Context context, RoboStroke roboStroke) { 
 		super(context);
 		
-		setGraph(new StrokePowerGraph(new UILiaisonViewImpl(this), roboStroke));
+		setGraph(new StrokePowerGraph(new AndroidUILiaison(this), roboStroke));
 
 	}
 }
