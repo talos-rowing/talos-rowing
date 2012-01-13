@@ -23,9 +23,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.channels.Channels;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -98,13 +104,60 @@ public class RoboStrokeTest {
 		roboStroke.destroy();
 	}
 	
+	
+	@Test
+	public void testRowingEvents() throws Exception {
+		
+		File newEventsFile = File.createTempFile("testRowingEvents", ".txt");
+		final Writer newEvents = new OutputStreamWriter(new FileOutputStream(newEventsFile));
+				
+		BusEventListener listener = new BusEventListener() {
+			
+			@Override
+			public void onBusEvent(BusEvent event) {
+				try {
+					newEvents.write(String.format("%s %s", event.type, event.dataToString()));
+					newEvents.write("\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+
+		bus.addBusListener(listener);
+		
+		BusEvent event = splitRowing(RowingSplitMode.AUTO, false);
+		
+		newEvents.close();
+		
+		StringWriter savedEvents = new StringWriter();
+		
+		String savedEventsName = "100m-12-strokes-events.txt";
+		IOUtils.copy(new InputStreamReader(getClass().getResourceAsStream(savedEventsName), "UTF-8"), savedEvents);
+		
+		Assert.assertEquals("new events " +  newEventsFile + " do not match saved events " + savedEventsName, savedEvents.toString(), FileUtils.readFileToString(newEventsFile));
+		
+		Object[] data = (Object[]) event.data;
+		
+		float distance = (Float)data[1];
+		long splitTime = (Long) data[2];
+		long travelTime = (Long) data[3];
+		int strokes = (Integer) data[4];
+		
+		Assert.assertEquals(36272340992L, splitTime);
+		Assert.assertEquals(114, distance, 1);
+		Assert.assertEquals(37000L, travelTime);
+		Assert.assertEquals(12, strokes);
+	}
+	
+
 	@Test
 	public void testSplitRowingContinuousMode() throws Exception {
 		
-		StrokeListener listener = new StrokeListener() {
+		BusEventListener listener = new BusEventListener() {
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case ROWING_COUNT:
 					if ((Integer)event.data == 12) {
@@ -116,15 +169,15 @@ public class RoboStrokeTest {
 			}
 		};
 		
-		bus.addStrokeListener(listener);
-		StrokeEvent event;
+		bus.addBusListener(listener);
+		BusEvent event;
 		
 		try {							
 			
 			event = splitRowing(RowingSplitMode.CONTINUOUS, false);
 		
 		} finally {
-			bus.removeStrokeListener(listener);
+			bus.removeBusListener(listener);
 		}
 		
 		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
@@ -149,11 +202,11 @@ public class RoboStrokeTest {
 		final int[] strokeRate = {0, 0}; // count, accum 
 		
 		
-		StrokeListener listener = new StrokeListener() {
+		BusEventListener listener = new BusEventListener() {
 			boolean hasPower;
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case STROKE_POWER_END:
 					hasPower = (Float)event.data > 0;
@@ -169,7 +222,7 @@ public class RoboStrokeTest {
 			}
 		};
 		
-		bus.addStrokeListener(listener);
+		bus.addBusListener(listener);
 		
 		try {					
 			splitRowing(RowingSplitMode.AUTO, true);
@@ -178,13 +231,13 @@ public class RoboStrokeTest {
 			Assert.assertEquals(19.25, (strokeRate[1] / (double)strokeRate[0]), 0.25);
 			
 		} finally {
-			bus.removeStrokeListener(listener);
+			bus.removeBusListener(listener);
 		}
 	}
 	
 	@Test
 	public void testSplitRowing() throws Exception {
-		StrokeEvent event = splitRowing(RowingSplitMode.AUTO, false);
+		BusEvent event = splitRowing(RowingSplitMode.AUTO, false);
 		
 		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
 		Object[] data = (Object[]) event.data;
@@ -204,7 +257,7 @@ public class RoboStrokeTest {
 
 	@Test
 	public void testSplitRowingStraight() throws Exception {
-		StrokeEvent event = splitRowing(RowingSplitMode.AUTO, true);
+		BusEvent event = splitRowing(RowingSplitMode.AUTO, true);
 		
 		Object[] data = (Object[]) event.data;
 		
@@ -219,16 +272,24 @@ public class RoboStrokeTest {
 		Assert.assertEquals(12, strokes);
 	}
 	
-	private StrokeEvent splitRowing(RowingSplitMode mode, boolean straightMode) throws Exception {
+	private BusEvent splitRowing(RowingSplitMode mode, boolean straightMode) throws Exception {
+		return splitRowing(mode, straightMode, null);
+	}
+	
+	private BusEvent splitRowing(RowingSplitMode mode, boolean straightMode, final BusEventListener testEventListener) throws Exception {
 		
-		final AtomicReference<StrokeEvent> startEvent = new AtomicReference<StrokeEvent>();
-		final AtomicReference<StrokeEvent> stopEvent = new AtomicReference<StrokeEvent>();
+		final AtomicReference<BusEvent> startEvent = new AtomicReference<BusEvent>();
+		final AtomicReference<BusEvent> stopEvent = new AtomicReference<BusEvent>();
 		
-		StrokeListener listener = new StrokeListener() {
+		BusEventListener listener = new BusEventListener() {
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				System.out.println(event);
+				
+				if (null != testEventListener) {
+					testEventListener.onBusEvent(event);
+				}
 				
 				switch (event.type) {
 				case ROWING_START:
@@ -253,7 +314,7 @@ public class RoboStrokeTest {
 		};
 		
 		try {
-			bus.addStrokeListener(listener);
+			bus.addBusListener(listener);
 			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE, straightMode);
 			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE, mode.name());
 			start();
@@ -280,7 +341,7 @@ public class RoboStrokeTest {
 			Thread.sleep(1000); // allow enough time for bus to log event to record file
 			
 		} finally {
-			bus.removeStrokeListener(listener);
+			bus.removeBusListener(listener);
 		}
 		
 		return stopEvent.get();
