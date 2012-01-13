@@ -25,7 +25,6 @@ import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.nargila.robostroke.ui.graph.DataUpdatable;

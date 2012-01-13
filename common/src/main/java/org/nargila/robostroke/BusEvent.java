@@ -134,14 +134,6 @@ public class BusEvent {
 			}
 		};
 
-		private static final class DOUBLE extends DataSerializer {
-
-			@Override
-			public Object doParse(String s) {
-				return new Double(s);
-			}
-		};
-
 		private static final class FLOAT_ARR extends DataSerializer {
 
 			@Override
@@ -176,37 +168,6 @@ public class BusEvent {
 			@Override
 			public Object doParse(String s) {
 				return new ParameterBusEventData(s);
-			}
-		}
-
-		private static final class DOUBLE_ARR extends DataSerializer {
-
-			@Override
-			public Object doParse(String s) {
-				String[] sarr = s.split(",");
-				double[] res = new double[sarr.length];
-
-				for (int i = 0; i < sarr.length; ++i) {
-					res[i] = new Double(sarr[i]);
-				}
-
-				return res;
-			}
-
-			@Override
-			protected String doSerialize(Object data) {
-
-				String sdata = "";
-
-				int i = 0;
-				for (double f : ((double[]) data)) {
-					if (i++ != 0) {
-						sdata += ",";
-					}
-					sdata += f;
-				}
-
-				return sdata;
 			}
 		}
 

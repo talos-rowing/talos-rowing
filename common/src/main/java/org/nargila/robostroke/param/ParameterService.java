@@ -21,9 +21,9 @@ package org.nargila.robostroke.param;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.RoboStrokeEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -46,6 +46,7 @@ public class RollGraph extends LineGraph implements SensorDataSink {
 	private long rollAccumTimestamp;
 	
 	
+	@SuppressWarnings("serial")
 	private final CyclicArrayXYSeries panelSeries = new CyclicArrayXYSeries(XYSeries.XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint())) {
 		
 		@Override

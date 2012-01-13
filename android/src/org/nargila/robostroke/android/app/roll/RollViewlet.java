@@ -19,8 +19,6 @@
 package org.nargila.robostroke.android.app.roll;
 
 import org.nargila.robostroke.android.app.R;
-import org.nargila.robostroke.android.app.R.id;
-import org.nargila.robostroke.android.app.R.layout;
 import org.nargila.robostroke.common.NumberHelper;
 
 import android.content.Context;
@@ -30,7 +28,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;

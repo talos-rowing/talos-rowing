@@ -19,10 +19,10 @@
 
 package org.nargila.robostroke.stroke;
 
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;

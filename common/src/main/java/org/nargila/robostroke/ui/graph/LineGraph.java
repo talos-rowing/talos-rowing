@@ -21,7 +21,6 @@ package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.ui.RSCanvas;
-import org.nargila.robostroke.ui.RSDrawable;
 import org.nargila.robostroke.ui.RSPaint;
 import org.nargila.robostroke.ui.RSPath;
 import org.nargila.robostroke.ui.RSRect;

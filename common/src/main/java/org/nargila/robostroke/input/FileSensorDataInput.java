@@ -24,9 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.SessionRecorderConstants;
-import org.nargila.robostroke.BusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -47,6 +47,7 @@ public class RollGraphOverlayStrokeAnalysis  {
 
 	private final MultiXYSeries multySeries;
 
+	@SuppressWarnings("serial")
 	public RollGraphOverlayStrokeAnalysis(UILiaison uiFactory, MultiXYSeries multySeries) {
 		this.uiFactory = uiFactory;
 		this.multySeries = multySeries;

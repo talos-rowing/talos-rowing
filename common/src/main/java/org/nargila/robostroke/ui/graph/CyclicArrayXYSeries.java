@@ -154,13 +154,19 @@ public class CyclicArrayXYSeries implements XYSeries, Serializable {
 	 * 
 	 * @param index
 	 *            the index in the series of the value to remove
-	 * @param skipUpdateYRange
 	 */
 	@Override
 	public synchronized void remove(int index) {
 		remove(index, false);
 	}
 
+	/**
+	 * Removes an existing value from the series.
+	 * 
+	 * @param index
+	 *            the index in the series of the value to remove
+	 * @param skipUpdateYRange if set to 'true', updating of Y scale is skipped 
+	 */
 	private synchronized void remove(int index, boolean skipUpdateYRange) {
 		double removedY = getY(index);
 		double removedX = getX(index);

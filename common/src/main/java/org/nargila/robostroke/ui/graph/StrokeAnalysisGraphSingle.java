@@ -45,6 +45,7 @@ public class StrokeAnalysisGraphSingle extends SensorGraphBase {
 	
 	private static final float Y_SCALE = 8f;
 
+	@SuppressWarnings("serial")
 	private final CyclicArrayXYSeries rollPanelSeries = new CyclicArrayXYSeries(XMode.GROWING, new XYSeries.Renderer(uiLiaison.createPaint())) {
 		{
 			setIndependantYAxis(true);				
@@ -57,8 +58,8 @@ public class StrokeAnalysisGraphSingle extends SensorGraphBase {
 	private final CyclicArrayXYSeries rollSeries;
 	
 	private final RollGraphOverlay rollGraph;
-	private final int next = 1;
 	
+	@SuppressWarnings("serial")
 	public StrokeAnalysisGraphSingle(UILiaison factory, RoboStroke roboStroke) {
 		super(factory, XMode.GROWING, MIN_XRANGE, Y_SCALE, roboStroke);
 

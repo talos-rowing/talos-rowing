@@ -22,11 +22,11 @@ package org.nargila.robostroke.android.app;
 
 import java.util.concurrent.TimeUnit;
 
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEvent.Type;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.BusEvent;
-import org.nargila.robostroke.BusEventListener;
-import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.GPSDataFilter;

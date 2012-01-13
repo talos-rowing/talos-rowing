@@ -22,7 +22,6 @@ import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSPaint;
 
 import android.graphics.Paint;
-import android.graphics.Paint.Style;
 
 public class AndroidPaint extends Paint implements RSPaint {
 

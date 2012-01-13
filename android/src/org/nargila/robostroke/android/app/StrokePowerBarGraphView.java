@@ -19,17 +19,17 @@
 
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.Paint.Style;
 import android.view.View;
 
 /**

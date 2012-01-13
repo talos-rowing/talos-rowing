@@ -33,10 +33,6 @@ import org.nargila.robostroke.ui.RSPaint;
 import org.nargila.robostroke.ui.RSPath;
 import org.nargila.robostroke.ui.RSRect;
 import org.nargila.robostroke.ui.UILiaison;
-import org.nargila.robostroke.ui.swing.SwingCanvas;
-import org.nargila.robostroke.ui.swing.SwingPaint;
-import org.nargila.robostroke.ui.swing.SwingPath;
-import org.nargila.robostroke.ui.swing.SwingUILiaison;
 
 public class SwingCanvasTest {
 
@@ -58,6 +54,7 @@ public class SwingCanvasTest {
 	
 	private Painter painter;
 	
+	@SuppressWarnings("serial")
 	@Before
 	public void setUp() throws Exception {
 		

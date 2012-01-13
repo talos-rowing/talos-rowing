@@ -19,12 +19,12 @@
 
 package org.nargila.robostroke.way;
 
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEvent.Type;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.BusEvent;
-import org.nargila.robostroke.BusEventListener;
-import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;

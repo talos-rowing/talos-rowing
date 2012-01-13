@@ -41,9 +41,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.acra.ErrorReporter;
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.android.app.roll.RollViewGroup;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
@@ -992,11 +992,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					graph.disableUpdate(true);
 				} else {
 					graph.reset();
-					try {
-						graph.disableUpdate(restoreStates[i++]);
-					} catch (Throwable e) {
-						boolean bula = true;
-					}
+					graph.disableUpdate(restoreStates[i++]);
 				}
 			} else {				
 				graph.reset();
@@ -1217,8 +1213,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
-		Intent intent = getIntent();
 		
 		screenLock.start();
 	}

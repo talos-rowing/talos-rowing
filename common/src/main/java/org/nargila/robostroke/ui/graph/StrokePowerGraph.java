@@ -21,9 +21,9 @@ package org.nargila.robostroke.ui.graph;
 
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.SensorDataSink;
