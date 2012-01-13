@@ -20,8 +20,8 @@
 package org.nargila.robostroke.android.app;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
@@ -53,10 +53,10 @@ public class StrokePowerBarGraphView extends View implements DataUpdatable, Robo
 	private float barStrokeWidth;
 	private final RoboStroke roboStroke;
 
-	private final StrokeListener privateBusListener = new StrokeListener() {
+	private final BusEventListener privateBusListener = new BusEventListener() {
 
 		@Override
-		public void onStrokeEvent(StrokeEvent event) {
+		public void onBusEvent(BusEvent event) {
 
 			switch (event.type) {
 			case STROKE_POWER_END:
@@ -205,9 +205,9 @@ public class StrokePowerBarGraphView extends View implements DataUpdatable, Robo
 	public void disableUpdate(boolean disable) {
 		if (this.disabled != disable) {
 			if (!disable) {
-				roboStroke.getBus().addStrokeListener(privateBusListener);
+				roboStroke.getBus().addBusListener(privateBusListener);
 			} else {
-				roboStroke.getBus().removeStrokeListener(privateBusListener);
+				roboStroke.getBus().removeBusListener(privateBusListener);
 			}
 
 			this.disabled = disable;

@@ -21,8 +21,8 @@
 package org.nargila.robostroke.stroke;
 
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataFilter;
@@ -36,7 +36,7 @@ import org.nargila.robostroke.input.SensorDataInput;
  * @author tshalif
  *
  */
-public class RollScanner extends SensorDataFilter implements StrokeListener {
+public class RollScanner extends SensorDataFilter implements BusEventListener {
 	
 	private static final float DEFAULT_TILT_DAMP_FACTOR = .01f;
 	
@@ -83,7 +83,7 @@ public class RollScanner extends SensorDataFilter implements StrokeListener {
 	public RollScanner(RoboStrokeEventBus bus) {
 		this.bus = bus;
 		
-		bus.addStrokeListener(this);
+		bus.addBusListener(this);
 	}
 	
 	@Override
@@ -115,13 +115,13 @@ public class RollScanner extends SensorDataFilter implements StrokeListener {
 	}
 	
 	@Override
-	public void onStrokeEvent(StrokeEvent event) {
+	public void onBusEvent(BusEvent event) {
 		switch (event.type) {
 		case STROKE_POWER_START:
 			insideStrokePower = true;
 			
 			if (hadPower) {
-				bus.fireEvent(StrokeEvent.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
+				bus.fireEvent(BusEvent.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
 			}
 			
 			hadPower = false;
@@ -132,7 +132,7 @@ public class RollScanner extends SensorDataFilter implements StrokeListener {
 			insideStrokePower = false;
 			
 			if (hadPower) {
-				bus.fireEvent(StrokeEvent.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
+				bus.fireEvent(BusEvent.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
 			}
 			
 			strokeRoll.reset();
@@ -145,7 +145,7 @@ public class RollScanner extends SensorDataFilter implements StrokeListener {
 	
 	@Override
 	protected void finalize() throws Throwable {
-		bus.removeStrokeListener(this);
+		bus.removeBusListener(this);
 		super.finalize();
 	}
 }

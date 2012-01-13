@@ -22,8 +22,8 @@ package org.nargila.robostroke.acceleration;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataFilter;
@@ -42,7 +42,7 @@ import org.nargila.robostroke.param.ParameterService;
  * @author tshalif
  *
  */
-public class GravityFilter extends SensorDataFilter implements ParameterListenerOwner, StrokeListener {
+public class GravityFilter extends SensorDataFilter implements ParameterListenerOwner, BusEventListener {
 
 
 	private static final float G = 9.8f;
@@ -80,7 +80,7 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 		
 		this.bus = owner.getBus();
 		
-		bus.addStrokeListener(this);
+		bus.addBusListener(this);
 		
 		params.addListeners(this);
 	}
@@ -131,7 +131,7 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 	}
 
 	@Override
-	public void onStrokeEvent(StrokeEvent event) {
+	public void onBusEvent(BusEvent event) {
 		switch (event.type) {
 		case FREEZE_TILT:
 			orientationFrozen = (Boolean)event.data;
@@ -142,7 +142,7 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 	@Override
 	protected void finalize() throws Throwable {
 		params.removeListeners(this);
-		bus.removeStrokeListener(this);
+		bus.removeBusListener(this);
 		super.finalize();
 	}
 }

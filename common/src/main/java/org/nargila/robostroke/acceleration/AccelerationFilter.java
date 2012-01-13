@@ -22,7 +22,7 @@ import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.SensorDataFilter;
 
 /**
- * Joins gravity-filtered 3 axis sensor data into acceleration amplituded value
+ * Joins gravity-filtered 3 axis sensor data into acceleration amplitude value
  * @author tshalif
  *
  */

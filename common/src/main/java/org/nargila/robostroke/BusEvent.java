@@ -22,7 +22,7 @@ package org.nargila.robostroke;
 import org.nargila.robostroke.param.ParameterBusEventData;
 
 
-public class StrokeEvent {
+public class BusEvent {
 
 	public enum Type {
 		UUID,
@@ -228,7 +228,7 @@ public class StrokeEvent {
 	public final long timestamp;
 	public final Object data;
 		
-	public StrokeEvent(Type type, long timestamp, Object data) {
+	public BusEvent(Type type, long timestamp, Object data) {
 		this.type = type;
 		this.timestamp = timestamp;
 		this.data = data;
@@ -237,6 +237,12 @@ public class StrokeEvent {
 	@Override
 	public String toString() {
 		
+		String sdata = dataToString();
+		
+		return "" + type + " " + timestamp + " " + sdata;
+	}
+
+	public String dataToString() {
 		String sdata;
 		
 		if (type.dataParser != null) {
@@ -244,15 +250,14 @@ public class StrokeEvent {
 		} else {
 			sdata = String.valueOf(data);
 		}
-		
-		return "" + type + " " + timestamp + " " + sdata;
+		return sdata;
 	}
 
-	public static StrokeEvent create(Type type, long timestamp, Object data) {
-		return new StrokeEvent(type, timestamp, data);
+	public static BusEvent create(Type type, long timestamp, Object data) {
+		return new BusEvent(type, timestamp, data);
 	}
 
-	public static StrokeEvent create(Type type, long timestamp, String str) {
+	public static BusEvent create(Type type, long timestamp, String str) {
 		if (type.dataParser != null) {
 			Object data = type.dataParser.parse(str);
 			return create(type, timestamp, data);

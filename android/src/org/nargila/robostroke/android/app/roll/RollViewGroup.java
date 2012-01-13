@@ -19,8 +19,8 @@
 package org.nargila.robostroke.android.app.roll;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
@@ -39,10 +39,10 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 		STROKE_RECOVERY
 	}
 	
-	private class MyListener implements StrokeListener, SensorDataSink {
+	private class MyListener implements BusEventListener, SensorDataSink {
 
 		@Override
-		public void onStrokeEvent(StrokeEvent event) {
+		public void onBusEvent(BusEvent event) {
 			float[] roll;
 			RollView view;
 			
@@ -53,12 +53,12 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 				case STROKE_RECOVERY:
 					break;
 				case RECOVERY:
-					if (event.type != StrokeEvent.Type.RECOVERY_ROLL) {
+					if (event.type != BusEvent.Type.RECOVERY_ROLL) {
 						return;
 					}
 					break;
 				case STROKE:
-					if (event.type != StrokeEvent.Type.STROKE_ROLL) {
+					if (event.type != BusEvent.Type.STROKE_ROLL) {
 						return;
 					}
 					break;
@@ -68,7 +68,7 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 
 				roll = (float[])event.data;
 				ViewType type = 
-					(event.type == StrokeEvent.Type.RECOVERY_ROLL) ? ViewType.RECOVERY : 
+					(event.type == BusEvent.Type.RECOVERY_ROLL) ? ViewType.RECOVERY : 
 						ViewType.STROKE;
 				view = rollViews[type.ordinal()];
 				break;
@@ -204,10 +204,10 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 		if (this.disabled != disable) {
 			if (!disable) {
 				roboStroke.getRollScanner().addSensorDataSink(privateListener);
-				roboStroke.getBus().addStrokeListener(privateListener);
+				roboStroke.getBus().addBusListener(privateListener);
 			} else {
 				roboStroke.getRollScanner().removeSensorDataSink(privateListener);
-				roboStroke.getBus().removeStrokeListener(privateListener);
+				roboStroke.getBus().removeBusListener(privateListener);
 			}
 
 			this.disabled = disable;

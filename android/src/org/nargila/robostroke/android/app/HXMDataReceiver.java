@@ -21,7 +21,7 @@ package org.nargila.robostroke.android.app;
 import java.util.concurrent.TimeUnit;
 
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent.Type;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

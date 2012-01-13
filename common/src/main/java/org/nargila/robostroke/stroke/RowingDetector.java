@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.param.Parameter;
@@ -34,6 +34,11 @@ import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
 import org.nargila.robostroke.param.ParameterService;
 
+/**
+ * Rowing detectror. Generates rowing activity start/stop events based on value of parameter PARAM_ROWING_MODE
+ * @author tshalif
+ *
+ */
 public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
@@ -132,11 +137,11 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
 		bus = roboStroke.getBus();
 		
-		bus.addStrokeListener(new StrokeListener() {
+		bus.addBusListener(new BusEventListener() {
 			
 
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case STROKE_DROP_BELOW_ZERO:
 					if (rowing) {

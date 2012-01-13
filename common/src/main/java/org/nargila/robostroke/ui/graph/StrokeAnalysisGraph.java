@@ -20,8 +20,8 @@
 package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.UILiaison;
@@ -86,10 +86,10 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 	protected boolean needReset;
 
 	
-	private final StrokeListener privateBusListener = new StrokeListener() {
+	private final BusEventListener privateBusListener = new BusEventListener() {
 		
 		@Override
-		public void onStrokeEvent(StrokeEvent event) {
+		public void onBusEvent(BusEvent event) {
 			switch (event.type) {
 			case STROKE_RATE:
 				aboveStrokeRateTreshold =  (Integer)event.data > MIN_STROKE_RATE;
@@ -168,7 +168,7 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 		if (attached) {
 			roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccelDataSink);
 			roboStroke.getRollScanner().removeSensorDataSink(privateRollDataSink);
-			roboStroke.getBus().removeStrokeListener(privateBusListener);
+			roboStroke.getBus().removeBusListener(privateBusListener);
 			attached = false;
 		}
 	}
@@ -178,7 +178,7 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 
 	private void attachSensors() {
 		if (!attached) {
-			roboStroke.getBus().addStrokeListener(privateBusListener);
+			roboStroke.getBus().addBusListener(privateBusListener);
 			roboStroke.getAccelerationFilter().addSensorDataSink(privateAccelDataSink);
 			roboStroke.getRollScanner().addSensorDataSink(privateRollDataSink);
 			

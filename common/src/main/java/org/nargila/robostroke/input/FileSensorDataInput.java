@@ -26,7 +26,7 @@ import java.io.RandomAccessFile;
 
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.SessionRecorderConstants;
-import org.nargila.robostroke.StrokeEvent;
+import org.nargila.robostroke.BusEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,10 +79,10 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 
 				switch (type) {
 				case EVENT:
-					StrokeEvent.Type eventType;
+					BusEvent.Type eventType;
 					
 					try {
-						eventType = StrokeEvent.Type.valueOf(vals[2]);
+						eventType = BusEvent.Type.valueOf(vals[2]);
 					} catch (IllegalArgumentException e) {
 						break; // SessionFileVersionError() is thrown later
 					}
@@ -228,11 +228,11 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 	private void handleBusEvent(String[] vals) {
 		/* timestamp, EVENT <StrokeEvent.Type> timestamp data1,data2,data3.. */
 		
-		StrokeEvent.Type type = StrokeEvent.Type.valueOf(vals[2]);
+		BusEvent.Type type = BusEvent.Type.valueOf(vals[2]);
 		long timestamp = new Long(vals[3]);
 		
 		if (type.isReplayableEvent) {
-			StrokeEvent event = StrokeEvent.create(type, timestamp, vals[4]);
+			BusEvent event = BusEvent.create(type, timestamp, vals[4]);
 
 			bus.fireEvent(event);
 		}

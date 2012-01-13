@@ -22,8 +22,8 @@ package org.nargila.robostroke.stroke;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
@@ -41,7 +41,7 @@ import org.nargila.robostroke.param.ParameterService;
  * @author tshalif
  *
  */
-public class StrokePowerScanner extends StrokeScanner implements StrokeListener, ParameterListenerOwner  {
+public class StrokePowerScanner extends StrokeScannerBase implements BusEventListener, ParameterListenerOwner  {
 	
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
@@ -99,7 +99,7 @@ public class StrokePowerScanner extends StrokeScanner implements StrokeListener,
 		
 		strokePowerTreshold = params.getValue(ParamKeys.PARAM_STROKE_POWER_MIN_POWER);
 		
-		bus.addStrokeListener(this);
+		bus.addBusListener(this);
 
 		params.addListeners(this);
 	}
@@ -142,7 +142,7 @@ public class StrokePowerScanner extends StrokeScanner implements StrokeListener,
 	private void newStroke(long timestamp) {
 		strokeDone = false;
 		if (strokeRate > 0) {
-			bus.fireEvent(StrokeEvent.Type.STROKE_POWER_START, timestamp, (Object[]) null);
+			bus.fireEvent(BusEvent.Type.STROKE_POWER_START, timestamp, (Object[]) null);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class StrokePowerScanner extends StrokeScanner implements StrokeListener,
 		lastStrokeTimestamp = timestamp;
 		
 		if (strokeRate > 0) {
-			bus.fireEvent(StrokeEvent.Type.STROKE_POWER_END, timestamp, strokePower > strokePowerTreshold ? strokePower : 0);			
+			bus.fireEvent(BusEvent.Type.STROKE_POWER_END, timestamp, strokePower > strokePowerTreshold ? strokePower : 0);			
 		}
 		
 		strokePower = 0;
@@ -201,7 +201,7 @@ public class StrokePowerScanner extends StrokeScanner implements StrokeListener,
 	}
 	
 	@Override
-	public void onStrokeEvent(StrokeEvent event) {
+	public void onBusEvent(BusEvent event) {
 		switch (event.type) {
 		case STROKE_ACCELERATION_TRESHOLD:
 			hasPeak = true;

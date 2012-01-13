@@ -19,8 +19,8 @@
 package org.nargila.robostroke.android.app;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
@@ -40,9 +40,9 @@ public class HeartRateView extends FrameLayout implements DataUpdatable {
 
 	private final RoboStroke roboStroke;
 	
-	private final StrokeListener busListener = new StrokeListener() {
+	private final BusEventListener busListener = new BusEventListener() {
 		@Override
-		public void onStrokeEvent(final StrokeEvent event) {
+		public void onBusEvent(final BusEvent event) {
 			switch (event.type) {
 			case HEART_BPM:
 				final int bpm = (Integer)event.data;
@@ -104,9 +104,9 @@ public class HeartRateView extends FrameLayout implements DataUpdatable {
 	public void disableUpdate(boolean disable) {
 		if (this.disabled != disable) {
 			if (!disable) {
-				roboStroke.getBus().addStrokeListener(busListener);
+				roboStroke.getBus().addBusListener(busListener);
 			} else {
-				roboStroke.getBus().removeStrokeListener(busListener);
+				roboStroke.getBus().removeBusListener(busListener);
 			}
 
 			this.disabled = disable;

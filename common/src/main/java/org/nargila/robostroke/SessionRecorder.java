@@ -24,13 +24,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.input.ErrorListener;
 import org.nargila.robostroke.input.InputType;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.input.SensorDataSource;
 
-class SessionRecorder implements StrokeListener, SessionRecorderConstants {
+class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 	private ErrorListener errorListener;
 	private BufferedWriter logger;
 	private final RoboStroke roboStroke;
@@ -65,7 +65,7 @@ class SessionRecorder implements StrokeListener, SessionRecorderConstants {
 		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getAccelerometerDataSource(), InputType.ACCEL));
 		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getOrientationDataSource(), InputType.ORIENT));
 		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getGPSDataSource(), InputType.GPS));
-		roboStroke.getBus().addStrokeListener(this);
+		roboStroke.getBus().addBusListener(this);
 	}
 	
 	private void disconnect() {
@@ -75,7 +75,7 @@ class SessionRecorder implements StrokeListener, SessionRecorderConstants {
 				
 		sourceBinderList.clear();
 		
-		roboStroke.getBus().removeStrokeListener(this);
+		roboStroke.getBus().removeBusListener(this);
 	}
 	
 	synchronized void setDataLogger(File file) throws IOException {
@@ -88,7 +88,7 @@ class SessionRecorder implements StrokeListener, SessionRecorderConstants {
 			if (file != null) {
 				logger = new BufferedWriter(new FileWriter(file));
 				
-				logEvent(new StrokeEvent(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
+				logEvent(new BusEvent(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
 
 				connect();
 			}
@@ -137,13 +137,13 @@ class SessionRecorder implements StrokeListener, SessionRecorderConstants {
 	}
 
 	@Override
-	public synchronized void onStrokeEvent(StrokeEvent event) {
+	public synchronized void onBusEvent(BusEvent event) {
 		if (logger != null) {
 			logEvent(event);
 		}		
 	}
 
-	private void logEvent(StrokeEvent event) {
+	private void logEvent(BusEvent event) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(System.currentTimeMillis()).append(" ")
 		.append("EVENT ")

@@ -43,7 +43,7 @@ import java.util.zip.GZIPOutputStream;
 import org.acra.ErrorReporter;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.android.app.roll.RollViewGroup;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
@@ -200,7 +200,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							
 					roboStroke.setDataLogger(logFile);
 					
-					roboStroke.getBus().fireEvent(StrokeEvent.Type.UUID, preferencesHelper.getUUID());
+					roboStroke.getBus().fireEvent(BusEvent.Type.UUID, preferencesHelper.getUUID());
 							
 				} else {
 					roboStroke.setDataLogger(null);
@@ -932,12 +932,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							@Override
 							public void run() {
 								tiltFreezeOn = true;
-								roboStroke.getBus().fireEvent(StrokeEvent.Type.FREEZE_TILT, true);
+								roboStroke.getBus().fireEvent(BusEvent.Type.FREEZE_TILT, true);
 								progress.dismiss();
 							}
 						}, TILT_FREEZE_CALIBRATION_TIME, TimeUnit.SECONDS);
 					} else {
-						roboStroke.getBus().fireEvent(StrokeEvent.Type.FREEZE_TILT, false);
+						roboStroke.getBus().fireEvent(BusEvent.Type.FREEZE_TILT, false);
 						tiltFreezeOn = false;
 					}
 					settingDialog.dismiss();

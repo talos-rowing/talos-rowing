@@ -22,9 +22,9 @@ package org.nargila.robostroke.way;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
@@ -99,10 +99,10 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		
 		params.addListeners(this);
 		
-		bus.addStrokeListener(new StrokeListener() {
+		bus.addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case ROWING_COUNT: // means DROP_BELOW_ZERO with a valid stroke amplitude - see RowingDetector
 					if (splitRowingOn && bookMarkedLocation != null) {

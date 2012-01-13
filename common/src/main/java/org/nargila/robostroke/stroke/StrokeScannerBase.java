@@ -20,12 +20,12 @@ package org.nargila.robostroke.stroke;
 
 
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.SensorDataFilter;
 import org.nargila.robostroke.stroke.HalfSinoidDetector.Dir;
 
-public abstract class StrokeScanner  extends SensorDataFilter {
+public abstract class StrokeScannerBase  extends SensorDataFilter {
 
 	private final LowpassFilter amplitudeFilter;
 	private final HalfSinoidDetector decelerationAmplitudeDetector = new HalfSinoidDetector(Dir.DOWN);
@@ -35,7 +35,7 @@ public abstract class StrokeScanner  extends SensorDataFilter {
 	protected final RoboStrokeEventBus bus;
 	
 
-	public StrokeScanner(RoboStrokeEventBus bus, float amplitudeFilterFactor) {
+	public StrokeScannerBase(RoboStrokeEventBus bus, float amplitudeFilterFactor) {
 		this.bus = bus;
 		amplitudeFilter = new LowpassFilter(amplitudeFilterFactor);		
 	}
@@ -74,21 +74,13 @@ public abstract class StrokeScanner  extends SensorDataFilter {
 	}
 
 
-	protected void onDecelerationTreshold(long timestamp, float amplitude) {
-		bus.fireEvent(StrokeEvent.Type.STROKE_DECELERATION_TRESHOLD, timestamp, amplitude);		
-	}
+	protected abstract void onDecelerationTreshold(long timestamp, float amplitude);
 	
-	protected void onAccelerationTreshold(long timestamp, float amplitude) {
-		bus.fireEvent(StrokeEvent.Type.STROKE_ACCELERATION_TRESHOLD, timestamp, amplitude);		
-	}
+	protected abstract void onAccelerationTreshold(long timestamp, float amplitude);
 
-	protected void onDropBelow(long timestamp, float maxVal) {
-		bus.fireEvent(StrokeEvent.Type.STROKE_DROP_BELOW_ZERO, timestamp, maxVal);		
-	}
+	protected abstract void onDropBelow(long timestamp, float maxVal);
 	
-	protected void onRiseAbove(long timestamp, float minVal) {
-		bus.fireEvent(StrokeEvent.Type.STROKE_RISE_ABOVE_ZERO, timestamp, minVal);
-	}
+	protected abstract void onRiseAbove(long timestamp, float minVal);
 
 	public float getAmplitudeFiltering() {
 		return amplitudeFilter.getFilteringFactor();

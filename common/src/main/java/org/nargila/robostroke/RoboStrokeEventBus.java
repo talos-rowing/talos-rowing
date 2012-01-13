@@ -22,10 +22,15 @@ import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Simple communication bus enabling communication between various components 
+ * @author tshalif
+ *
+ */
 public class RoboStrokeEventBus extends Thread {
 
 	private static final Logger logger = LoggerFactory.getLogger(RoboStrokeEventBus.class);
@@ -33,10 +38,10 @@ public class RoboStrokeEventBus extends Thread {
 	private static final int DEBUG_QUEUE_OVERFLOW_SIZE = 50;
 	private static final int DEBUG_QUEUE_WARN_SIZE = 20;
 	
-	private final LinkedBlockingQueue<StrokeEvent> eventQueue = 
-		new LinkedBlockingQueue<StrokeEvent>();
+	private final LinkedBlockingQueue<BusEvent> eventQueue = 
+		new LinkedBlockingQueue<BusEvent>();
 	
-	private final LinkedList<StrokeListener> listeners = new LinkedList<StrokeListener>();
+	private final LinkedList<BusEventListener> listeners = new LinkedList<BusEventListener>();
 
 	private boolean shutdown;
 
@@ -55,18 +60,18 @@ public class RoboStrokeEventBus extends Thread {
 	public void run() {
 		while (!shutdown) {
 			try {
-				StrokeEvent event = eventQueue.take();
+				BusEvent event = eventQueue.take();
 
 				if (shutdown) {
 					break;
 				}
 				
 				synchronized (listeners) {
-					for (StrokeListener listener: listeners) {
+					for (BusEventListener listener: listeners) {
 						if (shutdown) {
 							break;
 						}
-						listener.onStrokeEvent(event);
+						listener.onBusEvent(event);
 					}
 				}
 			} catch (InterruptedException e) {
@@ -81,7 +86,7 @@ public class RoboStrokeEventBus extends Thread {
 	 * add stroke rate listener
 	 * @param listener listener object
 	 */
-	public void addStrokeListener(StrokeListener listener) {
+	public void addBusListener(BusEventListener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
 		}
@@ -91,13 +96,13 @@ public class RoboStrokeEventBus extends Thread {
 	 * remove stroke rate listener
 	 * @param listener listener object
 	 */
-	public void removeStrokeListener(StrokeListener listener) {
+	public void removeBusListener(BusEventListener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
 		}
 	}
 
-	public void fireEvent(StrokeEvent event) {
+	public void fireEvent(BusEvent event) {
 		if (shutdown) {
 			return;
 		}
@@ -118,14 +123,14 @@ public class RoboStrokeEventBus extends Thread {
 	}
 
 	public void fireEvent(Type type, Object data) {
-		fireEvent(new StrokeEvent(type, TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()), data));		
+		fireEvent(new BusEvent(type, TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()), data));		
 	}
 	
 	public void fireEvent(Type type, long timestamp, Object ... data) {
-		fireEvent(new StrokeEvent(type, timestamp, data));		
+		fireEvent(new BusEvent(type, timestamp, data));		
 	}
 	
 	public void fireEvent(Type type, long timestamp, Object data) {
-		fireEvent(new StrokeEvent(type, timestamp, data));		
+		fireEvent(new BusEvent(type, timestamp, data));		
 	}
 }

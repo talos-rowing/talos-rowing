@@ -18,6 +18,11 @@
  */
 package org.nargila.robostroke.common;
 
+/**
+ * Generic interface for dynamic generation of double values
+ * @author tshalif
+ *
+ */
 public interface DoubleGenerator {
 	double get();
 }

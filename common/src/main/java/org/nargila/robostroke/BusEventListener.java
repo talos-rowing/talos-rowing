@@ -25,10 +25,10 @@ package org.nargila.robostroke;
  * @author tshalif
  *
  */
-public interface StrokeListener {
+public interface BusEventListener {
 	/**
 	 * process stroke rate notification
 	 * @param spm stroke rate value in strokes per minute
 	 */
-	void onStrokeEvent(StrokeEvent event);
+	void onBusEvent(BusEvent event);
 }

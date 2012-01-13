@@ -22,11 +22,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Parameter registration/notification service
+ * @author tshalif
+ *
+ */
 public class ParameterService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ParameterService.class);
@@ -46,16 +51,16 @@ public class ParameterService {
 			
 			@Override
 			public void onParameterChanged(Parameter<?> param) {
-				eventBus.fireEvent(StrokeEvent.Type.PARAMETER_CHANGE, new ParameterBusEventData(param.getId(), param.convertToString()));
+				eventBus.fireEvent(BusEvent.Type.PARAMETER_CHANGE, new ParameterBusEventData(param.getId(), param.convertToString()));
 			}
 		});
 		/**
 		 * register a bus listener, to enable replaying of parameter value changes
 		 */
-		eventBus.addStrokeListener(new StrokeListener() {
+		eventBus.addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case PARAMETER_CHANGE:
 					ParameterBusEventData data = (ParameterBusEventData) event.data;

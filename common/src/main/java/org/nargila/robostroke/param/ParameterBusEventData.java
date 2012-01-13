@@ -18,6 +18,11 @@
  */
 package org.nargila.robostroke.param;
 
+/**
+ * Data object used as payload for BusEvent.PARAMETER_CHANGE  events 
+ * @author tshalif
+ *
+ */
 public class ParameterBusEventData {
 	private static final String FIELD_SEP = "|";
 	

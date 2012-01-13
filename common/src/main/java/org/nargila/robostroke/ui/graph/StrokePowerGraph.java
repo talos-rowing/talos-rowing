@@ -22,8 +22,8 @@ package org.nargila.robostroke.ui.graph;
 import java.util.concurrent.TimeUnit;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.input.SensorDataSink;
@@ -69,11 +69,11 @@ public class StrokePowerGraph extends LineGraph implements DataUpdatable {
 	};
 	
 	private int strokeRate;
-	private final StrokeListener privateBusListener = new StrokeListener() {
+	private final BusEventListener privateBusListener = new BusEventListener() {
 
 
 		@Override
-		public void onStrokeEvent(StrokeEvent event) {
+		public void onBusEvent(BusEvent event) {
 			switch (event.type) {
 			case STROKE_POWER_START:
 				validStrokePowerScope = hasStrokePower && strokeRate > 10;
@@ -151,13 +151,13 @@ public class StrokePowerGraph extends LineGraph implements DataUpdatable {
 		if (this.disabled != disable) {
 			if (!disable) {
 				roboStroke.getStrokePowerScanner().addSensorDataSink(privateStrokePowerDataSink);
-				roboStroke.getBus().addStrokeListener(privateBusListener);
+				roboStroke.getBus().addBusListener(privateBusListener);
 			} else {
 				validStrokePowerScope = hasStrokePower = false;
 				strokeRate = 0;
 
 				roboStroke.getStrokePowerScanner().removeSensorDataSink(privateStrokePowerDataSink);
-				roboStroke.getBus().removeStrokeListener(privateBusListener);
+				roboStroke.getBus().removeBusListener(privateBusListener);
 			}
 
 			this.disabled = disable;

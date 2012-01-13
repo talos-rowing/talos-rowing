@@ -20,6 +20,11 @@ package org.nargila.robostroke.input;
 
 import java.io.IOException;
 
+/**
+ * Error type for replayed data version mismatch 
+ * @author tshalif
+ *
+ */
 public class SessionFileVersionError extends IOException {
 
 

@@ -21,7 +21,12 @@ package org.nargila.robostroke.param;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-
+/**
+ * Parameter object with param ID, value and default value
+ * @author tshalif
+ *
+ * @param <T> data type of parameter value
+ */
 public abstract class Parameter<T> {
 	
 	public static class BOOLEAN extends Parameter<Boolean> {

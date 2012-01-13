@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
-import org.nargila.robostroke.StrokeListener;
-import org.nargila.robostroke.StrokeEvent.Type;
+import org.nargila.robostroke.BusEvent;
+import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.GPSDataFilter;
@@ -189,10 +189,10 @@ public class MetersDisplayManager implements SensorDataSink, LayoutModeChangeLis
 
 		});
 				
-		owner.roboStroke.getBus().addStrokeListener(new StrokeListener() {
+		owner.roboStroke.getBus().addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onStrokeEvent(StrokeEvent event) {
+			public void onBusEvent(BusEvent event) {
 				switch (event.type) {
 				case ROWING_START_TRIGGERED:
 					triggered = (Boolean)event.data;

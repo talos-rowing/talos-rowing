@@ -22,7 +22,7 @@ package org.nargila.robostroke.stroke;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.StrokeEvent;
+import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
@@ -40,7 +40,7 @@ import org.nargila.robostroke.param.ParameterService;
  * @author tshalif
  *
  */
-public class StrokeRateScanner extends StrokeScanner implements ParameterListenerOwner {
+public class StrokeRateScanner extends StrokeScannerBase implements ParameterListenerOwner {
 
 	private long lastStrokeTimestamp;
 
@@ -93,6 +93,21 @@ public class StrokeRateScanner extends StrokeScanner implements ParameterListene
 		return listenerRegistrations;
 	}
 
+	@Override
+	protected void onDecelerationTreshold(long timestamp, float amplitude) {
+		bus.fireEvent(BusEvent.Type.STROKE_DECELERATION_TRESHOLD, timestamp, amplitude);		
+	}
+
+	@Override
+	protected void onAccelerationTreshold(long timestamp, float amplitude)  {
+		bus.fireEvent(BusEvent.Type.STROKE_ACCELERATION_TRESHOLD, timestamp, amplitude);		
+	}
+	
+	@Override
+	protected void onDropBelow(long timestamp, float maxVal)  {
+		bus.fireEvent(BusEvent.Type.STROKE_DROP_BELOW_ZERO, timestamp, maxVal);		
+	}
+	
 	/**
 	 * setup and notify a stroke event
 	 * @param timestamp stroke timestamp
@@ -107,7 +122,7 @@ public class StrokeRateScanner extends StrokeScanner implements ParameterListene
 				spm = 60 * 1000 / msDiff;
 			}
 			
-			bus.fireEvent(StrokeEvent.Type.STROKE_RATE, timestamp, (int)spm);
+			bus.fireEvent(BusEvent.Type.STROKE_RATE, timestamp, (int)spm);
 			
 		}
 		
@@ -117,7 +132,7 @@ public class StrokeRateScanner extends StrokeScanner implements ParameterListene
 	
 	@Override
 	protected void onRiseAbove(long timestamp, float minVal) {
-		super.onRiseAbove(timestamp, minVal);
+		bus.fireEvent(BusEvent.Type.STROKE_RISE_ABOVE_ZERO, timestamp, minVal);
 		registerStroke(timestamp);
 	}
 	
