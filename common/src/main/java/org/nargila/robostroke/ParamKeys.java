@@ -25,6 +25,7 @@ public interface ParamKeys {
 	static final String PARAM_GPS_MIN_DISTANCE = "org.nargila.talos.rowing.gps.minDistance";
 	static final String PARAM_GPS_DATA_FILTER_MAX_SPEED = "org.nargila.talos.rowing.gps.maxSpeed";
 	static final String PARAM_SENSOR_ORIENTATION_DAMP_FACTOR = "org.nargila.talos.rowing.sensor.orientationDampFactor";
+	static final String PARAM_SENSOR_ORIENTATION_REVERSED = "org.nargila.talos.rowing.sensor.reverseDeviceOrientation";
 	static final String PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR = "org.nargila.talos.rowing.stroke.rate.amplitudeFilterFactor";
 	static final String PARAM_STROKE_RATE_MIN_AMPLITUDE = "org.nargila.talos.rowing.stroke.rate.minAmplitude";
 	static final String PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR = "org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor";

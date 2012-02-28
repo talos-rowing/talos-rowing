@@ -153,7 +153,7 @@ public class RoboStroke {
 	 * @param distanceResolver
 	 */
 	private void initPipeline(DistanceResolver distanceResolver) {
-		accelerationFilter = new AccelerationFilter();
+		accelerationFilter = new AccelerationFilter(this);
 		gravityFilter = new GravityFilter(this, accelerationFilter);
 		strokeRateScanner = new StrokeRateScanner(this);
 		rowingDetector = new RowingDetector(this); 

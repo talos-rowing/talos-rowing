@@ -47,6 +47,8 @@ class ParamRegistration {
 	};
 	
 	private final Parameter<?>[] GRAVITY_PARAMS = {
+			new Parameter.BOOLEAN(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED, 
+					"coax mode", "Sensors", ParameterLevel.BASIC, false),
 			new Parameter.FLOAT(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR, 
 					"orientation damper", "Sensors", ParameterLevel.ADVANCED, 0.01f)
 	};

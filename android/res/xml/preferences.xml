@@ -83,17 +83,23 @@
 	</PreferenceCategory>				
 	<PreferenceCategory android:title="Misc">
 		<CheckBoxPreference
-			android:title="Enable Zephyr HRM"
+			android:title="Coax mode"
 			android:persistent="true" 
 			android:defaultValue="false"
-			android:summary="For using the unsupported Zephyr bluetooth heart monitor (requires 'Talos Heart' from this application's home page)" 
-			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
+			android:summary="For example When device is used by a forward facing coax" 
+			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/>
 		<CheckBoxPreference
 			android:title="Reset settings"
 			android:persistent="true" 
 			android:defaultValue="false"
 			android:summary="If selected, you will be given the option to reset your settings next time you start the application" 
 			android:key="org.nargila.talos.rowing.android.preferences.reset"/>
+		<CheckBoxPreference
+			android:title="Enable Zephyr HRM"
+			android:persistent="true" 
+			android:defaultValue="false"
+			android:summary="For using the unsupported Zephyr bluetooth heart monitor (requires 'Talos Heart' from this application's home page)" 
+			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Advanced">
 		<PreferenceScreen android:title="Advanced Settings" android:summary="Don't touch these unless you know what you are doing!">
