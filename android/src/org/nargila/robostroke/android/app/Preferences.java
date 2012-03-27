@@ -18,14 +18,50 @@
  */
 package org.nargila.robostroke.android.app;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 public class Preferences extends PreferenceActivity {
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
-	    addPreferencesFromResource(R.xml.preferences);	    
+	    addPreferencesFromResource(R.xml.preferences);	  
+	    
+	    ListView listView = getListView();
+	    listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+	    	@Override
+	    	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+	    		
+	    		ListView listView = (ListView) parent;
+	    		ListAdapter listAdapter = listView.getAdapter();
+	    		Object obj = listAdapter.getItem(position);
+	    		
+	    		if (obj != null && obj instanceof Preference) {
+	    			Preference p = (Preference) obj;
+	    			String key = p.getKey();
+	    			
+	    			if (key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
+	    				
+	    				String url = "http://nargila.org/trac/robostroke/wiki/GuideParameters#" + key;
+	    				Intent i = new Intent(Intent.ACTION_VIEW);
+	    				i.setData(Uri.parse(url));
+	    				startActivity(i);
+	    			}
+	    			
+	    			return true;
+	    		}
+	    		
+	    		return false;
+	    	}
+	    });
 	}
 }
