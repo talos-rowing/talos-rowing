@@ -119,7 +119,7 @@ public class AccellGraph extends SensorGraphBase  {
 					int alpha = (int) ((avgY / maxYValue) * 255 * ROLL_PANNEL_DIM_FACTOR);
 
 					rollBackgroundPaint.setColor(color);
-					rollBackgroundPaint.setAlpha(Math.abs(alpha));
+					rollBackgroundPaint.setAlpha(Math.min(Math.abs(alpha), 255));
 
 					float left = (float) ((startX - minX) * scaleX);
 					float right = (float) (((stopX - minX) * scaleX));

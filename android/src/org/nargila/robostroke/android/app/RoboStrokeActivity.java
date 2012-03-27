@@ -56,6 +56,7 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
+import org.nargila.robostroke.ui.LayoutMode;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.android.AccellGraphView;
 import org.nargila.robostroke.ui.graph.android.StrokeAnalysisGraphView;

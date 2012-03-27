@@ -18,8 +18,10 @@
  */
 package org.nargila.robostroke.param;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
@@ -198,6 +200,10 @@ public class ParameterService {
 	@SuppressWarnings("unchecked")
 	public <T> T getValue(String id) {
 		return (T) getParam(id).getValue();
+	}
+	
+	public Map<String, Parameter<?>> getParamMap() {
+		return Collections.unmodifiableMap(paramMap);
 	}
 	
 	public synchronized Parameter<?> getParam(String id) {

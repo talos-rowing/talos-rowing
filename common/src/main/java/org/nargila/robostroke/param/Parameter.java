@@ -31,13 +31,9 @@ public abstract class Parameter<T> {
 	
 	public static class BOOLEAN extends Parameter<Boolean> {
 
-		public BOOLEAN(String id) {
-			super(id);
-		}
-		
-		public BOOLEAN(String id, String name, String category, ParameterLevel level,
+		public BOOLEAN(String id, String name, String description, String category, ParameterLevel level,
 				boolean defaultValue) {
-			super(id, name, category, level, defaultValue);
+			super(id, name, description, category, level, defaultValue);
 		}
 
 		@Override
@@ -48,13 +44,10 @@ public abstract class Parameter<T> {
 	
 	public static class STRING extends Parameter<String> {
 
-		public STRING(String id) {
-			super(id);
-		}
 		
-		public STRING(String id, String name, String category, ParameterLevel level,
+		public STRING(String id, String name, String description, String category, ParameterLevel level,
 				String defaultValue) {
-			super(id, name, category, level, defaultValue);
+			super(id, name, description, category, level, defaultValue);
 		}
 
 		@Override
@@ -65,9 +58,9 @@ public abstract class Parameter<T> {
 	
 	public static class FLOAT extends Parameter<Float> {
 
-		public FLOAT(String id, String name, String category, ParameterLevel level,
+		public FLOAT(String id, String name, String description, String category, ParameterLevel level,
 				Float defaultValue) {
-			super(id, name, category, level, defaultValue);
+			super(id, name, description, category, level, defaultValue);
 		}
 
 		@Override
@@ -78,9 +71,9 @@ public abstract class Parameter<T> {
 	
 	public static class INTEGER extends Parameter<Integer> {
 
-		public INTEGER(String id, String name, String category, ParameterLevel level,
+		public INTEGER(String id, String name, String description, String category, ParameterLevel level,
 				Integer defaultValue) {
-			super(id, name, category, level, defaultValue);
+			super(id, name, description, category, level, defaultValue);
 		}
 		@Override
 		protected Integer convertFromString(String val) {
@@ -89,9 +82,9 @@ public abstract class Parameter<T> {
 	}
 	public static class LONG extends Parameter<Long> {
 
-		public LONG(String id, String name, String category, ParameterLevel level,
+		public LONG(String id, String name, String description, String category, ParameterLevel level,
 				Long defaultValue) {
-			super(id, name, category, level, defaultValue);
+			super(id, name, description, category, level, defaultValue);
 		}
 		@Override
 		protected Long convertFromString(String val) {
@@ -101,6 +94,7 @@ public abstract class Parameter<T> {
 	
 	private final String id;
 	private final String name;
+	private final String description;
 	private final String category;
 	private final ParameterLevel level;
 	private final T defaultValue;
@@ -108,18 +102,18 @@ public abstract class Parameter<T> {
 	
 	ParameterService parameterService; // is set by ParameterService when this param instance is registered
 	
-
-	public Parameter(String id, String name, String category,
+	public Parameter(String id, String name, String description, String category,
 			ParameterLevel level, T defaultValue) {
 		this.id = id;
 		this.name = name;
+		this.description = description;
 		this.category = category;
 		this.level = level;
 		this.defaultValue = value = defaultValue;
 	}
 	
 	public Parameter(String id) {
-		this(id, null, null, null, null);
+		this(id, null, null, null, null, null);
 	}
 	
 	public T getValue() {
@@ -147,6 +141,9 @@ public abstract class Parameter<T> {
 	}
 	public String getName() {
 		return name;
+	}
+	public String getDescription() {
+		return description;
 	}
 	public String getCategory() {
 		return category;

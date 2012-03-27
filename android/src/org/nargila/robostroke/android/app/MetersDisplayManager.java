@@ -29,6 +29,7 @@ import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.stroke.RowingSplitMode;
+import org.nargila.robostroke.ui.LayoutMode;
 import org.nargila.robostroke.way.GPSDataFilter;
 import org.nargila.robostroke.way.WayListener;
 import org.slf4j.Logger;
@@ -50,8 +51,10 @@ import android.widget.TextView;
  * This class implements SensorDataSink so it can
  * update itself upon sensor events and does not have to
  * create a timer thread.
+ * 
+ * TODO: merge with MetersDisplayManager in robostroke-common
  */
-public class MetersDisplayManager implements SensorDataSink, LayoutModeChangeListener {
+public class MetersDisplayManager implements SensorDataSink {
 
 	private static final Logger logger = LoggerFactory.getLogger(MetersDisplayManager.class);
 	
@@ -590,7 +593,6 @@ public class MetersDisplayManager implements SensorDataSink, LayoutModeChangeLis
 		}
 	}
 
-	@Override
 	public void onLayoutModeChange(LayoutMode newMode) {
 		
 		if (newMode != layoutMode) {

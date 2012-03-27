@@ -61,6 +61,8 @@ public class BusEvent {
 		BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()), 				
 		ROWING_START_DISTANCE(false, new DistanceEventSerializer()), 
 		CRASH_STACK, 
+		REPLAY_PROGRESS,
+		REPLAY_SKIPPED,
 		LOGFILE_VERSION(false, new INT());
 
 		private static final class DistanceEventSerializer extends DataSerializer {

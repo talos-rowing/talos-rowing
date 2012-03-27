@@ -22,7 +22,8 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterLevel;
 import org.nargila.robostroke.param.ParameterService;
 
-class ParamRegistration {
+public class ParamRegistration {
+	
 	private final Parameter<?>[] WAY_PARAMS = {
 			new Parameter.FLOAT(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER,
 					"Speed change damper",
@@ -121,6 +122,15 @@ class ParamRegistration {
 					ParameterLevel.ADVANCED, .02f)
 	};
 	
+	private final Parameter<?>[][] PARAMS = {
+			DETECTOR_PARAMS,
+			GRAVITY_PARAMS,
+			POWER_PARAMS,
+			SESSION_PARAMS,
+			STROKE_PARAMS,
+			WAY_PARAMS
+	};
+	
 	private ParamRegistration() {
 		// ParamRegistration is a dummy object
 	}
@@ -129,11 +139,10 @@ class ParamRegistration {
 		
 		ParamRegistration pr = new ParamRegistration();
 		
-		ps.registerParam(pr.DETECTOR_PARAMS);
-		ps.registerParam(pr.GRAVITY_PARAMS);
-		ps.registerParam(pr.POWER_PARAMS);
-		ps.registerParam(pr.SESSION_PARAMS);
-		ps.registerParam(pr.STROKE_PARAMS);
-		ps.registerParam(pr.WAY_PARAMS);
+		for (Parameter<?>[] paramGroup: pr.PARAMS) {
+			ps.registerParam(paramGroup);
+		}
 	}
+	
+	
 }

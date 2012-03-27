@@ -46,6 +46,8 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 	long logTimestamp;
 	
 	private float skipRequested = 0;
+	
+	private double setPosRequested = -1;
 
 	private boolean paused;
 
@@ -57,9 +59,14 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 	
 	private final RoboStrokeEventBus bus;
 	
+	private final long fileLength;
+
+	private long lastProgressNotifyTime;
+	
 	public FileSensorDataInput(RoboStrokeEventBus bus, File dataFile) throws IOException {
 		this.bus = bus;
 		this.reader = new RandomAccessFile(dataFile, "r");
+		fileLength = dataFile.length();
 		
 		checkVersion();
 
@@ -117,20 +124,42 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 			try {
 				Thread.yield();
 
-				if (skipRequested != 0) {
-					long pos = reader.getFilePointer();
-
-					pos += -skipRequested * SKIP_BYTES;
-
+				long pos = reader.getFilePointer();
+				
+				if (setPosRequested != -1 || skipRequested != 0) {
+					
+					if (setPosRequested != -1) {
+						pos = (long)(fileLength * setPosRequested);
+					} else {
+						assert skipRequested != 0;
+						
+						pos += -skipRequested * SKIP_BYTES;
+					}
+					
 					pos = Math.max(Math.min(reader.length() - 1,pos), 0);
-
 					reader.seek(pos);
 					reader.readLine();
 					skipRequested = 0;
+					setPosRequested = -1;
 					startTimeDiff = 0; // force re-adjust below
+					
+					bus.fireEvent(BusEvent.Type.REPLAY_SKIPPED, null);
+
 					continue;
 				}
 
+				long currentTimeMillis = System.currentTimeMillis();
+				
+				if (currentTimeMillis - lastProgressNotifyTime > 500) {
+					
+					lastProgressNotifyTime = currentTimeMillis;
+					
+					double progress = pos / (double)fileLength;
+					
+					bus.fireEvent(BusEvent.Type.REPLAY_PROGRESS, progress);
+
+				}
+				
 				if (paused || 
 						(l = reader.readLine()) == null) { 
 					continue;
@@ -298,6 +327,15 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 		
 	}
 
+	public void setPos(double pos) {
+
+		if (pos < 0 || pos > 1.0) {
+			throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
+		}
+		
+		setPosRequested = pos;		
+	}
+	
 	@Override
 	public void setPaused(boolean paused) {
 		if (paused) {

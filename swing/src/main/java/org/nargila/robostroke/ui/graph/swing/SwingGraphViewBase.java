@@ -27,9 +27,13 @@ import java.awt.event.ComponentListener;
 
 import javax.swing.JPanel;
 
+import org.nargila.robostroke.ui.RSClickListener;
+import org.nargila.robostroke.ui.RSDoubleClickListener;
+import org.nargila.robostroke.ui.RSLongClickListener;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
 import org.nargila.robostroke.ui.swing.SwingCanvas;
+import org.nargila.robostroke.ui.swing.SwingView;
 
 
 /**
@@ -47,14 +51,31 @@ public abstract class SwingGraphViewBase<T extends UpdatableGraphBase> extends J
 	
 	private final boolean selfPaint;
 	
+	private final SwingView swingView;
+	
 	public SwingGraphViewBase() {
 		this(true);
 	}
 	
 	public SwingGraphViewBase(boolean selfPaint) {
+		
 		this.selfPaint = selfPaint;
+		
+		swingView = new SwingView(this);
 	}
 	
+	public void setOnLongClickListener(RSLongClickListener listener) {
+		swingView.setOnLongClickListener(listener);
+	}
+
+	public void setOnClickListener(RSClickListener listener) {
+		swingView.setOnClickListener(listener);
+	}
+
+	public void setOnDoubleClickListener(RSDoubleClickListener listener) {
+		swingView.setOnDoubleClickListener(listener);
+	}
+
 	protected void setGraph(T _graph) {
 		
 		this.graph = _graph;

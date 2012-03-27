@@ -32,11 +32,11 @@ import org.nargila.robostroke.param.Parameter.INTEGER;
 
 public class ParameterServiceTest {
 	
-	private static final BOOLEAN BOOLEAN_PARAM = new Parameter.BOOLEAN("bool", null, null, null, true);
+	private static final BOOLEAN BOOLEAN_PARAM = new Parameter.BOOLEAN("bool", null, null, null, null, true);
 
-	private static final INTEGER INTEGER_PARAM = new Parameter.INTEGER("int", null, null, null, 5);
+	private static final INTEGER INTEGER_PARAM = new Parameter.INTEGER("int", null, null, null, null, 5);
 
-	private static final FLOAT FLOAT_PARAM = new Parameter.FLOAT("float", null, null, null, .5f);
+	private static final FLOAT FLOAT_PARAM = new Parameter.FLOAT("float", null, null, null, null, .5f);
 
 	private ParameterService ps;
 	private final RoboStrokeEventBus bus = new RoboStrokeEventBus();
