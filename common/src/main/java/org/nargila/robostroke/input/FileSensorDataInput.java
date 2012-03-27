@@ -143,7 +143,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 					setPosRequested = -1;
 					startTimeDiff = 0; // force re-adjust below
 					
-					bus.fireEvent(BusEvent.Type.REPLAY_SKIPPED, null);
+					if (bus != null) bus.fireEvent(BusEvent.Type.REPLAY_SKIPPED, null);
 
 					continue;
 				}
@@ -156,7 +156,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 					
 					double progress = pos / (double)fileLength;
 					
-					bus.fireEvent(BusEvent.Type.REPLAY_PROGRESS, progress);
+					if (bus != null) bus.fireEvent(BusEvent.Type.REPLAY_PROGRESS, progress);
 
 				}
 				
@@ -260,7 +260,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 		BusEvent.Type type = BusEvent.Type.valueOf(vals[2]);
 		long timestamp = new Long(vals[3]);
 		
-		if (type.isReplayableEvent) {
+		if (bus != null && type.isReplayableEvent) {
 			BusEvent event = BusEvent.create(type, timestamp, vals[4]);
 
 			bus.fireEvent(event);
