@@ -18,6 +18,11 @@
  */
 package org.nargila.robostroke;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterLevel;
 import org.nargila.robostroke.param.ParameterService;
@@ -60,7 +65,7 @@ public class ParamRegistration {
 	private final Parameter<?>[] SESSION_PARAMS = {
 			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 
 	
-			"", "", null, ParameterLevel.PRIVATE, false)
+			"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false)
 	};
 	
 	private final Parameter<?>[] DETECTOR_PARAMS = {
@@ -90,12 +95,12 @@ public class ParamRegistration {
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR, 
 					"power filter",
 					"*FIXME*", // TODO
-					"Stroke", 
+					"Stroke Power", 
 					ParameterLevel.ADVANCED, .5f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_POWER_MIN_POWER, 
 					"power filter",
 					"Minimum power (sum of acceleration points) required during a rowing cycle in order for it to register",
-					"Stroke", 
+					"Stroke Power", 
 					ParameterLevel.ADVANCED, 5f)
 	};
 	
@@ -135,6 +140,40 @@ public class ParamRegistration {
 		// ParamRegistration is a dummy object
 	}
 	
+	public static void printParams(OutputStream os) throws IOException {
+		
+		ParamRegistration pr = new ParamRegistration();
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os));
+		
+		writer.write("<div class='robostroke-params'>\n" +
+				"<table class='robostroke-param-table' border='1'>\n" +
+				"<tr>" +
+				"<th>Category</th><th>Name</th><th>Level</th><th>Default Value</th><th>Description</th>" +
+				"</tr>\n");
+		
+		for (Parameter<?>[] paramGroup: pr.PARAMS) {
+			
+			int i = 0;
+			for (Parameter<?> param: paramGroup) {
+				writer.write("<tr>\n");
+			
+				if (i++ == 0) {
+					writer.write("<td class='robostroke-param-category' rowspan='" + paramGroup.length + "'>" + param.getCategory() + "</td>\n");
+				}
+				
+				writer.write("<td class='robostroke-param-name' id='" + param.getId() + "'>" + param.getName() + "</td>\n" +
+						"<td class='robostroke-param-level'>" + param.getLevel() + "</td>\n" +
+						"<td class='robostroke-param-default'>" + param.getDefaultValue() + "</td>\n" +
+								"<td class='robostroke-param-description'>" + param.getDescription() + "</td>\n");
+				writer.write("</tr>\n");
+			}			
+		}
+		
+		writer.write("</table></div>");
+		
+		writer.flush();
+	}
+	
 	static void installParams(ParameterService ps) {
 		
 		ParamRegistration pr = new ParamRegistration();
@@ -144,5 +183,9 @@ public class ParamRegistration {
 		}
 	}
 	
+	
+	public static void main(String[] args) throws IOException {
+		printParams(System.out);
+	}
 	
 }
