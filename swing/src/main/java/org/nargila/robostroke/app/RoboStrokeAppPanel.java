@@ -62,6 +62,8 @@ public class RoboStrokeAppPanel extends JPanel {
 
 	protected boolean paused;
 
+	protected ParamEditDialog paramEditDialog;
+
 	/**
 	 * Create the panel.
 	 */
@@ -91,32 +93,57 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		mnFile.add(mntmExit);
 		
+		JMenu mnEdit = new JMenu("Edit");
+		menuBar.add(mnEdit);
+		
+		JMenuItem mntmEditParams = new JMenuItem("Preferences");
+		mntmEditParams.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (paramEditDialog == null) {
+					paramEditDialog = new ParamEditDialog();
+					paramEditDialog.init(rs);
+				}
+				
+				paramEditDialog.setVisible(true);
+				
+			}
+		});
+		
+		mnEdit.add(mntmEditParams);
+		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
 		
-		JCheckBoxMenuItem chckbxmntmAccel = new JCheckBoxMenuItem("Accel");
+		final JCheckBoxMenuItem chckbxmntmAccel = new JCheckBoxMenuItem("Accel");
+		chckbxmntmAccel.setSelected(true);
+		chckbxmntmAccel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				accellGraph.getParent().setVisible(chckbxmntmAccel.isSelected());
+			}
+		});
+		
 		mnView.add(chckbxmntmAccel);
 		
-		JCheckBoxMenuItem chckbxmntmStroke = new JCheckBoxMenuItem("Stroke");
+		final JCheckBoxMenuItem chckbxmntmStroke = new JCheckBoxMenuItem("Stroke");
+		chckbxmntmStroke.setSelected(true);
+		chckbxmntmStroke.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				strokeGraph.getParent().setVisible(chckbxmntmStroke.isSelected());
+			}
+		});
 		mnView.add(chckbxmntmStroke);
 		
 		JSeparator separator = new JSeparator();
 		mnView.add(separator);
 		
-		JCheckBoxMenuItem chckbxmntmAnalysis = new JCheckBoxMenuItem("Analysis");
+		final JCheckBoxMenuItem chckbxmntmAnalysis = new JCheckBoxMenuItem("Analysis");
+		chckbxmntmAnalysis.setSelected(true);
+		chckbxmntmAnalysis.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				strokeAnalysisGraph.getParent().setVisible(chckbxmntmAnalysis.isSelected());
+			}
+		});
 		mnView.add(chckbxmntmAnalysis);
-		
-		JCheckBoxMenuItem chckbxmntmPower = new JCheckBoxMenuItem("Power");
-		mnView.add(chckbxmntmPower);
-		
-		JCheckBoxMenuItem chckbxmntmStroke_1 = new JCheckBoxMenuItem("Stroke");
-		mnView.add(chckbxmntmStroke_1);
-		
-		JSeparator separator_1 = new JSeparator();
-		mnView.add(separator_1);
-		
-		JCheckBoxMenuItem chckbxmntmStability = new JCheckBoxMenuItem("Stability");
-		mnView.add(chckbxmntmStability);
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(Color.BLACK);
@@ -128,6 +155,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		panel.add(meterView);
 		
 		JPanel panel_2 = new JPanel();
+		panel_2.setMaximumSize(new Dimension(32767, 20));
 		panel_2.setBackground(Color.BLACK);
 		panel_2.setBorder(new EmptyBorder(0, 5, 0, 5));
 		panel.add(panel_2);
