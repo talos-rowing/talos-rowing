@@ -26,10 +26,12 @@ class ParamRegistration {
 	private final Parameter<?>[] WAY_PARAMS = {
 			new Parameter.FLOAT(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER,
 					"Speed change damper",
+					"Boat speed lowpass filter: any value lower then 1.0 will cause delayed updates of boat speed value",
 					"GPS",
 					ParameterLevel.ADVANCED, 1.0f),
 			new Parameter.INTEGER(ParamKeys.PARAM_GPS_MIN_DISTANCE,
 							"min distance",
+							"Minimum distance boat must travel between each distance/speed calculation",
 							"GPS",
 							ParameterLevel.ADVANCED, 20) {
 
@@ -42,62 +44,80 @@ class ParamRegistration {
 			},
 			new Parameter.FLOAT(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED,
 					"max speed",
+					"Maximum permited boat speed - useful for catching and throwing away erratic GPS readings",
 					"GPS",
 					ParameterLevel.ADVANCED, 6.5f)
 	};
 	
 	private final Parameter<?>[] GRAVITY_PARAMS = {
 			new Parameter.BOOLEAN(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED, 
-					"coax mode", "Sensors", ParameterLevel.BASIC, false),
+					"coax mode", "indicates the device user is forward facing - such as a coax or trainer. Normally the rower sits with her back to the front of the boat", "Sensors", ParameterLevel.BASIC, false),
 			new Parameter.FLOAT(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR, 
-					"orientation damper", "Sensors", ParameterLevel.ADVANCED, 0.01f)
+					"orientation damper", "Lowpass filter used as stabalizer for the 'down' notion of the application", "Sensors", ParameterLevel.ADVANCED, 0.01f)
 	};
 	
 	private final Parameter<?>[] SESSION_PARAMS = {
 			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 
 	
-			"", "", ParameterLevel.PRIVATE, false)
+			"", "", null, ParameterLevel.PRIVATE, false)
 	};
 	
 	private final Parameter<?>[] DETECTOR_PARAMS = {
 			new Parameter.INTEGER(ParamKeys.PARAM_ROWING_STOP_TIMEOUT, 
-							"stop timeout", "Autorow", 
+							"stop timeout", "How many seconds since end of last stroke before finishing a rowing lap when in 'Autorow' mode", "Autorow", 
 							ParameterLevel.BASIC, 5),
 			new Parameter.INTEGER(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME, 
-							"Auto Restart Wait Time", "Autorow", 
+							"Auto Restart Wait Time", "Number of seconds application must wait before allowed to auto start another rowing lap when in 'Autorow' mode", "Autorow", 
 							ParameterLevel.BASIC, 5),
 			new Parameter.FLOAT(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD, 
-							"min amplitude", "Autorow", 
+							"min amplitude", "Arbitrary min acceleration/deceleration amplitude value must be detected in order for the application to consider it the beginning of a starting stroke when in 'Autorow' mode", "Autorow", 
 							ParameterLevel.BASIC, 1.0f),
 			new Parameter.STRING(ParamKeys.PARAM_ROWING_MODE, 
-							"Rowing Start Mode", "Autorow", 
-							ParameterLevel.BASIC, "MANUAL"),
+							"Split rowing start/stop mode", 
+							"Rowing lap display start mode - in AUTO mode application will automatically start and stop a split rowing session. In SEMI_AUTO mode the rower needs to press the device once to enable each auto-start. In MANUAL mode the rower must press to start and stop split rowing mode. In CONTINUOUS mode the application will immediately enter split mode like as if 'start' was pressed", 
+							"Autorow",
+							ParameterLevel.BASIC, 
+							"MANUAL"),
 			new Parameter.BOOLEAN(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE, 
-							"Rowing Straight Line Mode", "Autorow", 
+							"Rowing Straight Line Mode", 
+							"Only calculate GPS distance between original start point and current location - if usefull at all, only to be used when the rowing course is completely streight", 
+							"Autorow", 
 							ParameterLevel.BASIC, false)
 	};
 	
 	private final Parameter<?>[] POWER_PARAMS = {
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR, 
-					"power filter", "Stroke", 
+					"power filter",
+					"*FIXME*", // TODO
+					"Stroke", 
 					ParameterLevel.ADVANCED, .5f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_POWER_MIN_POWER, 
-					"power filter", "Stroke", 
+					"power filter",
+					"Minimum power (sum of acceleration points) required during a rowing cycle in order for it to register",
+					"Stroke", 
 					ParameterLevel.ADVANCED, 5f)
 	};
 	
 	private final Parameter<?>[] STROKE_PARAMS = {
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR, 
-					"stroke amplitude filter", "Stroke", 
+					"stroke amplitude filter", 
+					"Lowpass filter to 'smooth' the rowing sinusoids and establish single rise-above/drop-below zero points in each rowing cycle", 
+					"Stroke", 
 					ParameterLevel.ADVANCED, .05f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR,
-					"stroke amplitude change filter", "Stroke", 
+					"stroke amplitude change filter", 
+					"Lowpass filter to stabalize stroke rate and protect against displaying erratic changes",
+					"Stroke", 
 					ParameterLevel.ADVANCED, .5f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_ACCEPT_FACTOR,
-					"stroke amplitude change accept filter", "Stroke", 
+					"stroke amplitude change accept filter", 
+					"*FIXME*", // TODO
+					"Stroke", 
 					ParameterLevel.ADVANCED, .5f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_RATE_MIN_AMPLITUDE,
-					"stroke min amplitude", "Stroke", 
+					"stroke min amplitude", 
+					"Minimum acceleration amplitude required during a rowing cycle in order for it to register", 
+					"Stroke", 
 					ParameterLevel.ADVANCED, .02f)
 	};
 	
