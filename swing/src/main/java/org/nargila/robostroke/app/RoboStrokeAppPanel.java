@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -37,6 +38,7 @@ import org.nargila.robostroke.ui.meters.MetersDisplayManager;
 import org.nargila.robostroke.ui.meters.swing.SwingMeterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.swing.SwingConstants;
 
 public class RoboStrokeAppPanel extends JPanel {
 
@@ -202,16 +204,19 @@ public class RoboStrokeAppPanel extends JPanel {
 		JSeparator separator_2 = new JSeparator();
 		panel.add(separator_2);
 		
-		JPanel panel_1 = new JPanel();
+		Box panel_1 = new Box(BoxLayout.Y_AXIS);
 		panel_1.setBackground(Color.BLACK);
 		panel.add(panel_1);
-		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.Y_AXIS));
 		
 		accellGraphContainer = new JPanel();
 		accellGraphContainer.setPreferredSize(new Dimension(10, 70));
 		accellGraphContainer.setBackground(Color.BLACK);
 		panel_1.add(accellGraphContainer);
 		accellGraphContainer.setLayout(new BorderLayout(0, 0));
+		
+		JLabel lblAccelerationGraph = new JLabel("Acceleration Graph");
+		lblAccelerationGraph.setHorizontalAlignment(SwingConstants.CENTER);
+		accellGraphContainer.add(lblAccelerationGraph, BorderLayout.CENTER);
 		
 		JSeparator separator_3 = new JSeparator();
 		panel_1.add(separator_3);
@@ -222,6 +227,10 @@ public class RoboStrokeAppPanel extends JPanel {
 		panel_1.add(analysisGraphContainer);
 		analysisGraphContainer.setLayout(new BorderLayout(0, 0));
 		
+		JLabel lblNewLabel = new JLabel("Stroke Analysis Graph");
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		analysisGraphContainer.add(lblNewLabel, BorderLayout.CENTER);
+		
 		JSeparator separator_4 = new JSeparator();
 		panel_1.add(separator_4);
 		
@@ -230,6 +239,10 @@ public class RoboStrokeAppPanel extends JPanel {
 		strokeGraphContainer.setBackground(Color.BLACK);
 		panel_1.add(strokeGraphContainer);
 		strokeGraphContainer.setLayout(new BorderLayout(0, 0));
+		
+		JLabel lblNewLabel_1 = new JLabel("Stroke Graph");
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		strokeGraphContainer.add(lblNewLabel_1, BorderLayout.CENTER);
 		
 	}
 
@@ -287,10 +300,15 @@ public class RoboStrokeAppPanel extends JPanel {
 		this.rs = rs;
 		
 		accellGraph = new AccellGraphView(rs);
+		accellGraphContainer.removeAll();
 		accellGraphContainer.add(accellGraph, BorderLayout.CENTER);
+		
 		strokeAnalysisGraph = new StrokeAnalysisGraphView(rs);
+		analysisGraphContainer.removeAll();
 		analysisGraphContainer.add(strokeAnalysisGraph, BorderLayout.CENTER);
+		
 		strokeGraph = new StrokeGraphView(rs);
+		strokeGraphContainer.removeAll();
 		strokeGraphContainer.add(strokeGraph, BorderLayout.CENTER);	
 		
 		metersDisplayManager = new MetersDisplayManager(rs, meterView);
