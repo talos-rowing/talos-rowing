@@ -3,14 +3,18 @@ package org.nargila.robostroke.app;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -33,11 +37,6 @@ import org.nargila.robostroke.ui.meters.MetersDisplayManager;
 import org.nargila.robostroke.ui.meters.swing.SwingMeterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class RoboStrokeAppPanel extends JPanel {
 
