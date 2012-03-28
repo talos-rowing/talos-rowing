@@ -48,14 +48,35 @@ import org.slf4j.LoggerFactory;
  */
 public class MetersDisplayManager implements SensorDataSink {
 
+	private enum GPSAcuracy {
+		
+		BAD(150, 255, 0, 0),
+		FAIR(170, 255, 255, 0),
+		GOOD(150, 0, 255, 0),
+		NONE(0xff, 0, 0, 0);
+		
+		GPSAcuracy(int ... color) {
+			this.color = color;
+		}
+		
+		final int[] color;
+		
+		static GPSAcuracy valueOf(double accuracy) {
+			
+			if (accuracy == -1) {
+				return NONE;
+			} else if (accuracy <= 2.0) {
+				return GOOD;
+			} else if (accuracy <= 4.0) {
+				return FAIR;
+			} else {
+				return BAD;
+			}
+		}
+	}
+	
 	private static final Logger logger = LoggerFactory.getLogger(MetersDisplayManager.class);
 	
-	private static final int[] GPS_ACCURACY_BAD_COLOUR = {150, 255, 0, 0};//Color.RED;
-
-	private static final int[] GPS_ACCURACY_FAIR_COLOUR = {170, 255, 255, 0};//Color.YELLOW;
-
-	private static final int[] GPS_ACCURACY_GOOD_COLOUR = {150, 0, 255, 0};//Color.GREEN;
-
 	private static final int[] ROWING_OFF_COLOUR = {0xff, 0xa9, 0xa9, 0xa9};
 
 	private static final int[] ROWING_ON_COLOUR = {0xff, 0, 0, 0};
@@ -118,7 +139,7 @@ public class MetersDisplayManager implements SensorDataSink {
 			public void onLongClick() {
 				resetSplit();
 
-				updateCount();
+				updateCount(false);
 				updateSplitDistance();
 				resetAvgSpm();
 				updateTime(lastTime, true);
@@ -159,7 +180,7 @@ public class MetersDisplayManager implements SensorDataSink {
 						}												
 					}
 					
-					updateCount();
+					updateCount(false);
 					updateSplitDistance();
 					
 					break;
@@ -178,7 +199,7 @@ public class MetersDisplayManager implements SensorDataSink {
 					break;
 				case ROWING_COUNT:
 					lastStrokeCount++;
-					updateCount();
+					updateCount(false);
 					
 					break;
 				case STROKE_POWER_END:
@@ -255,6 +276,13 @@ public class MetersDisplayManager implements SensorDataSink {
 		meters.getAvgSpmTxt().setText("0");
 	}
 	
+	private void resetAllMeters() {
+		meters.getSpmTxt().setText("0");
+		resetAvgSpm();
+		meters.getTotalDistanceTxt().setText("0");
+		meters.getAvgSpeedTxt().setText("0:00");
+	}
+	
 	/**
 	 * format and display distance in the 'distanceTxt' text view
 	 * 
@@ -296,11 +324,10 @@ public class MetersDisplayManager implements SensorDataSink {
 		
 		final String display = formatSpeed(speed);
 		
-		final int[] color = (accuracy <= 2.0 ? GPS_ACCURACY_GOOD_COLOUR
-				: (accuracy <= 4.0 ? GPS_ACCURACY_FAIR_COLOUR : GPS_ACCURACY_BAD_COLOUR));
+		GPSAcuracy gpsAccuracy = GPSAcuracy.valueOf(accuracy);
 		
 		meters.getSpeedTxt().setText(display);
-		meters.getAccuracyHighlighter().setBackgroundColor(color);
+		meters.getAccuracyHighlighter().setBackgroundColor(gpsAccuracy.color);
 	}
 
 	private String formatSpeed(long speed) {
@@ -374,7 +401,9 @@ public class MetersDisplayManager implements SensorDataSink {
 		splitTimerOn = RowingSplitMode.CONTINUOUS ==  queryRowingMode() ? true : false;
 
 		updateTime(lastTime, true);
-		updateCount();
+		updateCount(true);
+		
+		resetAllMeters();
 	}
 	
 	private RowingSplitMode queryRowingMode() {
@@ -382,8 +411,8 @@ public class MetersDisplayManager implements SensorDataSink {
 		return RowingSplitMode.valueOf(val.toString());
 	}
 
-	private void updateCount() {
-		if (splitTimerOn) {
+	private void updateCount(boolean force) {
+		if (force || splitTimerOn) {
 			int strokeCount = lastStrokeCount - startStrokeCount;
 			meters.getStrokeCountTxt().setText(strokeCount + "");
 		}
