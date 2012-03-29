@@ -115,6 +115,7 @@ public class RoboStrokeAppPanel extends JPanel {
 					paramEditDialog.init(rs);
 				}
 				
+				paramEditDialog.setLocationRelativeTo(RoboStrokeAppPanel.this);
 				paramEditDialog.setVisible(true);
 				
 			}
@@ -271,12 +272,18 @@ public class RoboStrokeAppPanel extends JPanel {
 			
 			@Override
 			public String getDescription() {
-				return "Talos Rowing Data File";
+				return "Talos Rowing Data Files";
 			}
 			
 			@Override
 			public boolean accept(File f) {
-				return true;
+				
+				if (f.isDirectory()) {
+					return true;
+				} else {
+					String name = f.getName();
+					return name.endsWith(".trsd") || name.endsWith(".txt");
+				}
 			}
 		});
 		
@@ -284,8 +291,36 @@ public class RoboStrokeAppPanel extends JPanel {
 
 			File f = fc.getSelectedFile();
 
-			start(f);
+			if (f.getName().endsWith(".trsd")) {
+				prepareFile(f);
+			} else {
+				start(f);
+			}
 		}
+	}
+
+	private void prepareFile(final File f) {
+		
+		final PrepareFileDialog pfd = new PrepareFileDialog() {
+			protected void onFinish(File res) {
+				
+				setVisible(false);
+				
+				if (res != null) {
+					start(res);
+				}
+			}
+		};
+		
+		pfd.setLocationRelativeTo(this);
+		
+		new Thread("RoboStrokeAppPanel prepareFile") {
+			public void run() {
+				pfd.launch(f);
+			}
+		}.start();	
+		
+		pfd.setVisible(true);
 	}
 
 	void start(File f) {

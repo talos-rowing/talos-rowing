@@ -1,7 +1,9 @@
 package org.nargila.robostroke.app;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.io.File;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
@@ -29,6 +31,9 @@ public class RoboStrokeSwing {
 			public void run() {
 				try {
 					RoboStrokeSwing window = new RoboStrokeSwing();
+					
+					centerOnScreen(window.frmTalosRowing);
+					
 					window.frmTalosRowing.setVisible(true);
 					
 					if (args.length > 0) {
@@ -42,6 +47,19 @@ public class RoboStrokeSwing {
 		});
 	}
 
+	private static void centerOnScreen(JFrame window) {
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		 
+		// Determine the new location of the window
+		int w = window.getSize().width;
+		int h = window.getSize().height;
+		int x = (dim.width-w)/2;
+		int y = (dim.height-h)/2;
+		 
+		// Move the window
+		window.setLocation(x, y);
+	}
+	
 	/**
 	 * Create the application.
 	 */
