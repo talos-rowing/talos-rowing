@@ -58,8 +58,6 @@ public class DataExportDialog extends JDialog {
 	public DataExportDialog(RoboStroke rs) {
 		
 		this.rs = rs;
-		
-		setAlwaysOnTop(true);
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());

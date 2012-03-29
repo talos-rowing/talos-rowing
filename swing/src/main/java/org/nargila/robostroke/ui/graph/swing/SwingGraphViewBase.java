@@ -62,6 +62,9 @@ public abstract class SwingGraphViewBase<T extends UpdatableGraphBase> extends J
 		this.selfPaint = selfPaint;
 		
 		swingView = new SwingView(this);
+		
+//		setDoubleBuffered(false);
+
 	}
 	
 	public void setOnLongClickListener(RSLongClickListener listener) {

@@ -78,8 +78,38 @@ public class DataRecord {
 		STROKE_ACCELERATION_TRESHOLD, 
 		STROKE_ROLL(false, new DataRecordSerializer.FLOAT_ARR()),
 		RECOVERY_ROLL(false, new DataRecordSerializer.FLOAT_ARR()), 
-		ACCEL(true, false, null, new DataRecordSerializer.FLOAT_ARR()),
-		ORIENT(true, false, null, new DataRecordSerializer.FLOAT_ARR()), 
+		ACCEL(true, false, new DataExporter() {
+
+			@Override
+			public String[] getColumnNames() {
+				return new String[] {"x", "y", "z"};
+			}
+
+			@Override
+			public Object[] exportData(Object data) {
+
+				float[] fdata = (float[]) data;
+
+				return new Object[]{fdata[0], fdata[1], fdata[2]};
+
+			}
+		}, new DataRecordSerializer.FLOAT_ARR()),
+		ORIENT(true, false, new DataExporter() {
+
+			@Override
+			public String[] getColumnNames() {
+				return new String[] {"azimuth", "pitch", "roll"};
+			}
+
+			@Override
+			public Object[] exportData(Object data) {
+
+				float[] fdata = (float[]) data;
+
+				return new Object[]{fdata[0], fdata[1], fdata[2]};
+
+			}
+		}, new DataRecordSerializer.FLOAT_ARR()), 
 		GPS(true, false, new DataExporter() {
 
 			@Override
