@@ -19,6 +19,6 @@
 package org.nargila.robostroke;
 
 public interface SessionRecorderConstants {
-	public static final int LOGFILE_VERSION = 1;
+	public static final int LOGFILE_VERSION = 2;
 	public static final String END_OF_RECORD = "@@";	
 }

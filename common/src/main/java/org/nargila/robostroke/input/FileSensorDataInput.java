@@ -24,9 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.SessionRecorderConstants;
+import org.nargila.robostroke.common.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +62,11 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 	private final long fileLength;
 
 	private long lastProgressNotifyTime;
+
+	private final File dataFile;
 	
 	public FileSensorDataInput(RoboStrokeEventBus bus, File dataFile) throws IOException {
+		this.dataFile = dataFile;
 		this.bus = bus;
 		this.reader = new RandomAccessFile(dataFile, "r");
 		fileLength = dataFile.length();
@@ -72,6 +75,10 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 
 	}
 
+	public File getDataFile() {
+		return dataFile;
+	}
+	
 	private void checkVersion() throws IOException, SessionFileVersionError {
 		String line = reader.readLine();
 		
@@ -82,37 +89,30 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 			String[] vals = readRecordLine(line);
 			
 			if (vals != null) {
-				final InputType type = InputType.valueOf(vals[1]);
+				final DataRecord.Type type;
+				
+				try {
+					type = DataRecord.Type.valueOf(vals[1]);
 
-				switch (type) {
-				case EVENT:
-					BusEvent.Type eventType;
-					
-					try {
-						eventType = BusEvent.Type.valueOf(vals[2]);
-					} catch (IllegalArgumentException e) {
-						break; // SessionFileVersionError() is thrown later
-					}
-					
-					switch (eventType) {
+					switch (type) {
 					case LOGFILE_VERSION:
-						version = new Integer(vals[4]);
-						
+						version = new Integer(vals[3]);
+
 						if (version == SessionRecorderConstants.LOGFILE_VERSION) {
 							validVersion = true;
 						}
-						
+
 						break;
 					}
-					break;
+				} catch (IllegalArgumentException e) {
+					// SessionFileVersionError() is thrown later
 				}
 			}
-		} 
+		}
 			
 		if (!validVersion) {
 			throw new SessionFileVersionError(version);
-		}
-		
+		}		
 	}
 	
 	@Override
@@ -143,7 +143,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 					setPosRequested = -1;
 					startTimeDiff = 0; // force re-adjust below
 					
-					if (bus != null) bus.fireEvent(BusEvent.Type.REPLAY_SKIPPED, null);
+					if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 
 					continue;
 				}
@@ -156,7 +156,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 					
 					double progress = pos / (double)fileLength;
 					
-					if (bus != null) bus.fireEvent(BusEvent.Type.REPLAY_PROGRESS, progress);
+					if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
 
 				}
 				
@@ -185,14 +185,30 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 		}
 	}
 
-	private void handleRecord(String line) throws InterruptedException {
+	public static Pair<Long /* record timestamp */, DataRecord> parseRecord(String line) {
+		
 		String[] vals = readRecordLine(line);
-
+		
 		if (vals != null) {
-			logTimestamp = new Long(vals[0]);
+			
+			Long logTimestamp = new Long(vals[0]);
+			
+			DataRecord.Type type = DataRecord.Type.valueOf(vals[1]);
 
-			final InputType type = InputType.valueOf(vals[1]);
-			final Object values;
+			if (type.isParsableEvent) {
+				return Pair.create(logTimestamp, DataRecord.create(type, Long.parseLong(vals[2]), vals[3]));
+			}			
+		}
+		
+		return null;
+	}
+	
+	private void handleRecord(String line) throws InterruptedException {
+		
+		Pair<Long /* record timestamp */, DataRecord> p = parseRecord(line);
+		
+		if (p != null) {
+			logTimestamp = p.first;
 
 			final long currentTime = System.currentTimeMillis();
 
@@ -202,46 +218,36 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 
 			long normalizedTime = logTimestamp - startTimeDiff;
 
-			switch (type) {
-			case GPS:
-				values = parseGPS(vals);
-				break;
-			case ACCEL:
-			case ORIENT:
-				values = parseSensors(type, vals);
-				break;
-			case EVENT:
-				if (bus != null) {
-					handleBusEvent(vals);
-				}
-				return;
-			default:
-				throw new RuntimeException("HDIGH!");
-			}
-
-
+			
 			if (normalizedTime > currentTime + 20) {					
 				Thread.sleep(normalizedTime - currentTime);
 			} else {
 				Thread.yield();
 			}
 
+			DataRecord record = p.second;
+				
+			if (record.type.isReplayableEvent) {
+				switch (record.type) {
+				case GPS:
+					gpsDataSource.pushData(record.timestamp, record.data);		
+					break;
+				case ACCEL:
+					accelerometerDataSource.pushData(record.timestamp, record.data);
+					break;
+				case ORIENT:
+					orientationDataSource.pushData(record.timestamp, record.data);
+					break;
+				}
 
-			switch (type) {
-			case GPS:
-				dispatchGpsEvent((double[])values);					
-				break;
-			case ACCEL:
-			case ORIENT:
-				dispatchSensorEvent(type, (float[])values);
-				break;
-			default:
-				throw new RuntimeException("HDIGH!");
+				if (record.type.isBusEvent && bus != null) {
+					bus.fireEvent(record);
+				}
 			}
 		}
 	}
-
-	private String[] readRecordLine(String line) {
+	
+	private static String[] readRecordLine(String line) {
 		int eorIdx;
 		if ((eorIdx = line.lastIndexOf(SessionRecorderConstants.END_OF_RECORD)) == -1) {
 			return null;
@@ -254,70 +260,6 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 		return vals;
 	}
 
-	private void handleBusEvent(String[] vals) {
-		/* timestamp, EVENT <StrokeEvent.Type> timestamp data1,data2,data3.. */
-		
-		BusEvent.Type type = BusEvent.Type.valueOf(vals[2]);
-		long timestamp = new Long(vals[3]);
-		
-		if (bus != null && type.isReplayableEvent) {
-			BusEvent event = BusEvent.create(type, timestamp, vals[4]);
-
-			bus.fireEvent(event);
-		}
-	}
-
-	private void dispatchSensorEvent(InputType type, float[] values) {
-		final long time = (long)values[0];
-		final float[] vals = {
-				values[1],
-				values[2],
-				values[3]								
-		};
-		
-		switch (type) {
-		case ACCEL:
-			accelerometerDataSource.pushData(time, vals);
-			break;
-		case ORIENT:
-			orientationDataSource.pushData(time, vals);
-			break;
-		}		
-	}
-	
-	private void dispatchGpsEvent(double[] values) {
-
-		long timestamp = (long) values[0]; 
-		double[] vals = new double[DataIdx.GPS_ITEM_COUNT_];
-		
-		System.arraycopy(values, 1, vals, 0, vals.length);		
-		gpsDataSource.pushData(timestamp, vals);		
-	}
-
-	private float[] parseSensors(InputType type, String[] vals) {
-		float[] res = {
-				Long.parseLong(vals[2]),
-				Float.parseFloat(vals[3]),
-				Float.parseFloat(vals[4]),
-				Float.parseFloat(vals[5])				
-		};
-		
-		return res;
-	}
-
-	private double[] parseGPS(String[] vals) {
-		double[] res = new double[DataIdx.GPS_ITEM_COUNT_ + 1];
-		final int startIdx = 3;
-		res[0] = Long.parseLong(vals[2]); // time
-		res[DataIdx.GPS_LAT + 1] = 		Float.parseFloat(vals[DataIdx.GPS_LAT + startIdx]); // alt
-		res[DataIdx.GPS_LONG + 1] = 		Float.parseFloat(vals[DataIdx.GPS_LONG + startIdx]); // long
-		res[DataIdx.GPS_ALT + 1] = 		Float.parseFloat(vals[DataIdx.GPS_ALT + startIdx]); // alt	
-		res[DataIdx.GPS_SPEED + 1] = 		Float.parseFloat(vals[DataIdx.GPS_SPEED + startIdx]); // speed	
-		res[DataIdx.GPS_BEARING + 1] = 		Float.parseFloat(vals[DataIdx.GPS_BEARING + startIdx]); // bearing	
-		res[DataIdx.GPS_ACCURACY + 1] = Float.parseFloat(vals[DataIdx.GPS_ACCURACY + startIdx]); // accuracy		
-		
-		return res;
-	}
 
 	@Override
 	public void skipReplayTime(float velocityX) {

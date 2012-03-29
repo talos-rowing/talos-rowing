@@ -19,15 +19,15 @@
 
 package org.nargila.robostroke.way;
 
-import org.nargila.robostroke.BusEvent;
-import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.filter.LowpassFilter;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.input.DataRecord.Type;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -53,8 +53,6 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 	}
 	
 	private final LowpassFilter speedChangeDamperFilter;
-
-	private WayListener wayListener;
 
 	private float minDistance;
 	private float maxSpeed;
@@ -102,7 +100,7 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		bus.addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case ROWING_COUNT: // means DROP_BELOW_ZERO with a valid stroke amplitude - see RowingDetector
 					if (splitRowingOn && bookMarkedLocation != null) {
@@ -136,10 +134,6 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		});
 	}
 	
-	public void setWayListener(WayListener wayListener) {
-		this.wayListener = wayListener;
-	}
-
 	public static int calcMilisecondsPer500m(float speed) {
 		
 		double seconds = 0;
@@ -177,6 +171,8 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		double[] values = (double[]) value;
 		
 		
+		bus.fireEvent(DataRecord.Type.GPS, timestamp, value);
+
 		if (lastSensorDataLocation == null) {
 			lastSensorDataLocation = lastLocation = new LocationData(timestamp, values);
 		} else {
@@ -197,9 +193,7 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 					
 					double accuracy = values[DataIdx.GPS_ACCURACY];
 					
-					if (wayListener != null) {
-						wayListener.onWayUpdate(timestamp, distance, finalSpeed, accuracy);
-					}				
+					bus.fireEvent(DataRecord.Type.WAY, timestamp, new double[]{distance, finalSpeed, accuracy});
 
 					lastLocation = new LocationData(timestamp, values);
 

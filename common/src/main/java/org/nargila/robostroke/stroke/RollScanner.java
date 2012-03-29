@@ -20,10 +20,10 @@
 
 package org.nargila.robostroke.stroke;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.filter.LowpassFilter;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataFilter;
 import org.nargila.robostroke.input.SensorDataInput;
@@ -115,13 +115,13 @@ public class RollScanner extends SensorDataFilter implements BusEventListener {
 	}
 	
 	@Override
-	public void onBusEvent(BusEvent event) {
+	public void onBusEvent(DataRecord event) {
 		switch (event.type) {
 		case STROKE_POWER_START:
 			insideStrokePower = true;
 			
 			if (hadPower) {
-				bus.fireEvent(BusEvent.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
+				bus.fireEvent(DataRecord.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
 			}
 			
 			hadPower = false;
@@ -132,7 +132,7 @@ public class RollScanner extends SensorDataFilter implements BusEventListener {
 			insideStrokePower = false;
 			
 			if (hadPower) {
-				bus.fireEvent(BusEvent.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
+				bus.fireEvent(DataRecord.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
 			}
 			
 			strokeRoll.reset();

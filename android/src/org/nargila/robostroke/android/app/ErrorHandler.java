@@ -23,7 +23,7 @@ import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.acra.ErrorReporter;
-import org.nargila.robostroke.BusEvent.Type;
+import org.nargila.robostroke.input.DataRecord.Type;
 
 public class ErrorHandler implements UncaughtExceptionHandler {
 

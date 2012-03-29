@@ -18,10 +18,10 @@
  */
 package org.nargila.robostroke.android.app.roll;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
@@ -42,7 +42,7 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 	private class MyListener implements BusEventListener, SensorDataSink {
 
 		@Override
-		public void onBusEvent(BusEvent event) {
+		public void onBusEvent(DataRecord event) {
 			float[] roll;
 			RollView view;
 			
@@ -53,12 +53,12 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 				case STROKE_RECOVERY:
 					break;
 				case RECOVERY:
-					if (event.type != BusEvent.Type.RECOVERY_ROLL) {
+					if (event.type != DataRecord.Type.RECOVERY_ROLL) {
 						return;
 					}
 					break;
 				case STROKE:
-					if (event.type != BusEvent.Type.STROKE_ROLL) {
+					if (event.type != DataRecord.Type.STROKE_ROLL) {
 						return;
 					}
 					break;
@@ -68,7 +68,7 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 
 				roll = (float[])event.data;
 				ViewType type = 
-					(event.type == BusEvent.Type.RECOVERY_ROLL) ? ViewType.RECOVERY : 
+					(event.type == DataRecord.Type.RECOVERY_ROLL) ? ViewType.RECOVERY : 
 						ViewType.STROKE;
 				view = rollViews[type.ordinal()];
 				break;

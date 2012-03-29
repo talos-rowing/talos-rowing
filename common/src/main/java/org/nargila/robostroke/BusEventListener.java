@@ -19,6 +19,8 @@
 
 package org.nargila.robostroke;
 
+import org.nargila.robostroke.input.DataRecord;
+
 /**
  * consumer of stroke rate updates.
  * Stroke rate updates are provided in strokes per minute
@@ -30,5 +32,5 @@ public interface BusEventListener {
 	 * process stroke rate notification
 	 * @param spm stroke rate value in strokes per minute
 	 */
-	void onBusEvent(BusEvent event);
+	void onBusEvent(DataRecord event);
 }

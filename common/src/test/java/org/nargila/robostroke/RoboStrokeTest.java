@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nargila.robostroke.common.LocationUtil;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.FileSensorDataInput;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.DistanceResolver;
@@ -114,7 +115,7 @@ public class RoboStrokeTest {
 		BusEventListener listener = new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				try {
 					newEvents.write(String.format("%s %s", event.type, event.dataToString()));
 					newEvents.write("\n");
@@ -126,7 +127,7 @@ public class RoboStrokeTest {
 
 		bus.addBusListener(listener);
 		
-		BusEvent event = splitRowing(RowingSplitMode.AUTO, false);
+		DataRecord event = splitRowing(RowingSplitMode.AUTO, false);
 		
 		newEvents.close();
 		
@@ -157,7 +158,7 @@ public class RoboStrokeTest {
 		BusEventListener listener = new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case ROWING_COUNT:
 					if ((Integer)event.data == 12) {
@@ -170,7 +171,7 @@ public class RoboStrokeTest {
 		};
 		
 		bus.addBusListener(listener);
-		BusEvent event;
+		DataRecord event;
 		
 		try {							
 			
@@ -206,7 +207,7 @@ public class RoboStrokeTest {
 			boolean hasPower;
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case STROKE_POWER_END:
 					hasPower = (Float)event.data > 0;
@@ -237,7 +238,7 @@ public class RoboStrokeTest {
 	
 	@Test
 	public void testSplitRowing() throws Exception {
-		BusEvent event = splitRowing(RowingSplitMode.AUTO, false);
+		DataRecord event = splitRowing(RowingSplitMode.AUTO, false);
 		
 		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
 		Object[] data = (Object[]) event.data;
@@ -257,7 +258,7 @@ public class RoboStrokeTest {
 
 	@Test
 	public void testSplitRowingStraight() throws Exception {
-		BusEvent event = splitRowing(RowingSplitMode.AUTO, true);
+		DataRecord event = splitRowing(RowingSplitMode.AUTO, true);
 		
 		Object[] data = (Object[]) event.data;
 		
@@ -272,19 +273,19 @@ public class RoboStrokeTest {
 		Assert.assertEquals(12, strokes);
 	}
 	
-	private BusEvent splitRowing(RowingSplitMode mode, boolean straightMode) throws Exception {
+	private DataRecord splitRowing(RowingSplitMode mode, boolean straightMode) throws Exception {
 		return splitRowing(mode, straightMode, null);
 	}
 	
-	private BusEvent splitRowing(RowingSplitMode mode, boolean straightMode, final BusEventListener testEventListener) throws Exception {
+	private DataRecord splitRowing(RowingSplitMode mode, boolean straightMode, final BusEventListener testEventListener) throws Exception {
 		
-		final AtomicReference<BusEvent> startEvent = new AtomicReference<BusEvent>();
-		final AtomicReference<BusEvent> stopEvent = new AtomicReference<BusEvent>();
+		final AtomicReference<DataRecord> startEvent = new AtomicReference<DataRecord>();
+		final AtomicReference<DataRecord> stopEvent = new AtomicReference<DataRecord>();
 		
 		BusEventListener listener = new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				System.out.println(event);
 				
 				if (null != testEventListener) {

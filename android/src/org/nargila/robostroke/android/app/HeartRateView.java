@@ -18,9 +18,9 @@
  */
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
@@ -42,7 +42,7 @@ public class HeartRateView extends FrameLayout implements DataUpdatable {
 	
 	private final BusEventListener busListener = new BusEventListener() {
 		@Override
-		public void onBusEvent(final BusEvent event) {
+		public void onBusEvent(final DataRecord event) {
 			switch (event.type) {
 			case HEART_BPM:
 				final int bpm = (Integer)event.data;

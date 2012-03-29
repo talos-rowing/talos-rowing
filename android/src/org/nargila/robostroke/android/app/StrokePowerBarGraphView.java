@@ -19,9 +19,9 @@
 
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;
@@ -56,7 +56,7 @@ public class StrokePowerBarGraphView extends View implements DataUpdatable, Robo
 	private final BusEventListener privateBusListener = new BusEventListener() {
 
 		@Override
-		public void onBusEvent(BusEvent event) {
+		public void onBusEvent(DataRecord event) {
 
 			switch (event.type) {
 			case STROKE_POWER_END:

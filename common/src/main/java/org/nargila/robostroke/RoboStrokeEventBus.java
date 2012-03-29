@@ -22,7 +22,8 @@ import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.BusEvent.Type;
+import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.input.DataRecord.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +39,8 @@ public class RoboStrokeEventBus extends Thread {
 	private static final int DEBUG_QUEUE_OVERFLOW_SIZE = 50;
 	private static final int DEBUG_QUEUE_WARN_SIZE = 20;
 	
-	private final LinkedBlockingQueue<BusEvent> eventQueue = 
-		new LinkedBlockingQueue<BusEvent>();
+	private final LinkedBlockingQueue<DataRecord> eventQueue = 
+		new LinkedBlockingQueue<DataRecord>();
 	
 	private final LinkedList<BusEventListener> listeners = new LinkedList<BusEventListener>();
 
@@ -60,7 +61,7 @@ public class RoboStrokeEventBus extends Thread {
 	public void run() {
 		while (!shutdown) {
 			try {
-				BusEvent event = eventQueue.take();
+				DataRecord event = eventQueue.take();
 
 				if (shutdown) {
 					break;
@@ -102,7 +103,7 @@ public class RoboStrokeEventBus extends Thread {
 		}
 	}
 
-	public void fireEvent(BusEvent event) {
+	public void fireEvent(DataRecord event) {
 		if (shutdown) {
 			return;
 		}
@@ -123,14 +124,14 @@ public class RoboStrokeEventBus extends Thread {
 	}
 
 	public void fireEvent(Type type, Object data) {
-		fireEvent(new BusEvent(type, TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()), data));		
+		fireEvent(new DataRecord(type, TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis()), data));		
 	}
 	
 	public void fireEvent(Type type, long timestamp, Object ... data) {
-		fireEvent(new BusEvent(type, timestamp, data));		
+		fireEvent(new DataRecord(type, timestamp, data));		
 	}
 	
 	public void fireEvent(Type type, long timestamp, Object data) {
-		fireEvent(new BusEvent(type, timestamp, data));		
+		fireEvent(new DataRecord(type, timestamp, data));		
 	}
 }

@@ -22,20 +22,19 @@ package org.nargila.robostroke.ui.meters;
 
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.BusEvent;
-import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.ClockTime;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.input.DataRecord.Type;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.ui.RSClickListener;
 import org.nargila.robostroke.ui.RSLongClickListener;
 import org.nargila.robostroke.ui.RSView;
 import org.nargila.robostroke.way.GPSDataFilter;
-import org.nargila.robostroke.way.WayListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,7 +157,7 @@ public class MetersDisplayManager implements SensorDataSink {
 		bus.addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case ROWING_START_TRIGGERED:
 					triggered = (Boolean)event.data;
@@ -221,6 +220,7 @@ public class MetersDisplayManager implements SensorDataSink {
 					break;
 
 				case BOOKMARKED_DISTANCE:
+				{
 					Object[] values = (Object[]) event.data;
 
 					long travelTime = (Long)values[0];
@@ -231,22 +231,24 @@ public class MetersDisplayManager implements SensorDataSink {
 					splitDistanceTime = TimeUnit.MILLISECONDS.toSeconds(travelTime);
 							
 					updateSplitDistance();
-					
-					break;
 				}
+				
+				break;
+					
+				case WAY: 
+				{
+					double[] values = (double[]) event.data;
+					double distance = values[0];
+					long speed = (long) values[1];
+					double accuracy = values[2];
+					
+					updateWay(distance, speed, accuracy);
+				}
+				break;
+				}				
 			}
 		});
 		
-		rs.getGpsFilter().setWayListener(new WayListener() {
-
-			@Override
-			public void onWayUpdate(long timestamp, final double distance,
-					final long speed, final double accuracy) {
-				
-				updateWay(distance, speed, accuracy);
-			}
-
-		});	
 		
 		rs.getAccelerationFilter().addSensorDataSink(this);
 	}

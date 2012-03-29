@@ -19,9 +19,9 @@
 
 package org.nargila.robostroke.ui.graph;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.UILiaison;
@@ -89,7 +89,7 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 	private final BusEventListener privateBusListener = new BusEventListener() {
 		
 		@Override
-		public void onBusEvent(BusEvent event) {
+		public void onBusEvent(DataRecord event) {
 			switch (event.type) {
 			case STROKE_RATE:
 				aboveStrokeRateTreshold =  (Integer)event.data > MIN_STROKE_RATE;

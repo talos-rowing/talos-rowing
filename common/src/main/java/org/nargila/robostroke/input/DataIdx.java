@@ -28,11 +28,9 @@ public final class DataIdx {
 	public static final int ACCEL_X = 0;
 	public static final int ACCEL_Y = 1;
 	public static final int ACCEL_Z = 2;
-	public static final int ACCEL_ITEM_COUNT_ = 3;
 	public static final int ORIENT_AZIMUTH = 0;
 	public static final int ORIENT_PITCH = 1;
 	public static final int ORIENT_ROLL = 2;
-	public static final int ORIENT_ITEM_COUNT_ = 3;	
 	public static final int GPS_LAT = 0;
 	public static final int GPS_LONG = 1;
 	public static final int GPS_ALT = 2;

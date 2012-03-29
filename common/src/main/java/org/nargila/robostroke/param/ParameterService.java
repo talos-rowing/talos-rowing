@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.input.DataRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class ParameterService {
 			
 			@Override
 			public void onParameterChanged(Parameter<?> param) {
-				eventBus.fireEvent(BusEvent.Type.PARAMETER_CHANGE, new ParameterBusEventData(param.getId(), param.convertToString()));
+				eventBus.fireEvent(DataRecord.Type.PARAMETER_CHANGE, new ParameterBusEventData(param.getId(), param.convertToString()));
 			}
 		});
 		/**
@@ -62,7 +62,7 @@ public class ParameterService {
 		eventBus.addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case PARAMETER_CHANGE:
 					ParameterBusEventData data = (ParameterBusEventData) event.data;

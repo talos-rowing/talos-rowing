@@ -21,11 +21,11 @@ package org.nargila.robostroke.ui.graph;
 
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.common.filter.LowpassFilter;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;
@@ -73,7 +73,7 @@ public class StrokePowerGraph extends LineGraph implements DataUpdatable {
 
 
 		@Override
-		public void onBusEvent(BusEvent event) {
+		public void onBusEvent(DataRecord event) {
 			switch (event.type) {
 			case STROKE_POWER_START:
 				validStrokePowerScope = hasStrokePower && strokeRate > 10;

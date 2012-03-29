@@ -19,12 +19,12 @@
 
 package org.nargila.robostroke.stroke;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -142,7 +142,7 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 	private void newStroke(long timestamp) {
 		strokeDone = false;
 		if (strokeRate > 0) {
-			bus.fireEvent(BusEvent.Type.STROKE_POWER_START, timestamp, (Object[]) null);
+			bus.fireEvent(DataRecord.Type.STROKE_POWER_START, timestamp, (Object[]) null);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 		lastStrokeTimestamp = timestamp;
 		
 		if (strokeRate > 0) {
-			bus.fireEvent(BusEvent.Type.STROKE_POWER_END, timestamp, strokePower > strokePowerTreshold ? strokePower : 0);			
+			bus.fireEvent(DataRecord.Type.STROKE_POWER_END, timestamp, strokePower > strokePowerTreshold ? strokePower : 0);			
 		}
 		
 		strokePower = 0;
@@ -201,7 +201,7 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 	}
 	
 	@Override
-	public void onBusEvent(BusEvent event) {
+	public void onBusEvent(DataRecord event) {
 		switch (event.type) {
 		case STROKE_ACCELERATION_TRESHOLD:
 			hasPeak = true;

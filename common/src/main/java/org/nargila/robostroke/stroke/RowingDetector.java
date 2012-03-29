@@ -20,14 +20,14 @@ package org.nargila.robostroke.stroke;
 
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.BusEvent;
-import org.nargila.robostroke.BusEvent.Type;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.input.DataRecord.Type;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -141,7 +141,7 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 			
 
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				switch (event.type) {
 				case STROKE_DROP_BELOW_ZERO:
 					if (rowing) {

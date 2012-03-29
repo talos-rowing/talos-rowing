@@ -27,9 +27,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.FileSensorDataInput;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
@@ -64,6 +64,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	protected boolean paused;
 
 	protected ParamEditDialog paramEditDialog;
+	private JMenuItem mntmExport;
 
 	/**
 	 * Create the panel.
@@ -91,6 +92,15 @@ public class RoboStrokeAppPanel extends JPanel {
 				System.exit(0);
 			}
 		});
+		
+		mntmExport = new JMenuItem("Export");
+		mntmExport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchExportWizard();
+			}
+		});
+		mntmExport.setEnabled(false);
+		mnFile.add(mntmExport);
 		
 		mnFile.add(mntmExit);
 		
@@ -246,7 +256,16 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 	}
 
-	protected void openFileAction() {
+	private void launchExportWizard() {
+		
+		DataExportDialog exportDialog = new DataExportDialog(rs);
+		
+		exportDialog.setLocationRelativeTo(this);
+		
+		exportDialog.setVisible(true);
+	}
+
+	private void openFileAction() {
 		JFileChooser fc = new JFileChooser();
 		fc.setFileFilter(new FileFilter() {
 			
@@ -276,6 +295,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		try {
 			rs.setFileInput(f);
 			reset();
+			mntmExport.setEnabled(true);
 		} catch (IOException e) {
 			logger.error("error opening file " + f, e);
 		}
@@ -320,7 +340,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		rs.getBus().addBusListener(new BusEventListener() {
 			
 			@Override
-			public void onBusEvent(BusEvent event) {
+			public void onBusEvent(DataRecord event) {
 				
 				switch (event.type) {
 				case REPLAY_PROGRESS:
@@ -339,5 +359,8 @@ public class RoboStrokeAppPanel extends JPanel {
 				}
 			}
 		});
+	}
+	public JMenuItem getMntmExport() {
+		return mntmExport;
 	}
 }

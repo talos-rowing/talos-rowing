@@ -24,9 +24,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import org.nargila.robostroke.BusEvent.Type;
+import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.input.DataRecord.Type;
 import org.nargila.robostroke.input.ErrorListener;
-import org.nargila.robostroke.input.InputType;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.input.SensorDataSource;
 
@@ -39,17 +39,17 @@ class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 	
 	private class SensorDataSourceBinder implements SensorDataSink {
 		private final SensorDataSource src;
-		private final InputType type;
+		private final DataRecord.Type type;
 		
-		SensorDataSourceBinder(SensorDataSource src, InputType type) {
+		SensorDataSourceBinder(SensorDataSource src, DataRecord.Type type) {
 			this.src = src;
 			this.type = type;
 			src.addSensorDataSink(this, true);
 		}
 		
 		@Override
-		public void onSensorData(long timestamp, Object value) {
-			logData(type, timestamp, value);
+		public void onSensorData(long timestamp, Object data) {
+			logData(DataRecord.create(type, timestamp, data));
 		}
 		
 		void unbind() {
@@ -62,9 +62,9 @@ class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 	}
 	
 	private void connect() {
-		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getAccelerometerDataSource(), InputType.ACCEL));
-		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getOrientationDataSource(), InputType.ORIENT));
-		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getGPSDataSource(), InputType.GPS));
+		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getAccelerometerDataSource(), DataRecord.Type.ACCEL));
+		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getOrientationDataSource(), DataRecord.Type.ORIENT));
+		sourceBinderList.add(new SensorDataSourceBinder(roboStroke.getDataInput().getGPSDataSource(), DataRecord.Type.GPS));
 		roboStroke.getBus().addBusListener(this);
 	}
 	
@@ -88,41 +88,17 @@ class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 			if (file != null) {
 				logger = new BufferedWriter(new FileWriter(file));
 				
-				logEvent(new BusEvent(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
+				logEvent(new DataRecord(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
 
 				connect();
 			}
 	}
 	
-	private synchronized void logData(InputType type, long timestamp, Object value) {
+	private synchronized void logData(DataRecord record) {
 		if (logger != null) {
-			StringBuffer sb = new StringBuffer();
-			sb.append(System.currentTimeMillis()).append(" ")
-			.append(type.toString()).append(" ")
-			.append(timestamp);
-
-			switch (type) {
-			case ACCEL:
-			case ORIENT: {
-				float[] values = (float[]) value;
-				for (float f: values) {
-					sb.append(" ").append(f);
-				}
-				break;
-			}
-			case GPS: {
-				double[] values = (double[]) value;
-				for (double f: values) {
-					sb.append(" ").append(f);
-				}
-				break;
-			}
-			default:
-				throw new RuntimeException("HDIGH!");
-			}
-
 			try {
-				logger.write(sb.toString());
+				logger.write("" + System.currentTimeMillis() + " " + record.type + " " + record.timestamp + " ");
+				logger.write(record.dataToString());
 				logger.write(END_OF_RECORD + "\n");
 			} catch (IOException e) {
 				if (errorListener != null) {
@@ -137,13 +113,13 @@ class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 	}
 
 	@Override
-	public synchronized void onBusEvent(BusEvent event) {
+	public synchronized void onBusEvent(DataRecord event) {
 		if (logger != null) {
 			logEvent(event);
 		}		
 	}
 
-	private void logEvent(BusEvent event) {
+	private void logEvent(DataRecord event) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(System.currentTimeMillis()).append(" ")
 		.append("EVENT ")

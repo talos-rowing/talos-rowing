@@ -19,12 +19,12 @@
 
 package org.nargila.robostroke.acceleration;
 
-import org.nargila.robostroke.BusEvent;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.filter.LowpassFilter;
+import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataIdx;
 import org.nargila.robostroke.input.SensorDataFilter;
 import org.nargila.robostroke.input.SensorDataSink;
@@ -131,7 +131,7 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 	}
 
 	@Override
-	public void onBusEvent(BusEvent event) {
+	public void onBusEvent(DataRecord event) {
 		switch (event.type) {
 		case FREEZE_TILT:
 			orientationFrozen = (Boolean)event.data;
