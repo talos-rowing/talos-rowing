@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 
 import javax.swing.Box;
@@ -19,6 +17,8 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
+
+import org.nargila.robostroke.common.DataConverter;
 
 public class PrepareFileDialog extends JDialog {
 
@@ -103,58 +103,60 @@ public class PrepareFileDialog extends JDialog {
 	
 	private File uncimpressFile(File trsd) {
 		
-		byte[] buff = new byte[4096];
-		InputStream is = null;
-		OutputStream os = null;
-		
 		try {
 			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-			
-			final long size = trsd.length();
 
 			File res = File.createTempFile("talos-rowing-data", ".txt");
 			res.deleteOnExit();
 
-
-
-			is = new GZIPInputStream(new FileInputStream(trsd));
-
-			os = new FileOutputStream(res);
-
-
-			long accum = 0;
-
-			for (int i =  is.read(buff); !cancelled && i != -1; i =  is.read(buff)) {
-
-				Thread.yield();
+			DataConverter converter = new DataConverter(
+					new GZIPInputStream(new FileInputStream(trsd)), 
+					new FileOutputStream(res), 
+					trsd.length()) {
 				
-				os.write(buff, 0, i);
+				@Override
+				protected void onStart() {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+					
+				}
+				
+				@Override
+				protected boolean onProgress(double d) {
+					
+					Thread.yield();
 
-				accum += i;
+					int pos = (int) (100.0 * d);
 
-				int pos = (int) (100.0 * (accum / (double) size));
+					progressBar.setValue(pos);
+					
+					return !cancelled;
+				}
+				
+				@Override
+				protected void onFinish() {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+				}
+				
+				@Override
+				protected void onError(Exception e) {
+					e.printStackTrace();
+				}
+			};
+			
+			converter.run();
 
-				progressBar.setValue(pos);
-			}
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-
-			if (!cancelled) {
+			if (converter.isGood()) {
 				return res;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			if (is != null) try {is.close();} catch (Exception e) {}
-			if (os != null) try {os.close();} catch (Exception e) {}
-		}
+		} 
 		
 		return null;
 	}
