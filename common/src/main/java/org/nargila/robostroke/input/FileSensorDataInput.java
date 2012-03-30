@@ -156,7 +156,7 @@ public class FileSensorDataInput extends SensorDataInputBase implements Runnable
 					
 					double progress = pos / (double)fileLength;
 					
-					if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
+					if (!paused && bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
 
 				}
 				
