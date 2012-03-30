@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+#set( $base = $project.properties.get("jnlp.basedir") )
+#set( $codebase = $project.properties.get("jnlp.codebase") )
+
+<jnlp spec="1.0+" codebase="${codebase}">
+
+  <information>
+    <title>${project.name}</title>
+    <homepage href="http://nargila.org/trac/robostroke"/>
+    <icon href="images/logo.png"/>
+    <icon kind="flash" href="images/logo.png"/>
+
+    <offline-allowed /> 
+  </information> 
+  <security> 
+    <all-permissions /> 
+  </security> 
+  
+  <resources>
+    <j2se version="1.6+" java-vm-args="-Dnargila.org=true"/> 
+    $dependencies
+  </resources>
+
+  <application-desc main-class="${mainClass}" />
+</jnlp>
+
+<!--
+ Local variables:
+ mode: xml
+ End:
+-->

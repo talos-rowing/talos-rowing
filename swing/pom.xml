@@ -12,6 +12,11 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jnlp.outfile>talos-rowing.jnlp</jnlp.outfile>
+    <jnlp.codebase>http://nargila.org/trac/robostroke/raw-attachment/wiki/WikiStart/</jnlp.codebase>
+    <jnlp.main.class>org.nargila.robostroke.app.RoboStrokeSwing</jnlp.main.class>
+    <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
+    <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
   </properties>
 
   <dependencies>
@@ -57,6 +62,31 @@
 	<artifactId>maven-resources-plugin</artifactId>
 	<configuration>
 	  <encoding>UTF-8</encoding>
+	</configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>webstart-maven-plugin</artifactId>
+	<version>1.0-beta-3</version>
+	<executions>
+	  <execution>
+            <phase>package</phase>
+	    <goals>
+	      <goal>jnlp</goal>
+	    </goals>
+	    <id>jnlp</id>
+	  </execution>
+	</executions>
+	<configuration>
+	  <jnlp>
+	    <inputTemplate>${jnlp.template}</inputTemplate>
+	    <outputFile>${jnlp.outfile}</outputFile>
+	    <mainClass>${jnlp.main.class}</mainClass>
+	  </jnlp>
+	  <sign>
+	    <alias>${javasigner.alias}</alias>
+	    <storepass>${javasigner.storepass}</storepass>
+	  </sign>
 	</configuration>
       </plugin>
     </plugins>
