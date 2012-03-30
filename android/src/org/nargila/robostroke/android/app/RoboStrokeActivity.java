@@ -52,6 +52,8 @@ import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.ErrorListener;
+import org.nargila.robostroke.input.version.DataVersionConverter;
+import org.nargila.robostroke.input.version.DataVersionConverter.ConverterError;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -1034,20 +1036,102 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 
 	private synchronized void start(SessionFileInfo replayFile) {
-
 		roboStroke.getParameters().setParam(
 				ParamKeys.PARAM_SESSION_RECORDING_ON, false);
-
-		this.replayFile = null;
 		
 		enableScheduler(true);
 
+		try {
+			if (replayFile != null) {
+				
+				DataVersionConverter converter = DataVersionConverter.getConvertersFor(replayFile.file);
+				
+				if (converter != null) {
+					convertStart(converter, replayFile);
+					return;
+				}
+			}
+		} catch (DataVersionConverter.ConverterError e) {
+			reportError(e, "error getting data file converter");
+		}
+		
+		realStart(replayFile);
+	}
+	
+	private void convertStart(final DataVersionConverter converter,
+			final SessionFileInfo replayFile) {
+		
+		final ProgressDialog progress = new ProgressDialog(RoboStrokeActivity.this);
+		progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		progress.setMessage("Converting...");
+		
+		progress.setMax(100);
+	
+		progress.setIndeterminate(true);
+		
+		
+		progress.setCancelable(true);
+		
+		progress.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				converter.cancel();
+				progress.dismiss();
+			}
+		});
+
+		converter.setProgressListener(new DataVersionConverter.ProgressListener() {
+			
+			@Override
+			public boolean onProgress(double d) {
+				
+				progress.setIndeterminate(false);
+			
+				progress.setProgress((int)(100 * d));
+
+				return true;
+			}
+		});
+
+		progress.show();
+		
+		scheduler.submit(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				SessionFileInfo newInfo = null;
+				
+				try {					
+					newInfo = new SessionFileInfo(converter.convert(replayFile.file), true);	
+					
+					if (replayFile.temporary) {
+						replayFile.file.delete();
+					}
+					
+				} catch (Exception e) {
+					reportError(e, "error getting data file converter");				
+				} finally {
+					progress.dismiss();
+					realStart(newInfo);
+				}
+			}
+		});		
+	}
+
+	private synchronized void realStart(SessionFileInfo replayFile) {
+		
+		this.replayFile = null;
+		
 		resetGraphs(false, null);
 
 		try {
+			
 			roboStroke.setDataLogger(null);
 
-			if (replayFile != null) {
+			if (replayFile != null) {				
+				
 				roboStroke.setFileInput(replayFile.file);
 				this.replayFile = replayFile;
 			}

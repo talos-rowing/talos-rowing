@@ -291,11 +291,7 @@ public class RoboStrokeAppPanel extends JPanel {
 
 			File f = fc.getSelectedFile();
 
-			if (f.getName().endsWith(".trsd")) {
-				prepareFile(f);
-			} else {
-				start(f);
-			}
+			prepareFile(f);
 		}
 	}
 

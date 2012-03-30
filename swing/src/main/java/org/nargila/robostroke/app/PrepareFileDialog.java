@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 import javax.swing.Box;
@@ -18,7 +17,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 
-import org.nargila.robostroke.common.DataConverter;
+import org.nargila.robostroke.common.DataStreamCopier;
+import org.nargila.robostroke.input.version.DataVersionConverter;
 
 public class PrepareFileDialog extends JDialog {
 
@@ -89,16 +89,52 @@ public class PrepareFileDialog extends JDialog {
 	}
 	
 	void launch(File trsd) {
+				
+		File f;
+
+		try {
+			if (trsd.getName().endsWith(".trsd")) {
+				f = uncimpressFile(trsd);
+			} else {
+				f = convertFileVersion(trsd);
+			}
+
+			onFinish(f);
 		
-		File f = uncimpressFile(trsd);
-		
-		onFinish(f);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
 	
 	void cancel() {
 		cancelled = true;
+	}
+	
+	private File convertFileVersion(File input) throws Exception {
+		
+		DataVersionConverter converter = DataVersionConverter.getConvertersFor(input);
+
+		if (converter != null) {
+
+			converter.setProgressListener(new DataVersionConverter.ProgressListener() {
+
+				@Override
+				public boolean onProgress(double d) {
+
+					progressBar.setValue((int)(100 * d));
+
+					Thread.yield();
+
+					return !cancelled;
+				}
+			});
+
+			input = converter.convert(input);
+		}
+	
+		return input;
 	}
 	
 	private File uncimpressFile(File trsd) {
@@ -109,7 +145,7 @@ public class PrepareFileDialog extends JDialog {
 			File res = File.createTempFile("talos-rowing-data", ".txt");
 			res.deleteOnExit();
 
-			DataConverter converter = new DataConverter(
+			DataStreamCopier converter = new DataStreamCopier(
 					new GZIPInputStream(new FileInputStream(trsd)), 
 					new FileOutputStream(res), 
 					trsd.length()) {
@@ -140,7 +176,7 @@ public class PrepareFileDialog extends JDialog {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-					}
+					}										
 				}
 				
 				@Override
@@ -152,9 +188,9 @@ public class PrepareFileDialog extends JDialog {
 			converter.run();
 
 			if (converter.isGood()) {
-				return res;
+				return convertFileVersion(res);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} 
 		

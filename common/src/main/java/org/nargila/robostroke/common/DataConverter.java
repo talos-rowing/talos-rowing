@@ -1,12 +1,12 @@
 package org.nargila.robostroke.common;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.Closeable;
+import java.io.IOException;
 
-public abstract class DataConverter implements Runnable {
+public abstract class DataConverter<IN extends Closeable, OUT extends Closeable> implements Runnable {
 	
-	private final InputStream in;
-	private final OutputStream out;
+	protected final IN in;
+	protected final OUT out;
 	
 	private final long inputLength;
 	
@@ -15,7 +15,7 @@ public abstract class DataConverter implements Runnable {
 	private boolean good;
 	private Exception error;
 	
-	public DataConverter(InputStream in, OutputStream out, long inputLength) {
+	public DataConverter(IN in, OUT out, long inputLength) {
 		this.in = in;
 		this.out = out;
 		this.inputLength = inputLength;
@@ -25,19 +25,17 @@ public abstract class DataConverter implements Runnable {
 		cancelled = true;
 	}
 	
+	protected abstract int processNext() throws IOException;
+	
 	public void run() {
 		
 		onStart();
-		
-		byte[] buff = new byte[4096];
-		
+				
 		try {
 
 			long accum = 0;
 
-			for (int i =  in.read(buff); !cancelled && i != -1; i =  in.read(buff)) {
-
-				out.write(buff, 0, i);
+			for (int i =  processNext(); !cancelled && i != -1; i =  processNext()) {
 
 				accum += i;
 
@@ -71,8 +69,8 @@ public abstract class DataConverter implements Runnable {
 		return cancelled;
 	}
 	
-	protected abstract void onStart();
+	protected void onStart() {}
 	protected abstract boolean onProgress(double d);
-	protected abstract void onFinish();
-	protected abstract void onError(Exception e);
+	protected void onFinish() {}
+	protected void onError(Exception e) {}
 }
