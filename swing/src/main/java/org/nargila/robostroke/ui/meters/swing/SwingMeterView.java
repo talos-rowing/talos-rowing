@@ -87,7 +87,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		speedTxt = new JLabel("0:00");
 		speedTxt.setForeground(Color.WHITE);
 		speedTxt.setHorizontalAlignment(SwingConstants.CENTER);
-		speedTxt.setFont(new Font("Dialog", Font.BOLD, 40));
+		speedTxt.setFont(new Font("Dialog", Font.BOLD, 60));
 		panel_2.add(speedTxt, BorderLayout.CENTER);
 		
 		JPanel panel_5 = new JPanel();
@@ -97,7 +97,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		panel_5.setLayout(new BorderLayout(0, 0));
 		
 		avgSpeedTxt = new JLabel("0:00");
-		avgSpeedTxt.setFont(new Font("Dialog", Font.BOLD, 22));
+		avgSpeedTxt.setFont(new Font("Dialog", Font.PLAIN, 40));
 		avgSpeedTxt.setForeground(Color.WHITE);
 		avgSpeedTxt.setVerticalAlignment(SwingConstants.TOP);
 		panel_5.add(avgSpeedTxt, BorderLayout.CENTER);
@@ -125,14 +125,14 @@ public class SwingMeterView extends JPanel implements MeterView {
 		panel_4.setLayout(new BorderLayout(0, 0));
 		
 		avgSpmTxt = new JLabel("00");
-		avgSpmTxt.setFont(new Font("Dialog", Font.BOLD, 22));
+		avgSpmTxt.setFont(new Font("Dialog", Font.PLAIN, 40));
 		avgSpmTxt.setForeground(Color.WHITE);
 		panel_4.add(avgSpmTxt, BorderLayout.CENTER);
 		avgSpmTxt.setVerticalAlignment(SwingConstants.TOP);
 		
 		spmTxt = new JLabel("0");
 		spmTxt.setForeground(Color.WHITE);
-		spmTxt.setFont(new Font("Dialog", Font.BOLD, 40));
+		spmTxt.setFont(new Font("Dialog", Font.BOLD, 70));
 		spmTxt.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(spmTxt, BorderLayout.CENTER);
 		add(panel);
@@ -152,7 +152,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		panel_7.setLayout(new BorderLayout(0, 0));
 		
 		splitStrokeCountTxt = new JLabel("0");
-		splitStrokeCountTxt.setFont(new Font("Dialog", Font.BOLD, 22));
+		splitStrokeCountTxt.setFont(new Font("Dialog", Font.PLAIN, 60));
 		splitStrokeCountTxt.setForeground(Color.WHITE);
 		panel_7.add(splitStrokeCountTxt, BorderLayout.CENTER);
 		splitStrokeCountTxt.setVerticalAlignment(SwingConstants.TOP);
@@ -160,7 +160,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		splitTimeTxt = new JLabel("0:00");
 		splitTimeTxt.setForeground(Color.WHITE);
 		splitTimeTxt.setHorizontalAlignment(SwingConstants.CENTER);
-		splitTimeTxt.setFont(new Font("Dialog", Font.BOLD, 48));
+		splitTimeTxt.setFont(new Font("Dialog", Font.BOLD, 80));
 		panel_6.add(splitTimeTxt, BorderLayout.CENTER);
 		
 		strokeModeHighlighter = new JPanel();
@@ -202,7 +202,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		panel_10.setLayout(new BorderLayout(0, 0));
 		
 		totalDistanceTxt = new JLabel("0");
-		totalDistanceTxt.setFont(new Font("Dialog", Font.BOLD, 22));
+		totalDistanceTxt.setFont(new Font("Dialog", Font.PLAIN, 40));
 		totalDistanceTxt.setForeground(Color.WHITE);
 		totalDistanceTxt.setVerticalAlignment(SwingConstants.TOP);
 		panel_10.add(totalDistanceTxt, BorderLayout.CENTER);
@@ -210,7 +210,7 @@ public class SwingMeterView extends JPanel implements MeterView {
 		splitDistanceTxt = new JLabel("0");
 		splitDistanceTxt.setForeground(Color.WHITE);
 		splitDistanceTxt.setHorizontalAlignment(SwingConstants.CENTER);
-		splitDistanceTxt.setFont(new Font("Dialog", Font.BOLD, 40));
+		splitDistanceTxt.setFont(new Font("Dialog", Font.BOLD, 60));
 		panel_9.add(splitDistanceTxt, BorderLayout.CENTER);
 		
 		JPanel panel_11 = new JPanel();
