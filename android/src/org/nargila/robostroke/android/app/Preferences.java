@@ -49,7 +49,7 @@ public class Preferences extends PreferenceActivity {
 	    			Preference p = (Preference) obj;
 	    			String key = p.getKey();
 	    			
-	    			if (key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
+	    			if (key != null && key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
 	    				
 	    				String url = "http://nargila.org/trac/robostroke/wiki/GuideParameters#" + key;
 	    				Intent i = new Intent(Intent.ACTION_VIEW);
