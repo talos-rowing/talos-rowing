@@ -66,6 +66,12 @@ public class RoboStrokeAppPanel extends JPanel {
 	protected ParamEditDialog paramEditDialog;
 	private JMenuItem mntmExport;
 
+	private JCheckBoxMenuItem chckbxmntmStroke;
+
+	private JCheckBoxMenuItem chckbxmntmAnalysis;
+
+	private JCheckBoxMenuItem chckbxmntmAccel;
+
 	/**
 	 * Create the panel.
 	 */
@@ -126,7 +132,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
 		
-		final JCheckBoxMenuItem chckbxmntmAccel = new JCheckBoxMenuItem("Accel");
+		chckbxmntmAccel = new JCheckBoxMenuItem("Accel");
 		chckbxmntmAccel.setSelected(true);
 		chckbxmntmAccel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -136,8 +142,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		mnView.add(chckbxmntmAccel);
 		
-		final JCheckBoxMenuItem chckbxmntmStroke = new JCheckBoxMenuItem("Stroke");
-		chckbxmntmStroke.setSelected(true);
+		chckbxmntmStroke = new JCheckBoxMenuItem("Stroke");
 		chckbxmntmStroke.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				strokeGraph.getParent().setVisible(chckbxmntmStroke.isSelected());
@@ -148,7 +153,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		JSeparator separator = new JSeparator();
 		mnView.add(separator);
 		
-		final JCheckBoxMenuItem chckbxmntmAnalysis = new JCheckBoxMenuItem("Analysis");
+		chckbxmntmAnalysis = new JCheckBoxMenuItem("Analysis");
 		chckbxmntmAnalysis.setSelected(true);
 		chckbxmntmAnalysis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -163,7 +168,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
 		meterView = new SwingMeterView();
-		meterView.setPreferredSize(new Dimension(370, 350));
+		meterView.setPreferredSize(new Dimension(350, 432));
 		panel.add(meterView);
 		
 		JPanel panel_2 = new JPanel();
@@ -367,6 +372,10 @@ public class RoboStrokeAppPanel extends JPanel {
 		accellGraph.disableUpdate(false);
 		strokeAnalysisGraph.disableUpdate(false);
 		strokeGraph.disableUpdate(false);
+		
+		strokeGraph.getParent().setVisible(chckbxmntmStroke.isSelected());
+		accellGraph.getParent().setVisible(chckbxmntmAccel.isSelected());
+		strokeAnalysisGraph.getParent().setVisible(chckbxmntmAnalysis.isSelected());
 		
 		rs.getBus().addBusListener(new BusEventListener() {
 			
