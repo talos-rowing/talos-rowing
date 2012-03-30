@@ -155,13 +155,13 @@ public class ParamRegistration {
 			
 			int i = 0;
 			for (Parameter<?> param: paramGroup) {
-				writer.write("<tr>\n");
+				writer.write("<tr class='robostroke-param' id='" + param.getId() + "'>\n");
 			
 				if (i++ == 0) {
 					writer.write("<td class='robostroke-param-category' rowspan='" + paramGroup.length + "'>" + param.getCategory() + "</td>\n");
 				}
 				
-				writer.write("<td class='robostroke-param-name' id='" + param.getId() + "'>" + param.getName() + "</td>\n" +
+				writer.write("<td class='robostroke-param-name'>" + param.getName() + "</td>\n" +
 						"<td class='robostroke-param-level'>" + param.getLevel() + "</td>\n" +
 						"<td class='robostroke-param-default'>" + param.getDefaultValue() + "</td>\n" +
 								"<td class='robostroke-param-description'>" + param.getDescription() + "</td>\n");
