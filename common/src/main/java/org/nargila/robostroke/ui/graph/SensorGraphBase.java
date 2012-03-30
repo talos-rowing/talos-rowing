@@ -19,7 +19,10 @@
 
 package org.nargila.robostroke.ui.graph;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 
@@ -28,20 +31,63 @@ import org.nargila.robostroke.ui.UILiaison;
  */
 public abstract class SensorGraphBase extends LineGraph {
 	
+	private static final int DATA_QUEUE_SIZE = 10;
 	private static final float INCR = 1f;
 	protected final XYSeries accelSeries;
 	protected final RoboStroke roboStroke;
 	
 	private boolean attached;
 	
-	protected final SensorDataSink accelDataSink = new SensorDataSink() {
+	private class SensorDataSinkQueue extends Thread implements SensorDataSink {
+		
+		private final ArrayBlockingQueue<Pair<Long,Float>> queue;		
+				
+		public SensorDataSinkQueue(int queueSize) {
+			
+			super("SensorDataSinkQueue " + SensorGraphBase.this.getClass());
+			
+			setDaemon(true);
+			
+			queue = new ArrayBlockingQueue<Pair<Long,Float>>(queueSize);
+			
+			start();
+			
+		}
 		
 		@Override
 		public void onSensorData(long timestamp, Object value) {
-			float[] values = (float[]) value;
-			accelSeries.add(timestamp, values[0]);
+
+			try {				
+				queue.put(Pair.create(timestamp, ((float[])value)[0]));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
-	};
+		
+		void reset() {
+			queue.clear();
+		}
+		
+		@Override
+		public void run() {
+			while (true) {
+							    
+				try {
+
+					Pair<Long, Float> p = queue.take();
+					accelSeries.add(p.first, p.second);
+					
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}
+		}
+	}
+	
+	protected final SensorDataSink accelDataSink = new SensorDataSinkQueue(DATA_QUEUE_SIZE);
 		
 	public SensorGraphBase(UILiaison factory, XYSeries.XMode xMode, float xRange, float yRange, RoboStroke roboStroke)	{ 
 		super(factory, xRange, xMode, yRange, INCR);
@@ -59,20 +105,28 @@ public abstract class SensorGraphBase extends LineGraph {
 					attachSensors();
 					attached = true;
 				}
-			} else {
-				reset();
+			} else {				
 				
 				if (attached) {
 					detachSensors();
 					attached = false;
 				}
+				
+				reset();
 			}
 
 			super.disableUpdate(disable);
 		}
 	}
 
-
+	@Override
+	public void reset() {
+		
+		((SensorDataSinkQueue)accelDataSink).reset();
+		
+		super.reset();
+	}
+	
 	protected void attachSensors() {
 		attachSensors(accelDataSink);
 	}
