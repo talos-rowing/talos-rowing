@@ -122,7 +122,6 @@ class SessionRecorder implements BusEventListener, SessionRecorderConstants {
 	private void logEvent(DataRecord event) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(System.currentTimeMillis()).append(" ")
-		.append("EVENT ")
 		.append(event);
 
 		try {
