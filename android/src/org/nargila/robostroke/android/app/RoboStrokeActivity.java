@@ -48,12 +48,12 @@ import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.PreviewFrameLayout;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
+import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.ErrorListener;
 import org.nargila.robostroke.input.version.DataVersionConverter;
-import org.nargila.robostroke.input.version.DataVersionConverter.ConverterError;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -341,7 +341,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			progress.setMessage("Preparing...");
 			
 			final AtomicReference<Future<?>> job = new AtomicReference<Future<?>>();
-			
+						
 			progress.setMax(100);
 		
 			progress.setIndeterminate(true);
@@ -358,8 +358,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				}
 			});
 			
-			progress.show();
-			
 			final AtomicBoolean res = new AtomicBoolean(true);
 			
 			synchronized (res) {
@@ -367,12 +365,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 					@Override
 					public void run() {
-						byte[] buff = new byte[4096];
-		
-						long accum = 0;
-						
-		
-		
 						try {
 							
 							Pair<InputStream, Long> openInfo;
@@ -396,6 +388,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 								});
 							}
 							
+							
 							InputStream is = openInfo.first;
 							OutputStream os;
 							try {
@@ -418,40 +411,35 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 								throw new MyError("internal error", e);
 							}
 							
-							while (!Thread.currentThread().isInterrupted()) {
+							DataStreamCopier dsc = new DataStreamCopier(is, os, size) {
 								
-								int i;
-								try {
-									i = is.read(buff);
-								} catch (IOException e) {
-									throw new MyError("data read error", e);
-								} 
+								int lastPos = -1;
 								
-								if (i < 0) {
-									break;
+								@Override
+								protected boolean onProgress(double d) {
+															
+									if (d > 0) {
+										int pos = (int) (100.0 * d);
+																				
+										progress.setProgress(pos);
+										
+										if (pos == 100 || pos - lastPos >= 5) {
+											lastPos = pos;
+											Thread.yield();
+										}
+									}
+
+									return !Thread.currentThread().isInterrupted();
 								}
-								
-								try {
-									os.write(buff, 0, i);
-								} catch (IOException e) {
-									throw new MyError("data write error", e);
-								}
-		
-								accum += i;
-		
-								if (size != -1) {
-									int pos = (int) (100.0 * (accum / (double) size));
-									progress.setProgress(pos);
-								}
+							};
+
+							
+							dsc.run();
+							
+							if (!dsc.isGood() && dsc.getError() != null) {
+								throw new MyError("error in data copying processor", dsc.getError());
 							}
 							
-							try {
-								is.close();
-								os.close();
-							} catch (IOException e) {
-								logger.error("failed to close open streams", e);
-							}
-		
 							if (!job.get().isCancelled()) {
 								if (runnable == null) {
 									res.set(true);
@@ -473,6 +461,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 				job.set(scheduler.submit(jobRunnable));
 		
+				progress.show();
+				
 				if (runnable == null) {
 					try {
 						res.wait();
@@ -1103,8 +1093,13 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				
 				SessionFileInfo newInfo = null;
 				
-				try {					
-					newInfo = new SessionFileInfo(converter.convert(replayFile.file), true);	
+				try {				
+					
+					File output = converter.convert(replayFile.file);
+					
+					if (output != null) {
+						newInfo = new SessionFileInfo(output, true);	
+					}
 					
 					if (replayFile.temporary) {
 						replayFile.file.delete();
@@ -1168,7 +1163,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		menu.findItem(R.id.menu_record_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
 		
-		final boolean canShareSession = replay && !replayFile.temporary;
+		final boolean canShareSession = replay;
 		
 		menu.findItem(R.id.menu_replay_share).setVisible(canShareSession);
 		
