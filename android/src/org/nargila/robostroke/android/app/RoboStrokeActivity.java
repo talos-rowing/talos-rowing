@@ -28,11 +28,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,10 +41,8 @@ import java.util.zip.GZIPOutputStream;
 import org.acra.ErrorReporter;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.android.app.roll.RollViewGroup;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
-import org.nargila.robostroke.android.common.PreviewFrameLayout;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
@@ -59,11 +55,6 @@ import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
 import org.nargila.robostroke.ui.LayoutMode;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
-import org.nargila.robostroke.ui.graph.android.AccellGraphView;
-import org.nargila.robostroke.ui.graph.android.StrokeAnalysisGraphView;
-import org.nargila.robostroke.ui.graph.android.StrokeGraphView;
-import org.nargila.robostroke.ui.graph.android.StrokePowerGraphView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,16 +74,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.text.format.DateFormat;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -133,27 +121,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	
 	private final Intent hrmService = new Intent(HRM_SERVICE_ACTION);
 
-	private AccellGraphView accel_graph;
-	private HeartRateView heart_rate_view;
-	private StrokePowerGraphView stroke_power_graph;
-	private StrokeAnalysisGraphView stroke_analysis_graph;
-	private StrokeGraphView stroke_graph;
-	private StrokePowerBarGraphView stroke_power_bar_graph;
-	private RollViewGroup roll_view_group;
 	private boolean recordingOn;
 	final Handler handler = new Handler();
-	private boolean tiltFreezeOn;
-	
-	private final long graphXRange = TimeUnit.SECONDS.toNanos(8);
 
-	private ScheduledExecutorService scheduler;
+	ScheduledExecutorService scheduler;
 	
 	final RoboStroke roboStroke = new RoboStroke(
 			new AndroidLocationDistanceResolver());
 
 	public NotificationHelper notificationHelper;
 
-	private MetersDisplayManager metersDisplayManager;
 
 	private final ScreenStayupLock screenLock;
 	private Menu menu;
@@ -168,30 +145,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	GraphPanelDisplayManager graphPanelDisplayManager;
 
-	private static AlertDialog m_AlertDlg;
-	
-	class PendingReset implements Runnable {
-		int delay = 250;
-		private ScheduledFuture<?> pending;
-		boolean[] restoreStates;
-		
-		synchronized void trigger() {
-			if (pending == null) {
-				logger.debug("initializing pending graph reset");
-				restoreStates = resetGraphs(true, null);
-			} else {
-				logger.debug("deffering pending graph reset");
-				pending.cancel(true);
-			}
-			
-			pending = scheduler.schedule(this, delay, TimeUnit.MILLISECONDS);				
-		}
-		@Override
-		public synchronized void run() {
-			resetGraphs(true, restoreStates);
-			pending = null;
-		}
-	}
+	MetersDisplayManager metersDisplayManager;
+
+	static AlertDialog m_AlertDlg;
 	
 	private class SessionFileHandler {
 		
@@ -525,8 +481,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private final SessionFileHandler sessionFileHandler = new SessionFileHandler();
 
-	private final PendingReset pendingReset = new PendingReset();
-
 	private SessionFileInfo replayFile;
 
 	public RoboStrokeActivity() {
@@ -547,7 +501,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		roboStroke.getDataInput().setPaused(replayPaused);
 	}
 
-	private void togglePause() {
+	void togglePause() {
 		setPaused(!replayPaused);
 	}
 
@@ -569,18 +523,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.main);		
-
-		this.accel_graph = new AccellGraphView(this, graphXRange, roboStroke);
-		this.heart_rate_view = new HeartRateView(this, roboStroke);
-		this.stroke_power_graph = new StrokePowerGraphView(this, roboStroke);
-		stroke_analysis_graph = new StrokeAnalysisGraphView(this, roboStroke);
-		this.stroke_graph = new StrokeGraphView(this, graphXRange, roboStroke);
-		this.stroke_power_bar_graph = new StrokePowerBarGraphView(this, roboStroke);
-		this.roll_view_group = new RollViewGroup(this, roboStroke);
 		
 		notificationHelper = new NotificationHelper(this, R.drawable.icon_small322);
-
-		metersDisplayManager = new MetersDisplayManager(this);
 
 		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 
@@ -595,10 +539,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						e.getMessage(), "robostroke error", "robostroke error");
 			}
 		});
-		
-		roboStroke.getAccelerationFilter().addSensorDataSink(metersDisplayManager);
 
-		initGraphDisplayToggling();
+		metersDisplayManager = new MetersDisplayManager(this);
+		
+		graphPanelDisplayManager = new GraphPanelDisplayManager(this);		
+
+		roboStroke.getAccelerationFilter().addSensorDataSink(metersDisplayManager);
 		
 		View.OnClickListener recordingClickListener = new View.OnClickListener() {
 			boolean recording;
@@ -643,131 +589,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 
 
-	private void initGraphDisplayToggling() {
-
-		View[] viewArr = {
-				new PreviewFrameLayout(this, R.drawable.graph_accel_400, accel_graph),
-				new PreviewFrameLayout(this, R.drawable.graph_power_bar_400, stroke_power_bar_graph), 
-				new PreviewFrameLayout(this, R.drawable.graph_analysis_400, stroke_analysis_graph),
-				new PreviewFrameLayout(this, R.drawable.graph_power_400, stroke_power_graph), 
-				new PreviewFrameLayout(this, R.drawable.graph_stroke_400, stroke_graph), 
-				roll_view_group, 
-				heart_rate_view
-		};
-		
-		LinkedList<View> views = new LinkedList<View>();
-		
-		for (View view: viewArr) { // add only non black-listed views
-			if (view.getTag() == null || !view.getTag().equals("blackList")) {
-				views.add(view);
-			}
-		}
-		
-		FrameLayout[] slots = {
-			(FrameLayout) findViewById(R.id.graph_frame1),
-			(FrameLayout) findViewById(R.id.graph_frame2),
-			(FrameLayout) findViewById(R.id.graph_frame3) 
-		};
-		
-		graphPanelDisplayManager = 
-			new GraphPanelDisplayManager(this, (LinearLayout) findViewById(R.id.graph_container), slots, views.toArray(new View[views.size()]));
-		
-
-		for (final View view: views) {
-						
-			final GestureDetector gd = new GestureDetector(
-					new GestureDetector.SimpleOnGestureListener() {
-						
-						@Override
-						public boolean onFling(MotionEvent e1, MotionEvent e2,
-								float velocityX, float velocityY) {
-							float vx = Math.abs(velocityX);
-							float vy = Math.abs(velocityY);
-							if (vx > vy) { // left/right fling: forward/rewind
-											// replay
-								if (isReplaying()) {
-									pendingReset.trigger(); // post graph data flush/reset request
-									roboStroke.getDataInput().skipReplayTime(
-											velocityX);
-								}
-							} else if (velocityY > 0) { // fling down
-								if (isReplaying())
-									togglePause();
-							} else { // fling up
-								graphPanelDisplayManager.toggleSlotView((FrameLayout) view.getParent());
-							}
-
-							return true;
-						}
-
-						@Override
-						public boolean onDoubleTap(MotionEvent event) {
-							graphPanelDisplayManager.toggleSlotCount(view);
-
-							return true;
-						};
-
-						@Override
-						public boolean onSingleTapConfirmed(MotionEvent event) {
-							if (view == roll_view_group) {
-								roll_view_group.setMode(null);
-								return true;
-							}
-
-							return super.onSingleTapConfirmed(event);
-						}
-
-						@Override
-						public void onLongPress(MotionEvent event) {
-
-							if (view == roll_view_group) {
-								if (tiltFreezeOn) {
-									showDialog(R.layout.tilt_freeze_dialog);
-								} else {
-									if (m_AlertDlg != null) {
-										m_AlertDlg.cancel();
-									}
-
-
-									m_AlertDlg = new AlertDialog.Builder(RoboStrokeActivity.this)
-									.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											dialog.cancel();
-											showDialog(R.layout.tilt_freeze_dialog);
-										}
-									})
-									.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											dialog.cancel();
-										}
-									})
-
-									.setMessage(getString(R.string.tilt_freeze_warning).replace("${CALIBRATION_SECONDS}", TILT_FREEZE_CALIBRATION_TIME+""))
-											.setTitle("Tilt Freeze")
-											.setIcon(R.drawable.icon)
-											.setCancelable(true)
-											.show();						
-								}
-							}
-						}
-					});
-
-			view.setOnTouchListener(new View.OnTouchListener() {
-
-				@Override
-				public boolean onTouch(View v, MotionEvent event) {
-					gd.onTouchEvent(event);
-					return true;
-				}
-			});
-		}
-
-		graphPanelDisplayManager.restore();
-	}
 	private void registerBpmReceiver() {
 		IntentFilter filter = new IntentFilter(HRM_SERVICE_ACTION);
 
@@ -924,14 +745,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						scheduler.schedule(new Runnable() {
 							@Override
 							public void run() {
-								tiltFreezeOn = true;
+								graphPanelDisplayManager.tiltFreezeOn = true;
 								roboStroke.getBus().fireEvent(DataRecord.Type.FREEZE_TILT, true);
 								progress.dismiss();
 							}
 						}, TILT_FREEZE_CALIBRATION_TIME, TimeUnit.SECONDS);
 					} else {
 						roboStroke.getBus().fireEvent(DataRecord.Type.FREEZE_TILT, false);
-						tiltFreezeOn = false;
+						graphPanelDisplayManager.tiltFreezeOn = false;
 					}
 					settingDialog.dismiss();
 				}
@@ -967,32 +788,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 		
 		start(replayFile);
-	}
-
-	private synchronized boolean[] resetGraphs(boolean halfFlush, boolean[] restoreStates) {
-		final DataUpdatable[] arr = {
-				accel_graph, stroke_graph, stroke_power_graph, stroke_analysis_graph
-		};
-		
-		final boolean[] states = new boolean[arr.length];
-		
-		int i = 0;
-		for (DataUpdatable graph: arr) {
-			if (halfFlush) {
-				if (restoreStates == null) {
-
-					states[i++] = graph.isDisabled();
-					graph.disableUpdate(true);
-				} else {
-					graph.reset();
-					graph.disableUpdate(restoreStates[i++]);
-				}
-			} else {				
-				graph.reset();
-			}
-		}
-
-		return states;
 	}
 
 	private void enableScheduler(boolean enable) {
@@ -1119,7 +914,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		this.replayFile = null;
 		
-		resetGraphs(false, null);
+		graphPanelDisplayManager.resetGraphs(false, null);
 
 		try {
 			
@@ -1305,20 +1100,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 
 	public void onUpdateGraphSlotCount(int slotCount) {
-		metersDisplayManager.onLayoutModeChange(slotCount == 1 ? LayoutMode.EXPANDED : LayoutMode.DEFAULT);		
+		metersDisplayManager.onLayoutModeChange(slotCount == 1 ? LayoutMode.EXPANDED : LayoutMode.COMPACT);		
 		
 	}
 
 	public MetersDisplayManager getMetersDisplayManager() {
 		return metersDisplayManager;
-	}
-
-	public void setEnableHrm(boolean enable, boolean resetNextRun) {
-		this.heart_rate_view.setTag(enable ? null : "blackList");
-		
-		if (resetNextRun) {
-			graphPanelDisplayManager.resetNextRun();
-		}
 	}
 
 	public ParameterListenerRegistration[] getListenerRegistrations() {

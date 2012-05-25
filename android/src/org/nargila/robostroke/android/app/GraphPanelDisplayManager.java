@@ -22,8 +22,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import org.nargila.robostroke.android.app.roll.RollViewGroup;
+import org.nargila.robostroke.android.common.PreviewFrameLayout;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.android.AccellGraphView;
+import org.nargila.robostroke.ui.graph.android.StrokeAnalysisGraphView;
+import org.nargila.robostroke.ui.graph.android.StrokeGraphView;
+import org.nargila.robostroke.ui.graph.android.StrokePowerGraphView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -31,6 +47,8 @@ import android.widget.LinearLayout.LayoutParams;
 
 public class GraphPanelDisplayManager {
 	
+	private static final Logger logger = LoggerFactory.getLogger(GraphPanelDisplayManager.class);
+
 	/**
 	 * layout version - to be increment whenever we want to force layout reset on client device upon app upgrade
 	 */
@@ -69,11 +87,83 @@ public class GraphPanelDisplayManager {
 	private final LinearLayout slotContainer;
 	private final RoboStrokeActivity owner;
 
+	private AccellGraphView accel_graph;
+	private HeartRateView heart_rate_view;
+	private StrokePowerGraphView stroke_power_graph;
+	private StrokeAnalysisGraphView stroke_analysis_graph;
+	private StrokeGraphView stroke_graph;
+	private StrokePowerBarGraphView stroke_power_bar_graph;
+	private RollViewGroup roll_view_group;
+	
+	private final long graphXRange = TimeUnit.SECONDS.toNanos(8);
 
-	public GraphPanelDisplayManager(RoboStrokeActivity owner, LinearLayout slotContainer, FrameLayout[] slots, View[] views) {
+	class PendingReset implements Runnable {
+		int delay = 250;
+		private ScheduledFuture<?> pending;
+		boolean[] restoreStates;
+		
+		synchronized void trigger() {
+			if (pending == null) {
+				logger.debug("initializing pending graph reset");
+				restoreStates = resetGraphs(true, null);
+			} else {
+				logger.debug("deffering pending graph reset");
+				pending.cancel(true);
+			}
+			
+			pending = owner.scheduler.schedule(this, delay, TimeUnit.MILLISECONDS);				
+		}
+		@Override
+		public synchronized void run() {
+			resetGraphs(true, restoreStates);
+			pending = null;
+		}
+	}
+	
+	private final PendingReset pendingReset = new PendingReset();
+
+	boolean tiltFreezeOn;
+	
+
+	public GraphPanelDisplayManager(final RoboStrokeActivity owner) {
+		
+		this.slotContainer = (LinearLayout) owner.findViewById(R.id.graph_container);
+		
+		this.accel_graph = new AccellGraphView(owner, graphXRange, owner.roboStroke);
+		this.heart_rate_view = new HeartRateView(owner, owner.roboStroke);
+		this.stroke_power_graph = new StrokePowerGraphView(owner, owner.roboStroke);
+		stroke_analysis_graph = new StrokeAnalysisGraphView(owner, owner.roboStroke);
+		this.stroke_graph = new StrokeGraphView(owner, graphXRange, owner.roboStroke);
+		this.stroke_power_bar_graph = new StrokePowerBarGraphView(owner, owner.roboStroke);
+		this.roll_view_group = new RollViewGroup(owner, owner.roboStroke);
+
+		FrameLayout[] slots = {
+				(FrameLayout) owner.findViewById(R.id.graph_frame1),
+				(FrameLayout) owner.findViewById(R.id.graph_frame2),
+				(FrameLayout) owner.findViewById(R.id.graph_frame3) 
+			};
+			
+		View[] viewArr = {
+				new PreviewFrameLayout(owner, R.drawable.graph_accel_400, accel_graph),
+				new PreviewFrameLayout(owner, R.drawable.graph_power_bar_400, stroke_power_bar_graph), 
+				new PreviewFrameLayout(owner, R.drawable.graph_analysis_400, stroke_analysis_graph),
+				new PreviewFrameLayout(owner, R.drawable.graph_power_400, stroke_power_graph), 
+				new PreviewFrameLayout(owner, R.drawable.graph_stroke_400, stroke_graph), 
+				roll_view_group, 
+				heart_rate_view
+		};
+		
+		LinkedList<View> views = new LinkedList<View>();
+		
+		for (View view: viewArr) { // add only non black-listed views
+			if (view.getTag() == null || !view.getTag().equals("blackList")) {
+				views.add(view);
+			}
+		}		
+		
 		slotList = new ArrayList<OrderInfo<FrameLayout>>(slots.length);
-		viewList = new ArrayList<OrderInfo<View>>(views.length);
-		this.slotContainer = slotContainer;
+		viewList = new ArrayList<OrderInfo<View>>(views.size());
+
 		{
 			int i = 0;
 			for (FrameLayout frame: slots) {
@@ -109,6 +199,105 @@ public class GraphPanelDisplayManager {
 		slotCyclicCounter = prefs.getInt("slot.count", slotCyclicCounter);
 		
 		this.owner = owner;
+		
+		
+		{ // init
+			
+			for (final View view: views) {
+				
+				final GestureDetector gd = new GestureDetector(
+						new GestureDetector.SimpleOnGestureListener() {
+							
+							@Override
+							public boolean onFling(MotionEvent e1, MotionEvent e2,
+									float velocityX, float velocityY) {
+								float vx = Math.abs(velocityX);
+								float vy = Math.abs(velocityY);
+								if (vx > vy) { // left/right fling: forward/rewind
+												// replay
+									if (owner.isReplaying()) {
+										pendingReset.trigger(); // post graph data flush/reset request
+										owner.roboStroke.getDataInput().skipReplayTime(
+												velocityX);
+									}
+								} else if (velocityY > 0) { // fling down
+									if (owner.isReplaying())
+										owner.togglePause();
+								} else { // fling up
+									toggleSlotView((FrameLayout) view.getParent());
+								}
+
+								return true;
+							}
+
+							@Override
+							public boolean onDoubleTap(MotionEvent event) {
+								toggleSlotCount(view);
+
+								return true;
+							};
+
+							@Override
+							public boolean onSingleTapConfirmed(MotionEvent event) {
+								if (view == roll_view_group) {
+									roll_view_group.setMode(null);
+									return true;
+								}
+
+								return super.onSingleTapConfirmed(event);
+							}
+
+							@Override
+							public void onLongPress(MotionEvent event) {
+
+								if (view == roll_view_group) {
+									if (tiltFreezeOn) {
+										owner.showDialog(R.layout.tilt_freeze_dialog);
+									} else {
+										if (RoboStrokeActivity.m_AlertDlg != null) {
+											RoboStrokeActivity.m_AlertDlg.cancel();
+										}
+
+
+										RoboStrokeActivity.m_AlertDlg = new AlertDialog.Builder(owner)
+										.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												dialog.cancel();
+												owner.showDialog(R.layout.tilt_freeze_dialog);
+											}
+										})
+										.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+											@Override
+											public void onClick(DialogInterface dialog, int which) {
+												dialog.cancel();
+											}
+										})
+
+										.setMessage(owner.getString(R.string.tilt_freeze_warning).replace("${CALIBRATION_SECONDS}", RoboStrokeConstants.TILT_FREEZE_CALIBRATION_TIME+""))
+												.setTitle("Tilt Freeze")
+												.setIcon(R.drawable.icon)
+												.setCancelable(true)
+												.show();						
+									}
+								}
+							}
+						});
+
+				view.setOnTouchListener(new View.OnTouchListener() {
+
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						gd.onTouchEvent(event);
+						return true;
+					}
+				});
+			}
+
+			restore();
+		}
 	}
 	
 	private void setVisibleSlotCount(int slots, View stickyView) {
@@ -214,6 +403,32 @@ public class GraphPanelDisplayManager {
 		return res;
 	}
 	
+	synchronized boolean[] resetGraphs(boolean halfFlush, boolean[] restoreStates) {
+		final DataUpdatable[] arr = {
+				accel_graph, stroke_graph, stroke_power_graph, stroke_analysis_graph
+		};
+		
+		final boolean[] states = new boolean[arr.length];
+		
+		int i = 0;
+		for (DataUpdatable graph: arr) {
+			if (halfFlush) {
+				if (restoreStates == null) {
+
+					states[i++] = graph.isDisabled();
+					graph.disableUpdate(true);
+				} else {
+					graph.reset();
+					graph.disableUpdate(restoreStates[i++]);
+				}
+			} else {				
+				graph.reset();
+			}
+		}
+
+		return states;
+	}
+
 	public void restore() {
 		
 		boolean firstRun = prefs.getBoolean("firstRun", true);
@@ -246,6 +461,17 @@ public class GraphPanelDisplayManager {
 		}			
 	}
 	
+	void setEnableHrm(boolean enable, boolean resetNextRun) {
+		
+		if (heart_rate_view != null) {
+			this.heart_rate_view.setTag(enable ? null : "blackList");
+
+			if (resetNextRun) {
+				resetNextRun();
+			}
+		}
+	}
+
 	public void toggleSlotCount(View view) {
 		
 		if (view == null) {
