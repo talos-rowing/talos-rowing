@@ -30,13 +30,18 @@ import android.graphics.Rect;
 
 public class AndroidCanvas implements RSCanvas {
 
-	private final Canvas canvas;
+	private Canvas canvas;
 	
 	
 	public AndroidCanvas(Canvas canvas) {
 		this.canvas = canvas;
 	}
 
+	public AndroidCanvas setCanvas(Canvas canvas) {
+		this.canvas = canvas;
+		return this;
+	}
+	
 	@Override
 	public void drawLine(int left, float y, int right, float y2,
 			RSPaint gridPaint) {

@@ -39,6 +39,8 @@ public abstract class AndroidGraphViewBase<T extends UpdatableGraphBase> extends
 
 	protected T graph;
 	
+	private final AndroidCanvas canvasAPI = new AndroidCanvas(null);
+	
 	public AndroidGraphViewBase(Context context) {
 		
 		super(context);
@@ -69,7 +71,7 @@ public abstract class AndroidGraphViewBase<T extends UpdatableGraphBase> extends
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		graph.draw(new AndroidCanvas(canvas));
+		graph.draw(canvasAPI.setCanvas(canvas));
 	}
 		
 	public boolean isDisabled() {
