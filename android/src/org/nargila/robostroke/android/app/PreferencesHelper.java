@@ -42,6 +42,8 @@ public class PreferencesHelper {
 
 	private static final String METERS_RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
 
+	private static final String GRAPHS_SHOW_PREFERENCE_KEY = "org.nargila.talos.rowing.android.layout.graphs.show";
+
 	private static final String METERS_LAYOUT_MODE_KEY = "org.nargila.talos.rowing.android.layout.meters.layoutMode";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
@@ -63,9 +65,14 @@ public class PreferencesHelper {
 				owner.graphPanelDisplayManager.resetNextRun();
 			} else 	if (key.equals(METERS_RESET_ON_START_PREFERENCE_KEY)) {
 				owner.metersDisplayManager.setResetOnStart(preferences.getBoolean(METERS_RESET_ON_START_PREFERENCE_KEY, true));
-			} else if (key.equals(METERS_LAYOUT_MODE_KEY)) {
-				String val = preferences.getString(METERS_LAYOUT_MODE_KEY, "AUTO");
+			} else if (key.equals(METERS_LAYOUT_MODE_KEY)) {				
+				String defaultValue = owner.getString(R.string.defaults_layout_meter_mode);
+				String val = preferences.getString(METERS_LAYOUT_MODE_KEY, defaultValue);
 				owner.metersDisplayManager.setLayoutMode(val);
+			} else if (key.equals(GRAPHS_SHOW_PREFERENCE_KEY)) {
+				boolean defaultValue = new Boolean(owner.getString(R.string.defaults_layout_show_graphs));
+				boolean val = preferences.getBoolean(GRAPHS_SHOW_PREFERENCE_KEY, defaultValue);
+				owner.graphPanelDisplayManager.setShowGraphs(val);
 			} 
 		}
 	};
@@ -136,7 +143,8 @@ public class PreferencesHelper {
 	private void applyPreferences() {
 		String[] keys = {
 				METERS_RESET_ON_START_PREFERENCE_KEY,
-				METERS_LAYOUT_MODE_KEY
+				METERS_LAYOUT_MODE_KEY,
+				GRAPHS_SHOW_PREFERENCE_KEY
 		};
 		
 		for (String key: keys) {
