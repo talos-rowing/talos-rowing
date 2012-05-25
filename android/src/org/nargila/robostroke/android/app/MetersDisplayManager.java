@@ -26,19 +26,16 @@ import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.input.DataRecord.Type;
+import org.nargila.robostroke.input.SensorDataSink;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.ui.LayoutMode;
 import org.nargila.robostroke.way.GPSDataFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Color;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.text.format.Time;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,8 +59,6 @@ public class MetersDisplayManager implements SensorDataSink {
 	private static final int GPS_ACCURACY_FAIR_COLOUR = Color.argb(170, 255, 255, 0);//Color.YELLOW;
 
 	private static final int GPS_ACCURACY_GOOD_COLOUR = Color.argb(150, 0, 255, 0);//Color.GREEN;
-
-	private static final String RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
 
 	private static final int ROWING_OFF_COLOUR = Color.DKGRAY;
 
@@ -92,7 +87,7 @@ public class MetersDisplayManager implements SensorDataSink {
 	private TextView distanceTxt;
 	private TextView splitDistanceTxt;
 	
-	private LayoutMode layoutMode = LayoutMode.DEFAULT;
+	private LayoutMode layoutMode = LayoutMode.COMPACT;
 	
 	private boolean splitTimerOn;
 
@@ -127,8 +122,6 @@ public class MetersDisplayManager implements SensorDataSink {
 
 	private long lastStopTime = -1;
 
-	private OnSharedPreferenceChangeListener onSharedPreferenceChangeListener; // must keep this as field, not local variable of initPreferenceSync()!
-
 	private Long startTimestamp;
 
 	private long baseDistanceTime;
@@ -136,6 +129,8 @@ public class MetersDisplayManager implements SensorDataSink {
 	private double baseDistance;
 
 	private long splitDistanceTime;
+
+	protected boolean lockLayoutMode;
 
 	/**
 	 * @param owner the RoboStroke Activity
@@ -156,14 +151,14 @@ public class MetersDisplayManager implements SensorDataSink {
 		splitDistanceTxt = distanceSubTxt = (TextView) owner.findViewById(R.id.distance_sub);
 		distanceTxt = distanceMainTxt = (TextView) owner.findViewById(R.id.distance_main);
 		
-		meterLayouts[LayoutMode.DEFAULT.ordinal()] = (ViewGroup) owner.findViewById(R.id.meters_container_compact);
+		meterLayouts[LayoutMode.COMPACT.ordinal()] = (ViewGroup) owner.findViewById(R.id.meters_container_compact);
 		meterLayouts[LayoutMode.EXPANDED.ordinal()] = (ViewGroup) owner.findViewById(R.id.meters_container_expanded);
 
 		bus = owner.roboStroke.getBus();
 		
 		{
-			this.currentMeterLayout = meterLayouts[LayoutMode.DEFAULT.ordinal()];			
-			toggleMeterExtras(LayoutMode.DEFAULT);
+			this.currentMeterLayout = meterLayouts[LayoutMode.COMPACT.ordinal()];			
+			toggleMeterExtras(LayoutMode.COMPACT);
 		}
 
 		splitTimeTxt.setOnLongClickListener(new View.OnLongClickListener() {
@@ -282,32 +277,7 @@ public class MetersDisplayManager implements SensorDataSink {
 				break;
 				}
 			}
-		});		
-		
-		initPreferenceSync();		
-		
-		
-	}
-	
-	private void initPreferenceSync() {
-		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(owner);
-		
-		onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-
-			@Override
-			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-					String key) {
-
-				if (key.equals(RESET_ON_START_PREFERENCE_KEY)) {
-					resetOnStart = 
-						preferences.getBoolean(RESET_ON_START_PREFERENCE_KEY, resetOnStart);
-				}
-			}
-		};
-		preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
-		
-		resetOnStart = 
-			preferences.getBoolean(RESET_ON_START_PREFERENCE_KEY, resetOnStart);
+		});				
 	}
 	
 	private void updateWay(final double distance, final long speed,
@@ -345,6 +315,11 @@ public class MetersDisplayManager implements SensorDataSink {
 			}
 		});
 	}
+	
+	public void setResetOnStart(boolean resetOnStart) {
+		this.resetOnStart = resetOnStart;
+	}
+	
 	/**
 	 * format and display distance in the 'distanceTxt' text view
 	 * 
@@ -542,7 +517,7 @@ public class MetersDisplayManager implements SensorDataSink {
 						
 			boolean swapped = true;
 			switch (meterLayout) {
-			case DEFAULT:
+			case COMPACT:
 				splitDistanceTxt = distanceSubTxt;
 				distanceTxt = distanceMainTxt;
 				break;
@@ -594,10 +569,24 @@ public class MetersDisplayManager implements SensorDataSink {
 	}
 
 	public void onLayoutModeChange(LayoutMode newMode) {
-		
+		if (!lockLayoutMode) {
+			setLayoutMode(newMode);
+		}
+	}
+
+	private void setLayoutMode(LayoutMode newMode) {
 		if (newMode != layoutMode) {
 			updateLayout(newMode);
 			layoutMode = newMode;
+		}
+	}
+
+	public void setLayoutMode(String val) {
+		
+		lockLayoutMode = !val.equals("AUTO");
+		
+		if (lockLayoutMode) {
+			setLayoutMode(LayoutMode.valueOf(val));
 		}
 	}
 }

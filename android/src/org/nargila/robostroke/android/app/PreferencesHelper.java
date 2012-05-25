@@ -40,10 +40,15 @@ public class PreferencesHelper {
 
 	private static final String PREFERENCE_KEY_PREFERENCES_RESET = "org.nargila.talos.rowing.android.preferences.reset";
 
+	private static final String METERS_RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
+
+	private static final String METERS_LAYOUT_MODE_KEY = "org.nargila.talos.rowing.android.layout.meters.layoutMode";
+
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	private final SharedPreferences preferences;
 	
+	// must keep onSharedPreferenceChangeListener as field, never as local variable or it will be garbage collected!
 	private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		
 		@Override
@@ -52,11 +57,16 @@ public class PreferencesHelper {
 			setParameterFromPreferences(key); 
 			
 			if (key.equals(PREFERENCE_KEY_HRM_ENABLE)) {
-				owner.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), true);
+				owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), true);
 			} else if (key.equals(PREFERENCE_KEY_PREFERENCES_RESET)) {
 				preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, true).commit();
 				owner.graphPanelDisplayManager.resetNextRun();
-			}
+			} else 	if (key.equals(METERS_RESET_ON_START_PREFERENCE_KEY)) {
+				owner.metersDisplayManager.setResetOnStart(preferences.getBoolean(METERS_RESET_ON_START_PREFERENCE_KEY, true));
+			} else if (key.equals(METERS_LAYOUT_MODE_KEY)) {
+				String val = preferences.getString(METERS_LAYOUT_MODE_KEY, "AUTO");
+				owner.metersDisplayManager.setLayoutMode(val);
+			} 
 		}
 	};
 
@@ -76,8 +86,10 @@ public class PreferencesHelper {
 		
 		resetPreferencesIfNeeded();
 		
-		initializePrefs();
-		
+		initializePrefs();		
+	}
+
+	public void init() {
 		syncParametersFromPreferences();
 		applyPreferences();
 		attachPreferencesListener();
@@ -122,7 +134,16 @@ public class PreferencesHelper {
 	}
 
 	private void applyPreferences() {
-		owner.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), false);
+		String[] keys = {
+				METERS_RESET_ON_START_PREFERENCE_KEY,
+				METERS_LAYOUT_MODE_KEY
+		};
+		
+		for (String key: keys) {
+			onSharedPreferenceChangeListener.onSharedPreferenceChanged(preferences, key);
+		}
+		
+		owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), false);
 	}
 
 	private void syncParametersFromPreferences() {
