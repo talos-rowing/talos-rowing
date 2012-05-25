@@ -581,7 +581,16 @@ public class MetersDisplayManager implements SensorDataSink {
 		}
 	}
 
+	void onUpdateGraphSlotCount(int slotCount) {
+		onLayoutModeChange(slotCount == 1 ? LayoutMode.EXPANDED : LayoutMode.COMPACT);		
+		
+	}
+	
 	public void setLayoutMode(String val) {
+		
+		if (val == null) {
+			val = "AUTO";
+		}
 		
 		lockLayoutMode = !val.equals("AUTO");
 		
