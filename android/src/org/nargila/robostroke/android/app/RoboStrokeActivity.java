@@ -54,7 +54,6 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
-import org.nargila.robostroke.ui.LayoutMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -496,6 +495,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		return handler;
 	}
 
+	
 	private void setPaused(boolean paused) {
 		replayPaused = paused;
 		roboStroke.getDataInput().setPaused(replayPaused);
@@ -544,6 +544,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		graphPanelDisplayManager = new GraphPanelDisplayManager(this);		
 
+		preferencesHelper.init();
+		
+		graphPanelDisplayManager.init();
+		
 		roboStroke.getAccelerationFilter().addSensorDataSink(metersDisplayManager);
 		
 		View.OnClickListener recordingClickListener = new View.OnClickListener() {
@@ -914,7 +918,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		this.replayFile = null;
 		
-		graphPanelDisplayManager.resetGraphs(false, null);
+		graphPanelDisplayManager.resetGraphs();
 
 		try {
 			
@@ -1096,12 +1100,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	protected void onPause() {
 		screenLock.stop();
 		super.onPause();
-	}
-
-
-	public void onUpdateGraphSlotCount(int slotCount) {
-		metersDisplayManager.onLayoutModeChange(slotCount == 1 ? LayoutMode.EXPANDED : LayoutMode.COMPACT);		
-		
 	}
 
 	public MetersDisplayManager getMetersDisplayManager() {
