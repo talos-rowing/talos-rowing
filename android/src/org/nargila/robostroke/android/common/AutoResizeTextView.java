@@ -1,6 +1,6 @@
 package org.nargila.robostroke.android.common;
+
 import android.content.Context;
-import android.graphics.Canvas;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -18,8 +18,12 @@ import android.widget.TextView;
  */
 public class AutoResizeTextView extends TextView {
 
+	private static final String XML_SCHEMA = "http://nargila.org/android";
+
+
     // Minimum text size for this text view
     public static final float MIN_TEXT_SIZE = 20;
+    public static final float MAX_TEXT_SIZE = 200;
 
     // Interface for resize notifications
     public interface OnTextResizeListener {
@@ -39,7 +43,7 @@ public class AutoResizeTextView extends TextView {
     private float mTextSize;
 
     // Temporary upper bounds on the starting text size
-    private float mMaxTextSize = 0;
+    private float mMaxTextSize = MAX_TEXT_SIZE;
 
     // Lower bounds for text size
     private float mMinTextSize = MIN_TEXT_SIZE;
@@ -65,8 +69,14 @@ public class AutoResizeTextView extends TextView {
 
     // Default constructor override
     public AutoResizeTextView(Context context, AttributeSet attrs, int defStyle) {
+    	
         super(context, attrs, defStyle);
+        
         mTextSize = getTextSize();
+        
+        mMaxTextSize = mTextSize;
+        
+        mMinTextSize = attrs.getAttributeFloatValue(XML_SCHEMA, "minTextSize", MIN_TEXT_SIZE);
     }
 
     /**
@@ -182,7 +192,7 @@ public class AutoResizeTextView extends TextView {
      */
     public void resetTextSize() {
         super.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
-        mMaxTextSize = mTextSize;
+//        mMaxTextSize = mTextSize;
     }
 
     /**
