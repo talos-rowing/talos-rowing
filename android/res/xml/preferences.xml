@@ -27,6 +27,21 @@
 			nargila:seekRange="9"
 			android:summary="shows a more visually appealing smooth stroke curve in power graph" />
 	</PreferenceCategory>
+	<PreferenceCategory android:title="Appearance">
+		<ListPreference android:title="Meters View Mode"
+			android:key="org.nargila.talos.rowing.android.layout.meters.layoutMode"
+			android:persistent="true"
+			android:defaultValue="@string/defaults_layout_meter_mode"
+			android:summary="Set meters view layout mode"
+			android:entries="@array/meter_layout_mode_display"
+			android:entryValues="@array/meter_layout_mode_values"/>
+		<CheckBoxPreference 
+			android:key="org.nargila.talos.rowing.android.layout.graphs.show" 
+			android:title="Show Graphs" 
+			android:defaultValue="@string/defaults_layout_show_graphs" 
+			android:summary="Display/hide graph view" 
+			android:persistent="true"/>
+    </PreferenceCategory>
 	<PreferenceCategory android:title="Split Rowing">
 		<ListPreference android:title="Activation Mode"
 			android:key="org.nargila.talos.rowing.stroke.detector.startMode"
