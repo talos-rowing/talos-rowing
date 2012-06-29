@@ -1029,9 +1029,26 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			String version = getVersion(this);
 			m_AlertDlg = new AlertDialog.Builder(this)
 			.setMessage(getString(R.string.about_text).replace("\\n","\n").replace("${VERSION}", version))
-			.setTitle("About")
+			.setTitle(R.string.about)
 			.setIcon(R.drawable.icon)
 			.setCancelable(true)
+			.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					m_AlertDlg.cancel();
+				}
+			})
+			.setPositiveButton(R.string.open_guide, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					String url = "http://nargila.org/trac/robostroke/wiki/GuideIntroduction";
+					Intent i = new Intent(Intent.ACTION_VIEW);
+					i.setData(Uri.parse(url));
+					startActivity(i);
+				}
+			})
 			.show();
 			break;
 		}
