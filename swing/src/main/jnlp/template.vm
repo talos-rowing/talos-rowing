@@ -7,9 +7,11 @@
 
   <information>
     <title>${project.name}</title>
+    <vendor>Talos Rowing</vendor>
+    <description>Talos Rowing Session Viewer</description>
     <homepage href="http://nargila.org/trac/robostroke"/>
-    <icon href="images/logo.png"/>
-    <icon kind="flash" href="images/logo.png"/>
+    <icon href="logo.png"/>
+    <icon kind="flash" href="logo.png"/>
 
     <offline-allowed /> 
   </information> 
