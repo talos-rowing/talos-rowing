@@ -197,11 +197,11 @@ public class TalosPipeline extends Pipeline implements PadListener,
 
 			videodec.setState(PAUSE);
 		} else if (mime.equals("application/x-kate")) {
-			addKateSteam(pad, caps);
+			addKateStream(pad, caps);
 		}
 	}
 
-	public void addKateSteam(Pad pad, Caps caps) {
+	public void addKateStream(Pad pad, Caps caps) {
 		String category = caps.getFieldString("category", "");
 		boolean isRobostrokeStream = category.equals("robostroke");
 		
