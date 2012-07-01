@@ -39,7 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nargila.robostroke.common.LocationUtil;
 import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.FileSensorDataInput;
+import org.nargila.robostroke.input.FileDataInput;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.DistanceResolver;
 
@@ -95,7 +95,7 @@ public class RoboStrokeTest {
 
 	private void start() throws IOException {
 		
-		roboStroke.setInput(new FileSensorDataInput(null, inputFile));
+		roboStroke.setInput(new FileDataInput(null, inputFile));
 		
 		roboStroke.setDataLogger(logFile);		
 	}

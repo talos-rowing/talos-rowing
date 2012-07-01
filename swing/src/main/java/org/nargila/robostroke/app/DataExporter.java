@@ -20,7 +20,7 @@ import javax.swing.filechooser.FileFilter;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataRecord.Type;
-import org.nargila.robostroke.input.FileSensorDataInput;
+import org.nargila.robostroke.input.FileDataInput;
 
 class DataExporter {
 
@@ -74,7 +74,7 @@ class DataExporter {
 				
 				onProgress(currentPos / (double)dataLength);
 				
-				Pair<Long,DataRecord> p = FileSensorDataInput.parseRecord(line);
+				Pair<Long,DataRecord> p = FileDataInput.parseRecord(line);
 
 				if (p != null) {
 					DataRecord record = p.second;

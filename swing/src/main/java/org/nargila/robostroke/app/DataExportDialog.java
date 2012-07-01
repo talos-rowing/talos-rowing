@@ -25,7 +25,8 @@ import javax.swing.event.ChangeListener;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.DataRecord.Type;
-import org.nargila.robostroke.input.FileSensorDataInput;
+import org.nargila.robostroke.input.FileDataInput;
+import org.nargila.robostroke.input.RecordDataInput;
 
 public class DataExportDialog extends JDialog {
 
@@ -123,7 +124,7 @@ public class DataExportDialog extends JDialog {
 
 		exportButton.setEnabled(false);
 		
-		FileSensorDataInput input = (FileSensorDataInput) rs.getDataInput();
+		FileDataInput input = (FileDataInput) rs.getDataInput();
 		
 		final File dataFile = input.getDataFile();
 		final HashSet<Type> exportSet = new HashSet<DataRecord.Type>();
@@ -158,7 +159,7 @@ public class DataExportDialog extends JDialog {
 	public void setVisible(boolean b) {
 		
 		if (b) {
-			FileSensorDataInput input = (FileSensorDataInput) rs.getDataInput();
+			RecordDataInput input = (RecordDataInput) rs.getDataInput();
 			input.setPaused(true);
 		}
 		

@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.acceleration.GravityFilter;
 import org.nargila.robostroke.input.ErrorListener;
-import org.nargila.robostroke.input.FileSensorDataInput;
+import org.nargila.robostroke.input.FileDataInput;
 import org.nargila.robostroke.input.SensorDataFilter;
 import org.nargila.robostroke.input.SensorDataInput;
 import org.nargila.robostroke.input.SensorDataSink;
@@ -173,7 +173,7 @@ public class RoboStroke {
 	 * @throws IOException
 	 */
 	public void setFileInput(File file) throws IOException {
-		setInput(new FileSensorDataInput(bus, file));
+		setInput(new FileDataInput(bus, file));
 	}
 	
 	/**
