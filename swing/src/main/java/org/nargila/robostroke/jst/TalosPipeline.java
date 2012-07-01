@@ -17,12 +17,13 @@
  */
 
 package org.nargila.robostroke.jst;
-
 import java.util.*;
 import java.awt.*;
 import java.net.URL;
 
 import javax.swing.JFrame;
+
+import org.nargila.robostroke.input.RecordDataInput;
 
 import com.fluendo.jst.*;
 import com.fluendo.utils.*;
@@ -53,6 +54,7 @@ public class TalosPipeline extends Pipeline implements PadListener,
 	private Element audiodec;
 	private Element videosink;
 	private Element audiosink;
+	private Element robostroke;
 	private Element v_queue, v_queue2, a_queue = null;
 	private Element overlay;
 	private Pad asinkpad, ovsinkpad, oksinkpad;
@@ -60,9 +62,10 @@ public class TalosPipeline extends Pipeline implements PadListener,
 	private Vector<Element> katedec = new Vector<Element>();
 	private Vector<Element> k_queue = new Vector<Element>();
 	private Element kselector = null;
+	private RecordDataInput talosRecordPlayer;
 
 	public boolean usingJavaX = false;
-
+	
 	private boolean setupVideoDec(String name) {
 		videodec = ElementFactory.makeByName(name, "videodec");
 		if (videodec == null) {
@@ -73,6 +76,10 @@ public class TalosPipeline extends Pipeline implements PadListener,
 		return true;
 	}
 
+	public void setTalosRecordPlayer(RecordDataInput talosRecordPlayer) {
+		this.talosRecordPlayer = talosRecordPlayer;
+	}
+	
 	public void padAdded(Pad pad) {
 		Caps caps = pad.getCaps();
 
@@ -196,8 +203,9 @@ public class TalosPipeline extends Pipeline implements PadListener,
 
 	public void addKateSteam(Pad pad, Caps caps) {
 		String category = caps.getFieldString("category", "");
-
-		if (category.equals("robostroke") || enableVideo) {
+		boolean isRobostrokeStream = category.equals("robostroke");
+		
+		if (isRobostrokeStream || enableVideo) {
 			Element tmp_k_queue, tmp_katedec;
 			int kate_index = katedec.size();
 
@@ -222,7 +230,7 @@ public class TalosPipeline extends Pipeline implements PadListener,
 			 * The selector is created when the first Kate stream is
 			 * encountered
 			 */
-			if (kselector == null) {
+			if (kselector == null && !isRobostrokeStream) {
 				Debug.debug("No Kate selector yet, creating one");
 
 				/* insert an overlay before the video sink */
@@ -292,14 +300,37 @@ public class TalosPipeline extends Pipeline implements PadListener,
 				return;
 			}
 
-			Pad new_selector_pad = kselector.requestSinkPad(tmp_katedec
-					.getPad("src"));
-			if (!tmp_katedec.getPad("src").link(new_selector_pad)) {
-				postMessage(Message.newError(this,
-						"kate sink already linked"));
-				return;
+			if (!isRobostrokeStream) {
+				Pad new_selector_pad = kselector.requestSinkPad(tmp_katedec
+						.getPad("src"));
+				if (!tmp_katedec.getPad("src").link(new_selector_pad)) {
+					postMessage(Message.newError(this,
+							"kate sink already linked"));
+					return;
+				}
+			} else {
+				
+				if (robostroke == null) {
+					
+					if (talosRecordPlayer == null) {
+						postMessage(Message.newError(this,
+								"setTalosRecordPlayer() was not called!"));
+						return;
+					}
+					
+					robostroke = new TalosSink(talosRecordPlayer);		
+					
+					add(robostroke);
+					robostroke.setState(PAUSE);
+				}
+				
+				if (!tmp_katedec.getPad("src").link(robostroke.getPad("sink"))) {
+					postMessage(Message.newError(this,
+							"robostroke sink already linked"));
+					return;
+				}
 			}
-
+			
 			tmp_katedec.setState(PAUSE);
 			tmp_k_queue.setState(PAUSE);
 
@@ -307,19 +338,21 @@ public class TalosPipeline extends Pipeline implements PadListener,
 			katedec.addElement(tmp_katedec);
 			k_queue.addElement(tmp_k_queue);
 
-			/* if we have just added the one that was selected, link it now */
-			if (enableKate == katedec.size() - 1) {
-				doEnableKateIndex(enableKate);
-			} else if (enableKate < 0
-					&& (!enableKateLanguage.equals("") || !enableKateCategory
-							.equals(""))) {
-				String language = caps.getFieldString("language", "");
-				boolean matching_language = enableKateLanguage.equals("")
-						|| enableKateLanguage.equals(language);
-				boolean matching_category = enableKateCategory.equals("")
-						|| enableKateCategory.equals(category);
-				if (matching_language && matching_category) {
-					doEnableKateIndex(katedec.size() - 1);
+			if (!isRobostrokeStream) {
+				/* if we have just added the one that was selected, link it now */
+				if (enableKate == katedec.size() - 1) {
+					doEnableKateIndex(enableKate);
+				} else if (enableKate < 0
+						&& (!enableKateLanguage.equals("") || !enableKateCategory
+								.equals(""))) {
+					String language = caps.getFieldString("language", "");
+					boolean matching_language = enableKateLanguage.equals("")
+							|| enableKateLanguage.equals(language);
+					boolean matching_category = enableKateCategory.equals("")
+							|| enableKateCategory.equals(category);
+					if (matching_language && matching_category) {
+						doEnableKateIndex(katedec.size() - 1);
+					}
 				}
 			}
 		}
@@ -368,10 +401,17 @@ public class TalosPipeline extends Pipeline implements PadListener,
 			overlay = null;
 			changed = true;
 		}
-		if (changed)
+		if (changed) {
 			scheduleReCalcState();
+		}
+		
+		super.noMorePads();
 	}
 
+	public boolean hasVideo() {
+		return enableVideo && videosink != null;
+	}
+	
 	public TalosPipeline() {
 		super("pipeline");
 		enableAudio = true;
