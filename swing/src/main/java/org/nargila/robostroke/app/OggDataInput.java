@@ -123,6 +123,8 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 
                     old = msg.parseStateChangedOld();
                     next = msg.parseStateChangedNext();
+                    
+                    Debug.log(Debug.INFO, "STATE_CHANGED: old=" + old + ", next=" + next);
 
                     switch (next) {
                         case Element.PAUSE:
@@ -171,12 +173,16 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 
 	@Override
 	protected void onSetPosPending(double pos) {
-		jst.setState(Pipeline.PAUSE);
+		if (seekable) {
+			jst.setState(Pipeline.PAUSE);
+		}
 	}
 
 	@Override
 	protected void onSetPosFinish(double pos) {
-		jst.setPos(pos);
-		jst.setState(Pipeline.PLAY);
+		if (seekable) {
+			jst.setPos(pos);
+			jst.setState(Pipeline.PLAY);			
+		}
 	}
 }
