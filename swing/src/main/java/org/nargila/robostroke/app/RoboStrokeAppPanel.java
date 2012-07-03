@@ -1,7 +1,6 @@
 package org.nargila.robostroke.app;
 
 import java.awt.BorderLayout;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,7 +15,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -35,7 +33,6 @@ import org.nargila.robostroke.input.DataRecord;
 import org.nargila.robostroke.input.FileDataInput;
 import org.nargila.robostroke.input.RecordDataInput;
 import org.nargila.robostroke.input.SensorDataInput;
-import org.nargila.robostroke.jst.TalosPipeline;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -44,9 +41,6 @@ import org.nargila.robostroke.ui.meters.swing.SwingMeterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fluendo.jst.Pad;
-import com.fluendo.jst.PadListener;
-import com.fluendo.jst.Pipeline;
 
 import javax.swing.SwingConstants;
 
@@ -62,9 +56,6 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JPanel accellGraphContainer;
 	private JPanel analysisGraphContainer;
 	private JPanel strokeGraphContainer;
-	private TalosPipeline jst;
-	private JFrame videoFrame;
-	private Canvas videoCanvas;
 	
 	private RoboStroke rs;
 
@@ -216,6 +207,7 @@ public class RoboStrokeAppPanel extends JPanel {
 			}
 		});
 		
+
 		slider.setBackground(Color.BLACK);
 		panel_2.add(slider);
 		slider.setValue(0);
@@ -367,78 +359,10 @@ public class RoboStrokeAppPanel extends JPanel {
 		boolean ogg = f.getName().toLowerCase().endsWith(".ogg");
 		SensorDataInput dataInput;
 		
-		if (jst != null) {
-			jst.setState(Pipeline.NONE);
-			jst = null;
-			
-			videoFrame.setVisible(false);
-		}
-		
 		if (ogg) {
 			
-			dataInput = new RecordDataInput(rs.getBus()) {
-				
-				@Override
-				public void stop() {
-					videoFrame.setVisible(false);
-				}
-				
-				@Override
-				public void start() {
-					jst.setState(Pipeline.PLAY);
-				}
-				
-				@Override
-				public void skipReplayTime(float velocityX) {
-					jst.setState(Pipeline.NONE);
-				}
-				
-				@Override
-				public void setPaused(boolean pause) {
-					jst.setState(pause ? Pipeline.PAUSE : Pipeline.PLAY);
-				}
-				
-				@Override
-				public void setPos(double pos) {
-					
-					if (pos < 0 || pos > 1.0) {
-						throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
-					}
-
-					jst.setPos(pos);
-				}
-			};
+			dataInput = new OggDataInput(f, rs.getBus());			
 			
-			if (videoFrame == null) {
-				videoFrame = new JFrame();
-				videoCanvas = new Canvas();
-				videoCanvas.setSize(500, 400);
-				videoFrame.getContentPane().add(videoCanvas);
-				videoFrame.pack();
-				videoFrame.setLocationRelativeTo(this);
-			}
-			
-			jst = new TalosPipeline();
-			jst.setComponent(videoCanvas);
-			jst.setTalosRecordPlayer((RecordDataInput) dataInput);
-			jst.setUrl(f.toURI().toURL().toString());
-
-			jst.addPadListener(new PadListener() {
-				
-				@Override
-				public void padRemoved(Pad pad) {					
-				}
-				
-				@Override
-				public void padAdded(Pad pad) {
-				}
-				
-				@Override
-				public void noMorePads() {	
-					videoFrame.setVisible(jst.hasVideo());
-				}
-			});
-						
 		} else {
 			dataInput = new FileDataInput(rs.getBus(), f);
 		}
@@ -496,9 +420,11 @@ public class RoboStrokeAppPanel extends JPanel {
 				switch (event.type) {
 				case REPLAY_PROGRESS:
 
-					double progress = (Double)event.data;
-					
-					slider.setValue((int)(progress * slider.getMaximum()));
+					if (!slider.getValueIsAdjusting()) {
+						double progress = (Double)event.data;
+
+						slider.setValue((int)(progress * slider.getMaximum()));
+					}
 					
 					break;
 					

@@ -256,7 +256,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		
 	}
 
-	public void setPos(double pos) {
+	protected void onSetPosFinish(double pos) {
 
 		if (pos < 0 || pos > 1.0) {
 			throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
