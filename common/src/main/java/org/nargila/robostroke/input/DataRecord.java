@@ -26,6 +26,7 @@ public class DataRecord {
 
 	public enum Type {
 		UUID,
+		RECORDING_COUNTDOWN,
 		STROKE_DROP_BELOW_ZERO,
 		STROKE_RISE_ABOVE_ZERO,
 		STROKE_POWER_START,

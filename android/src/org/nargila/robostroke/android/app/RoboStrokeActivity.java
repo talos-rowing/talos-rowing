@@ -146,6 +146,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	MetersDisplayManager metersDisplayManager;
 
+	public RecordSyncLeaderDialog recordLeaderDialog;
+
 	static AlertDialog m_AlertDlg;
 	
 	private class SessionFileHandler {
@@ -159,6 +161,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					roboStroke.setDataLogger(logFile);
 					
 					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
+					
+					if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_RECORD_LEADER_ENABLE, false)) {
+						if (recordLeaderDialog == null) {
+							recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
+						}
+						
+						recordLeaderDialog.start();
+					}
 							
 				} else {
 					roboStroke.setDataLogger(null);

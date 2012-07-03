@@ -31,20 +31,21 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 public class PreferencesHelper {
-	private static final int PREFERENCES_VERSION = 1;
+	public static final int PREFERENCES_VERSION = 1;
 
-	private static final String PREFERENCES_VERSION_RESET_KEY = "preferencesVersionReset" + PREFERENCES_VERSION;
+	public static final String PREFERENCES_VERSION_RESET_KEY = "preferencesVersionReset" + PREFERENCES_VERSION;
 
+	public static final String PREFERENCE_KEY_RECORD_LEADER_ENABLE = "org.nargila.talos.rowing.android.record.leader.enable";
+    
+	public static final String PREFERENCE_KEY_HRM_ENABLE = "org.nargila.talos.rowing.android.hrm.enable";
 
-	private static final String PREFERENCE_KEY_HRM_ENABLE = "org.nargila.talos.rowing.android.hrm.enable";
+	public static final String PREFERENCE_KEY_PREFERENCES_RESET = "org.nargila.talos.rowing.android.preferences.reset";
 
-	private static final String PREFERENCE_KEY_PREFERENCES_RESET = "org.nargila.talos.rowing.android.preferences.reset";
+	public static final String METERS_RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
 
-	private static final String METERS_RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
+	public static final String GRAPHS_SHOW_PREFERENCE_KEY = "org.nargila.talos.rowing.android.layout.graphs.show";
 
-	private static final String GRAPHS_SHOW_PREFERENCE_KEY = "org.nargila.talos.rowing.android.layout.graphs.show";
-
-	private static final String METERS_LAYOUT_MODE_KEY = "org.nargila.talos.rowing.android.layout.meters.layoutMode";
+	public static final String METERS_LAYOUT_MODE_KEY = "org.nargila.talos.rowing.android.layout.meters.layoutMode";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
@@ -140,6 +141,22 @@ public class PreferencesHelper {
 		}		
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> T getPref(String key, T defValue) {
+		
+		if (defValue instanceof Boolean) {
+			return (T)(Boolean)preferences.getBoolean(key, (Boolean) defValue);
+		} else if (defValue instanceof Integer) {
+			return (T)(Integer)preferences.getInt(key, (Integer) defValue);
+		} else if (defValue instanceof Long) {
+			return (T)(Long)preferences.getLong(key, (Long) defValue);
+		} else if (defValue instanceof Float) {
+			return (T)(Float)preferences.getFloat(key, (Float) defValue);
+		} else {
+			return  (T)preferences.getString(key, (String) defValue);
+		}
+	}
+	
 	private void applyPreferences() {
 		String[] keys = {
 				METERS_RESET_ON_START_PREFERENCE_KEY,

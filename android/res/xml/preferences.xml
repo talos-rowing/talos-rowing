@@ -102,7 +102,12 @@
 			android:persistent="true" 
 			android:defaultValue="false"
 			android:summary="For example When device is used by a forward facing coax" 
-			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/>
+			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/><CheckBoxPreference
+			android:title="Dispaly recording sync countdown"
+			android:persistent="true" 
+			android:defaultValue="false"
+			android:summary="Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media" 
+			android:key="org.nargila.talos.rowing.android.record.leader.enable"/>
 		<CheckBoxPreference
 			android:title="Reset settings"
 			android:persistent="true" 
