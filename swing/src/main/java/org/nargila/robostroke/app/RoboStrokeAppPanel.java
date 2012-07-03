@@ -207,7 +207,7 @@ public class RoboStrokeAppPanel extends JPanel {
 			    	
 			    	double progress = slider.getValue() / (double)slider.getMaximum();
 
-			    	FileDataInput input = (FileDataInput) rs.getDataInput();
+			    	RecordDataInput input = (RecordDataInput) rs.getDataInput();
 			    	
 			    	if (input != null) {
 			    		input.setPos(progress);
@@ -396,6 +396,16 @@ public class RoboStrokeAppPanel extends JPanel {
 				@Override
 				public void setPaused(boolean pause) {
 					jst.setState(pause ? Pipeline.PAUSE : Pipeline.PLAY);
+				}
+				
+				@Override
+				public void setPos(double pos) {
+					
+					if (pos < 0 || pos > 1.0) {
+						throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
+					}
+
+					jst.setPos(pos);
 				}
 			};
 			

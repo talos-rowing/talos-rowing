@@ -201,6 +201,21 @@ public class TalosPipeline extends Pipeline implements PadListener,
 		}
 	}
 
+    public void setPos(double aPos) {
+        boolean res;
+        com.fluendo.jst.Event event;
+
+        /* get value, convert to PERCENT and construct seek event */
+        event = com.fluendo.jst.Event.newSeek(Format.PERCENT,
+                (int) (aPos * 100.0 * Format.PERCENT_SCALE));
+
+        /* send event to pipeline */
+        res = sendEvent(event);
+        if (!res) {
+            Debug.log(Debug.WARNING, "seek failed");
+        }
+    }
+    
 	public void addKateStream(Pad pad, Caps caps) {
 		String category = caps.getFieldString("category", "");
 		boolean isRobostrokeStream = category.equals("robostroke");
@@ -300,15 +315,7 @@ public class TalosPipeline extends Pipeline implements PadListener,
 				return;
 			}
 
-			if (!isRobostrokeStream) {
-				Pad new_selector_pad = kselector.requestSinkPad(tmp_katedec
-						.getPad("src"));
-				if (!tmp_katedec.getPad("src").link(new_selector_pad)) {
-					postMessage(Message.newError(this,
-							"kate sink already linked"));
-					return;
-				}
-			} else {
+			if (isRobostrokeStream) {
 				
 				if (robostroke == null) {
 					
@@ -318,9 +325,21 @@ public class TalosPipeline extends Pipeline implements PadListener,
 						return;
 					}
 					
-					robostroke = new TalosSink(talosRecordPlayer);		
+					robostroke = ElementFactory.makeByName("queue", "robostroke_queue");
+					
+					if (robostroke == null) {
+						noSuchElement("queue");
+						return;
+					}
+
+					Element robostroke_sink = new TalosSink(talosRecordPlayer);		
 					
 					add(robostroke);
+					add(robostroke_sink);
+					
+					robostroke.getPad("src").link(robostroke_sink.getPad("sink"));
+					
+					robostroke_sink.setState(PAUSE);
 					robostroke.setState(PAUSE);
 				}
 				
@@ -329,7 +348,15 @@ public class TalosPipeline extends Pipeline implements PadListener,
 							"robostroke sink already linked"));
 					return;
 				}
-			}
+			} else {
+				Pad new_selector_pad = kselector.requestSinkPad(tmp_katedec
+						.getPad("src"));
+				if (!tmp_katedec.getPad("src").link(new_selector_pad)) {
+					postMessage(Message.newError(this,
+							"kate sink already linked"));
+					return;
+				}
+			} 
 			
 			tmp_katedec.setState(PAUSE);
 			tmp_k_queue.setState(PAUSE);

@@ -10,6 +10,13 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 		this.bus = bus;
 	}
 
+	
+	/**
+	 * set play pos
+	 * @param pos
+	 */	
+	public abstract void setPos(double pos);	
+	
 	public void playRecord(DataRecord record) {
 		if (record.type.isReplayableEvent) {
 			switch (record.type) {
