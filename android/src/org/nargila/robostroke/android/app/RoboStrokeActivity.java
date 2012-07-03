@@ -167,7 +167,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
 						}
 						
-						recordLeaderDialog.start();
+						recordLeaderDialog.show();
 					}
 							
 				} else {
@@ -741,12 +741,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			return super.onCreateDialog(id);
 		}
 
-		final Dialog settingDialog = new Dialog(this);
-		settingDialog.setContentView(id);
-		settingDialog.setTitle(dialogTitle);
+		final Dialog dialog = new Dialog(this);
+		dialog.setContentView(id);
+		dialog.setTitle(dialogTitle);
 
 		if (id == R.layout.tilt_freeze_dialog) {
-			final ToggleButton tb = (ToggleButton) settingDialog.findViewById(R.id.tilt_frozen);
+			final ToggleButton tb = (ToggleButton) dialog.findViewById(R.id.tilt_frozen);
 			tb.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -768,12 +768,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						roboStroke.getBus().fireEvent(DataRecord.Type.FREEZE_TILT, false);
 						graphPanelDisplayManager.tiltFreezeOn = false;
 					}
-					settingDialog.dismiss();
+					dialog.dismiss();
 				}
 			});
 		}
 
-		return settingDialog;
+		return dialog;
 	}
 
 	private synchronized void stop() {

@@ -2,61 +2,71 @@ package org.nargila.robostroke.android.app;
 
 import org.nargila.robostroke.input.DataRecord;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.os.Handler;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 
-class RecordSyncLeaderDialog {
-	private static final int COUNTDOWN = 3;
-	
-	final ProgressDialog progress;
+class RecordSyncLeaderDialog extends Dialog {
+	private final View view; 
 	private final RoboStrokeActivity owner;
 	private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+	private final ColorDrawable[] colors = {new ColorDrawable(Color.RED), new ColorDrawable(Color.YELLOW), new ColorDrawable(Color.GREEN)};
+	private boolean stopped;
+	private final Handler handler = new Handler();
 	
 	RecordSyncLeaderDialog(RoboStrokeActivity owner) {
-		this.owner = owner;
-		progress = new ProgressDialog(owner);
-		progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		progress.setMax(COUNTDOWN);
-		progress.setIndeterminate(false);
-		progress.setCancelable(true);
-		progress.setMessage("Countdown..");
-		
-		progress.setOnCancelListener(new DialogInterface.OnCancelListener() {
-			
-			@Override
-			public void onCancel(DialogInterface dialog) {
-				progress.dismiss();
-			}
-		});
+		super(owner);
+		this.owner = owner;	
+		this.view = new View(owner);
+		setContentView(view, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		view.setBackgroundColor(Color.TRANSPARENT);
+		getWindow().setBackgroundDrawable(colors[0]);
 	}
-	
-	void start() {				
 
-		progress.setProgress(0);
-
-		progress.show();	
+	@Override
+	protected void onStart() {
+		
+		getWindow().setBackgroundDrawable(colors[0]);
+		
+		stopped = false;
 		
 		owner.scheduler.submit(new Runnable() {
 			@Override
 			public void run() {
 
 				try {
-					for (int i = 0; i <= COUNTDOWN && progress.isShowing(); ++i) {
+					for (int i = 0; i < colors.length && !stopped; ++i) {
+						
+						final ColorDrawable color = colors[i];
+						
+						handler.post(new Runnable() {							
+							@Override
+							public void run() {
+								getWindow().setBackgroundDrawable(color);
+							}
+						});
+						
 						tg.startTone(ToneGenerator.TONE_PROP_BEEP);
-						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, i - COUNTDOWN);
-						progress.setProgress(i);
-
+						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, i - colors.length);
 						Thread.sleep(1000);						
 					}					
-				} catch (InterruptedException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					progress.dismiss();
+					dismiss();
 				}
 			}
 		});
-
+	}
+	
+	@Override
+	protected void onStop() {
+		stopped = true;
+		super.onStop();
 	}
 }
