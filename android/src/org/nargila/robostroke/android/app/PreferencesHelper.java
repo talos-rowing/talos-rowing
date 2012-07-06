@@ -34,8 +34,6 @@ public class PreferencesHelper {
 	public static final int PREFERENCES_VERSION = 1;
 
 	public static final String PREFERENCES_VERSION_RESET_KEY = "preferencesVersionReset" + PREFERENCES_VERSION;
-
-	public static final String PREFERENCE_KEY_RECORD_LEADER_ENABLE = "org.nargila.talos.rowing.android.record.leader.enable";
     
 	public static final String PREFERENCE_KEY_HRM_ENABLE = "org.nargila.talos.rowing.android.hrm.enable";
 
@@ -125,9 +123,7 @@ public class PreferencesHelper {
                     }
                 })
 			.show();
-		} 
-		
-		
+		}	
 	}
 
 	public String getUUID() {
