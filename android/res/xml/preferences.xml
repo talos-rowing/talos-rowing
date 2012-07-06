@@ -96,18 +96,33 @@
 			android:summary="Period of 'cool down' time in seconds to disable rowing restart"/>
 	
 	</PreferenceCategory>				
+	<PreferenceCategory android:title="Sharing">
+		<EditTextPreference
+			android:title="Remote Host"
+			android:persistent="true" 
+			android:defaultValue="192.168.43.1"
+			android:summary="Remote device to receive real-time session data from" 
+			android:key="org.nargila.talos.rowing.android.session.remote.host"/>		
+		<EditTextPreference
+			android:title="Port"
+			android:persistent="true" 
+			android:defaultValue="8256"
+			android:summary="Port on which to boradcast/receive session data" 
+			android:key="org.nargila.talos.rowing.session.broadcast.port"/>
+		<CheckBoxPreference
+			android:title="Recording start mark"
+			android:persistent="true" 
+			android:defaultValue="true"
+			android:summary="Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media" 
+			android:key="org.nargila.talos.rowing.android.record.leader.enable"/>
+	</PreferenceCategory>
 	<PreferenceCategory android:title="Misc">
 		<CheckBoxPreference
 			android:title="Coax mode"
 			android:persistent="true" 
 			android:defaultValue="false"
 			android:summary="For example When device is used by a forward facing coax" 
-			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/><CheckBoxPreference
-			android:title="Dispaly recording sync countdown"
-			android:persistent="true" 
-			android:defaultValue="false"
-			android:summary="Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media" 
-			android:key="org.nargila.talos.rowing.android.record.leader.enable"/>
+			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/>
 		<CheckBoxPreference
 			android:title="Reset settings"
 			android:persistent="true" 
