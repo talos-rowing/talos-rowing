@@ -25,12 +25,17 @@ import java.io.IOException;
 
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.acceleration.GravityFilter;
-import org.nargila.robostroke.input.ErrorListener;
-import org.nargila.robostroke.input.FileDataInput;
-import org.nargila.robostroke.input.SensorDataFilter;
-import org.nargila.robostroke.input.SensorDataInput;
-import org.nargila.robostroke.input.SensorDataSink;
-import org.nargila.robostroke.input.SensorDataSource;
+import org.nargila.robostroke.data.ErrorListener;
+import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.data.SensorDataFilter;
+import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSource;
+import org.nargila.robostroke.data.SessionBroadcaster;
+import org.nargila.robostroke.data.SessionRecorder;
+import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 import org.nargila.robostroke.stroke.RollScanner;
 import org.nargila.robostroke.stroke.RowingDetector;
@@ -113,6 +118,10 @@ public class RoboStroke {
 	 * data/event logger when recording is on
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
+
+	private final SessionBroadcaster sessionBroadcaster =  new SessionBroadcaster(this);
+
+	private int broadcastPort = SessionRecorderConstants.BROADCAST_PORT;
 	
 	/**
 	 * constructor with the <code>DistanceResolverDefault</code>
@@ -130,6 +139,15 @@ public class RoboStroke {
 		ParamRegistration.installParams(parameters);
 		
 		initPipeline(distanceResolver);
+		
+		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_PORT, new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter<?> param) {
+				broadcastPort = (Integer)param.getValue();
+				
+			}
+		});
 	}
 
 	/**
@@ -273,7 +291,12 @@ public class RoboStroke {
 	}
 
 	public void setDataLogger(File logFile) throws IOException {
-		recorder.setDataLogger(logFile);		
+		recorder.setDataLogger(logFile);	
+	}
+
+	public void setBroadcast(boolean broadcast) {		
+		sessionBroadcaster.setPort(broadcastPort);
+		sessionBroadcaster.setBoradcast(broadcast);
 	}
 
 	public ParameterService getParameters() {

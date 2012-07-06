@@ -19,9 +19,11 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,10 +31,12 @@ import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.FileDataInput;
-import org.nargila.robostroke.input.RecordDataInput;
-import org.nargila.robostroke.input.SensorDataInput;
+import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.data.RecordDataInput;
+import org.nargila.robostroke.data.RemoteDataInput;
+import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -40,9 +44,6 @@ import org.nargila.robostroke.ui.meters.MetersDisplayManager;
 import org.nargila.robostroke.ui.meters.swing.SwingMeterView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
-import javax.swing.SwingConstants;
 
 public class RoboStrokeAppPanel extends JPanel {
 
@@ -117,6 +118,15 @@ public class RoboStrokeAppPanel extends JPanel {
 				launchExportWizard();
 			}
 		});
+		
+		JMenuItem mntmOpenRemote = new JMenuItem("Open (Remote)");
+		mntmOpenRemote.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String host = JOptionPane.showInputDialog("hostname");				
+				openRemoteAction(host);
+			}
+		});
+		mnFile.add(mntmOpenRemote);
 		mntmExport.setEnabled(false);
 		mnFile.add(mntmExport);
 		
@@ -317,6 +327,21 @@ public class RoboStrokeAppPanel extends JPanel {
 		}
 	}
 
+	private void openRemoteAction(String host) {		
+		
+		
+		if (host != null && !host.equals("")) {
+			RemoteDataInput dataInput;
+			try {
+				dataInput = new RemoteDataInput(rs.getBus(), host);
+				start(dataInput, false);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private void prepareFile(final File f) {
 		
 		final PrepareFileDialog pfd = new PrepareFileDialog() {
@@ -346,15 +371,25 @@ public class RoboStrokeAppPanel extends JPanel {
 		paused = false;
 		
 		try {						
-			boolean canExport = setInput(f);
-			reset();
-			mntmExport.setEnabled(canExport);
+			Pair<SensorDataInput, Boolean> input = setInput(f);
+			start(input.first, input.second);
 		} catch (IOException e) {
 			logger.error("error opening file " + f, e);
 		}
 	}
 
-	private boolean setInput(File f) throws IOException {	
+	void start(SensorDataInput dataInput, boolean canExport) {
+				
+		rs.setInput(null);				
+		reset();
+		paused = false;
+		rs.setInput(dataInput);				
+		mntmExport.setEnabled(canExport);
+
+	}
+
+	
+	private Pair<SensorDataInput,Boolean> setInput(File f) throws IOException {	
 		
 		boolean ogg = f.getName().toLowerCase().endsWith(".ogg");
 		SensorDataInput dataInput;
@@ -367,9 +402,8 @@ public class RoboStrokeAppPanel extends JPanel {
 			dataInput = new FileDataInput(rs.getBus(), f);
 		}
 		
-		rs.setInput(dataInput);
-
-		return !ogg;
+		
+		return Pair.create(dataInput, !ogg);
 	}
 	
 	void reset() {

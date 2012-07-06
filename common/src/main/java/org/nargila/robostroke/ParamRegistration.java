@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterLevel;
 import org.nargila.robostroke.param.ParameterService;
@@ -63,9 +64,14 @@ public class ParamRegistration {
 	};
 	
 	private final Parameter<?>[] SESSION_PARAMS = {
-			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 
-	
-			"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false)
+			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 	
+			"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false),
+			new Parameter.STRING(ParamKeys.PARAM_SESSION_BROADCAST_HOST, 	
+			"session broadcast host", "Remote device to receive real-time session data from", "Session", ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_HOST),
+			new Parameter.INTEGER(ParamKeys.PARAM_SESSION_BROADCAST_PORT, 	
+			"session broadcast port", "Port number on which to braodcast/receive real-time device sensor data", "Session", ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_PORT),
+			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE, 	
+			"session recording sync mark", "Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", "Session", ParameterLevel.BASIC, false),
 	};
 	
 	private final Parameter<?>[] DETECTOR_PARAMS = {

@@ -38,4 +38,7 @@ public interface ParamKeys {
 	static final String PARAM_ROWING_MODE = "org.nargila.talos.rowing.stroke.detector.startMode";
 	static final String PARAM_ROWING_STRAIGHT_LINE_MODE = "org.nargila.talos.rowing.stroke.detector.straightLineMode";
 	static final String PARAM_SESSION_RECORDING_ON = "org.nargila.talos.rowing.android.sessionRecordingOn";
+	static final String PARAM_SESSION_RECORDING_LEADER_ENABLE = "org.nargila.talos.rowing.android.record.leader.enable";
+	static final String PARAM_SESSION_BROADCAST_PORT = "org.nargila.talos.rowing.session.broadcast.port";
+	static final String PARAM_SESSION_BROADCAST_HOST = "org.nargila.talos.rowing.android.session.remote.host";
 }

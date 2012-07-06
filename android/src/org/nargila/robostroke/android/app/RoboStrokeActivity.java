@@ -47,9 +47,13 @@ import org.nargila.robostroke.android.common.ScreenStayupLock;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.ErrorListener;
-import org.nargila.robostroke.input.version.DataVersionConverter;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.ErrorListener;
+import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.data.RemoteDataInput;
+import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.nargila.robostroke.data.version.DataVersionConverter;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
@@ -162,7 +166,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
 					
-					if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_RECORD_LEADER_ENABLE, false)) {
+					if (preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE, false)) {
 						if (recordLeaderDialog == null) {
 							recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
 						}
@@ -179,60 +183,63 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 		
 		private void shareSession() {
-			File toShare = replayFile.file;
 
-			if (toShare != null) {
+			if (dataInputInfo.inputType == DataInputInfo.InputType.FILE) {
+				File toShare = dataInputInfo.file;
 
-
-				if (toShare.length() > 30000000) {
-					if (m_AlertDlg != null) {
-						m_AlertDlg.cancel();
-					}
-
-					m_AlertDlg = new AlertDialog.Builder(RoboStrokeActivity.this).setMessage(
-							getString(
-									R.string.session_record_upload_size_too_large,
-									90)).setTitle(
-											getString(R.string.file_too_large)).setCancelable(true)
-											.show();
-				} else {
-
-					File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
-
-					tmpdir.mkdir();
-
-					String name = toShare.getName().replaceFirst("txt$", "trsd");
-
-					final File trsd = new File(tmpdir, name);			
+				if (toShare != null) {
 
 
-					try {
+					if (toShare.length() > 30000000) {
+						if (m_AlertDlg != null) {
+							m_AlertDlg.cancel();
+						}
+
+						m_AlertDlg = new AlertDialog.Builder(RoboStrokeActivity.this).setMessage(
+								getString(
+										R.string.session_record_upload_size_too_large,
+										90)).setTitle(
+												getString(R.string.file_too_large)).setCancelable(true)
+												.show();
+					} else {
+
+						File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
+
+						tmpdir.mkdir();
+
+						String name = toShare.getName().replaceFirst("txt$", "trsd");
+
+						final File trsd = new File(tmpdir, name);			
 
 
-						Runnable runnable = new Runnable() {
+						try {
 
-							@Override
-							public void run() {
 
-								Intent intent = new Intent(Intent.ACTION_SEND);
+							Runnable runnable = new Runnable() {
 
-								intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
-								intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(trsd));
-								intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
-								intent.putExtra(Intent.EXTRA_EMAIL,new String[] { getString(R.string.default_session_record_dispatch_address) });
-								intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Talos Rowing Session: %s", preferencesHelper.getUUID()));
-								intent.putExtra(Intent.EXTRA_TEXT, "Description:\n");
-								intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);									
+								@Override
+								public void run() {
 
-								startActivityForResult(Intent.createChooser(intent, "Email:"), 42);
-							}
-						};
+									Intent intent = new Intent(Intent.ACTION_SEND);
 
-						prepareData(Uri.fromFile(toShare), trsd, 1, runnable);
+									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
+									intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(trsd));
+									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
+									intent.putExtra(Intent.EXTRA_EMAIL,new String[] { getString(R.string.default_session_record_dispatch_address) });
+									intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Talos Rowing Session: %s", preferencesHelper.getUUID()));
+									intent.putExtra(Intent.EXTRA_TEXT, "Description:\n");
+									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);									
 
-					} catch (Exception e) {
-						reportError(e, "error preparing session data for sharing");
+									startActivityForResult(Intent.createChooser(intent, "Email:"), 42);
+								}
+							};
 
+							prepareData(Uri.fromFile(toShare), trsd, 1, runnable);
+
+						} catch (Exception e) {
+							reportError(e, "error preparing session data for sharing");
+
+						}
 					}
 				}
 			}
@@ -278,7 +285,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					return false;
 				}
 		
-				final SessionFileInfo sessionFileInfo = new SessionFileInfo(outFile, true);
+				final DataInputInfo sessionFileInfo = new DataInputInfo(outFile, true);
 				
 				prepareData(inputUri, outFile, -1, new Runnable() {
 		
@@ -478,19 +485,52 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}			
 	}
 
-	private static class SessionFileInfo {
-		public final File file;
-		public final boolean temporary;
+	private static class DataInputInfo {
+		enum InputType {
+			FILE,
+			REMOTE,
+			SENSORS
+		}
 		
-		public SessionFileInfo(File file, boolean temporary) {
+		final InputType inputType;		
+		final File file;
+		final boolean temporary;
+		final String host;
+		final int port;
+		final boolean broadcast;
+		
+		DataInputInfo(File file, boolean temporary) {
+			this.inputType = InputType.FILE;
 			this.file = file;
 			this.temporary = temporary;
-		}		
+			this.host = null;
+			this.port = -1;
+			this.broadcast = true;
+		}
+		
+		DataInputInfo(String host, int port) {
+			this.inputType = InputType.REMOTE;
+			this.file = null;
+			this.temporary = false;
+			this.host = host;
+			this.port = port;
+			this.broadcast = false;
+		}
+		
+		DataInputInfo(boolean broadcast) {
+			this.inputType = InputType.SENSORS;
+			this.file = null;
+			this.temporary = false;
+			this.host = null;
+			this.port = -1;			
+			this.broadcast = broadcast;
+		}
 	}
+	
 
 	private final SessionFileHandler sessionFileHandler = new SessionFileHandler();
 
-	private SessionFileInfo replayFile;
+	private DataInputInfo dataInputInfo = new DataInputInfo(false);
 
 	public RoboStrokeActivity() {
 		
@@ -581,7 +621,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			}
 		});
 		
-		start(null);
+		start(new DataInputInfo(false));
 
 	}
 
@@ -666,7 +706,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					@Override
 					public void onClick(View v) {
-						restart(new SessionFileInfo(f, false));
+						restart(new DataInputInfo(f, false));
 						dialog.dismiss();
 					}
 				});
@@ -786,17 +826,15 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		stopped = true;
 		
-		if (replayFile != null) { // delete preview/ad-hoc session files 
+		if (dataInputInfo.inputType == DataInputInfo.InputType.FILE) { // delete preview/ad-hoc session files 
 			
-			if (replayFile.temporary) {
-				replayFile.file.delete();
+			if (dataInputInfo.temporary) {
+				dataInputInfo.file.delete();
 			}
-			
-			replayFile = null;
 		}
 	}
 
-	synchronized void restart(SessionFileInfo replayFile) {
+	synchronized void restart(DataInputInfo replayFile) {
 		if (!stopped) {
 			stop();
 		}
@@ -834,14 +872,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 	}
 
-	private synchronized void start(SessionFileInfo replayFile) {
+	private synchronized void start(DataInputInfo replayFile) {
 		roboStroke.getParameters().setParam(
 				ParamKeys.PARAM_SESSION_RECORDING_ON, false);
 		
 		enableScheduler(true);
 
 		try {
-			if (replayFile != null) {
+			if (replayFile.inputType == DataInputInfo.InputType.FILE) {
 				
 				DataVersionConverter converter = DataVersionConverter.getConvertersFor(replayFile.file);
 				
@@ -857,8 +895,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		realStart(replayFile);
 	}
 	
-	private void convertStart(final DataVersionConverter converter,
-			final SessionFileInfo replayFile) {
+	private void convertStart(final DataVersionConverter converter, final DataInputInfo replayFile) {
 		
 		final ProgressDialog progress = new ProgressDialog(RoboStrokeActivity.this);
 		progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -900,14 +937,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			@Override
 			public void run() {
 				
-				SessionFileInfo newInfo = null;
+				DataInputInfo newInfo = null;
 				
 				try {				
 					
 					File output = converter.convert(replayFile.file);
 					
 					if (output != null) {
-						newInfo = new SessionFileInfo(output, true);	
+						newInfo = new DataInputInfo(output, true);	
 					}
 					
 					if (replayFile.temporary) {
@@ -924,39 +961,52 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		});		
 	}
 
-	private synchronized void realStart(SessionFileInfo replayFile) {
+	private synchronized void realStart(DataInputInfo dataInputInfo) {
 		
-		this.replayFile = null;
+		boolean replay = false;
+		int padding = dataInputInfo.broadcast ? HIGHLIGHT_PADDING_SIZE : 0;
+		int recordingIndicatorHilight = dataInputInfo.broadcast ? RECORDING_ON_COLOUR : REPLAYING_ON_COLOUR;
 		
+		this.dataInputInfo = dataInputInfo;
+		
+		SensorDataInput dataInput = new AndroidSensorDataInput(this);
+				
 		graphPanelDisplayManager.resetGraphs();
 
-		try {
-			
+		try {			
 			roboStroke.setDataLogger(null);
-
-			if (replayFile != null) {				
-				
-				roboStroke.setFileInput(replayFile.file);
-				this.replayFile = replayFile;
-			}
 		} catch (IOException e) {
-			reportError(e, "error opening session file for replay");
 		}
 
-		final boolean replay = this.replayFile != null;
+		try {
+			switch (dataInputInfo.inputType) {
+			case FILE:
+			case REMOTE:
+				dataInput = dataInputInfo.inputType == DataInputInfo.InputType.FILE ? 
+						new FileDataInput(roboStroke.getBus(), dataInputInfo.file) :
+							new RemoteDataInput(roboStroke.getBus(), dataInputInfo.host, dataInputInfo.port);
+				padding = HIGHLIGHT_PADDING_SIZE;
+				replay = true;
+				recordingIndicatorHilight = REPLAYING_ON_COLOUR;
+				break;	
+			}
+		} catch (Exception e) {
+			logger.error("failed to set input to " + dataInputInfo.inputType, e);
+		}
+		
+		roboStroke.setInput(dataInput);
+
+		roboStroke.setBroadcast(dataInputInfo.broadcast);
 		
 		if (!replay) {
-			roboStroke.setInput(new AndroidSensorDataInput(this));
 			registerBpmReceiver();
 		}
 
 		metersDisplayManager.reset();
 
 		stopped = false;
-
-		final int padding = replay ? HIGHLIGHT_PADDING_SIZE : 0;
 		
-		updateRecordingStateIndication(padding, REPLAYING_ON_COLOUR);
+		updateRecordingStateIndication(padding, recordingIndicatorHilight);
 
 	}
 
@@ -969,10 +1019,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
 		menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
+		menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn);
+		menu.findItem(R.id.menu_broadcast_start).setVisible(!replay && !recordingOn);
 		menu.findItem(R.id.menu_record_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
 		
-		final boolean canShareSession = replay;
+		final boolean canShareSession = replay && dataInputInfo.inputType == DataInputInfo.InputType.FILE;
 		
 		menu.findItem(R.id.menu_replay_share).setVisible(canShareSession);
 		
@@ -980,7 +1032,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 	
 	public boolean isReplaying() {
-		return replayFile != null;
+		return dataInputInfo.inputType != DataInputInfo.InputType.SENSORS || dataInputInfo.broadcast;
 	}
 	
 	public Menu getMenu() {
@@ -1008,6 +1060,15 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 			return true;
 
+		case R.id.menu_remote_start:
+			int port = new Integer(preferencesHelper.getPref("org.nargila.talos.rowing.session.broadcast.port", SessionRecorderConstants.BROADCAST_PORT + ""));
+			String host = preferencesHelper.getPref("org.nargila.talos.rowing.android.session.remote.host", SessionRecorderConstants.BROADCAST_HOST);
+			restart(new DataInputInfo(host, port));
+			break;
+			
+		case R.id.menu_broadcast_start:
+			restart(new DataInputInfo(true));
+			break;
 		case R.id.menu_record_start:
 			if (recheckExternalStorage()) {
 				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON, true);
@@ -1017,7 +1078,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 		case R.id.menu_replay_stop:
 			if (isReplaying()) {
-				restart(null);
+				restart(new DataInputInfo(false));
 			} else if (recordingOn) {
 				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON, false);
 			}
