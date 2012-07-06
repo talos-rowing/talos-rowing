@@ -20,12 +20,14 @@
 package org.nargila.robostroke.android.app;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -65,7 +67,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -1093,45 +1094,96 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			startActivity(new Intent(this, Preferences.class));
 			break;
 		case R.id.menu_about:
-			if (m_AlertDlg != null) {
-				m_AlertDlg.cancel();
-			}
-			
-			String version = getVersion(this);
-			m_AlertDlg = new AlertDialog.Builder(this)
-			.setMessage(getString(R.string.about_text).replace("\\n","\n").replace("${VERSION}", version))
-			.setTitle(R.string.about)
-			.setIcon(R.drawable.icon)
-			.setCancelable(true)
-			.setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					m_AlertDlg.cancel();
-				}
-			})
-			.setPositiveButton(R.string.open_guide, new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					String url = "http://nargila.org/trac/robostroke/wiki/GuideIntroduction";
-					Intent i = new Intent(Intent.ACTION_VIEW);
-					i.setData(Uri.parse(url));
-					startActivity(i);
-				}
-			})
-			.show();
+			showAbout();
 			break;
 		}
 
 		return false;
 	}
 
-	public static String getVersion(Context context) {		
+	public void showAbout() {
+		if (m_AlertDlg != null) {
+			m_AlertDlg.cancel();
+		}
+		
+		String version = getVersion();
+		m_AlertDlg = new AlertDialog.Builder(this)
+		.setMessage(getString(R.string.about_text).replace("\\n","\n").replace("${VERSION}", version))
+		.setTitle(R.string.about)
+		.setIcon(R.drawable.icon)
+		.setCancelable(true)
+		.setNegativeButton(R.string.changelog, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+				String[] v = getVersion().split("\\.");
+				
+				String page = "AndroidRelease";
+				
+				for (int i = 0; i < v.length - 1; ++i) {
+					page += "_" + v[i];
+				}
+								
+				String url = "http://nargila.org/trac/robostroke/wiki/" + page;
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+			}
+		})
+		.setPositiveButton(R.string.open_guide, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String url = "http://nargila.org/trac/robostroke/wiki/GuideIntroduction";
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(url));
+				startActivity(i);
+			}
+		})
+		.setNeutralButton(R.string.license, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				
+				StringBuffer bf = new StringBuffer();				
+				BufferedReader reader = null;
+				
+				try {
+					reader = new BufferedReader(new InputStreamReader(
+							getAssets().open("gpl-3.0.txt"),
+							"UTF-8"));
+					String l;
+					while ((l = reader.readLine()) != null) {
+						bf.append(l).append('\n');
+					}
+
+					new AlertDialog.Builder(RoboStrokeActivity.this)
+					.setMessage(bf.toString())
+					.setTitle(R.string.license)
+					.setCancelable(true)
+					.show();
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (reader != null) {
+						try {
+							reader.close();
+						} catch (IOException e) {
+						}
+					}
+				}
+			}
+		})
+		.show();
+	}
+
+	public String getVersion() {		
 		try {
 			
-			PackageInfo packageInfo = context.getPackageManager()
-				   .getPackageInfo(context.getPackageName(), 0);
+			PackageInfo packageInfo = getPackageManager()
+				   .getPackageInfo(getPackageName(), 0);
 			
 			
 			return packageInfo.versionName;

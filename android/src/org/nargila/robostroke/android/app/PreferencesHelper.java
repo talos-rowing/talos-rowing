@@ -35,6 +35,8 @@ public class PreferencesHelper {
 
 	public static final String PREFERENCES_VERSION_RESET_KEY = "preferencesVersionReset" + PREFERENCES_VERSION;
     
+	public static final String TALOS_APP_VERSION_KEY = "talosAppVersion";
+    
 	public static final String PREFERENCE_KEY_HRM_ENABLE = "org.nargila.talos.rowing.android.hrm.enable";
 
 	public static final String PREFERENCE_KEY_PREFERENCES_RESET = "org.nargila.talos.rowing.android.preferences.reset";
@@ -105,7 +107,8 @@ public class PreferencesHelper {
 
 		boolean resetPending = !preferences.getAll().isEmpty() && preferences.getBoolean(PREFERENCES_VERSION_RESET_KEY, true);
 		
-
+		boolean newVersion = !preferences.getString(TALOS_APP_VERSION_KEY, "").equals(owner.getVersion());
+		
 		if (resetPending) {
 			
 			preferences.edit().putBoolean(PREFERENCE_KEY_PREFERENCES_RESET, false).commit();
@@ -123,7 +126,16 @@ public class PreferencesHelper {
                     }
                 })
 			.show();
-		}	
+			
+			newVersion = true;
+			
+		} else if (newVersion) {			
+			owner.showAbout();			
+		}
+		
+		if (newVersion) {
+			preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).commit();
+		}
 	}
 
 	public String getUUID() {

@@ -16,6 +16,8 @@
     is hard-attached onto the boat and you have properly leveled it. The adjustment itself will take ${CALIBRATION_SECONDS} seconds, during which the boat should not be touched.</string>
     <string name="about">About</string>
     <string name="close">Close</string>
+    <string name="license">License</string>
+    <string name="changelog">Changelog</string>
     <string name="about_text">
     	Talos Rowing is an Open Source rowing application.
     	\n
