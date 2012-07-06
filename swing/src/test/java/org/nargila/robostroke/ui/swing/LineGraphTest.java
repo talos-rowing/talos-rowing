@@ -22,7 +22,7 @@ package org.nargila.robostroke.ui.swing;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.graph.CyclicArrayXYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;

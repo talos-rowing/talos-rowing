@@ -23,10 +23,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.DataRecord.Type;
-import org.nargila.robostroke.input.FileDataInput;
-import org.nargila.robostroke.input.RecordDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.DataRecord.Type;
+import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.data.RecordDataInput;
 
 public class DataExportDialog extends JDialog {
 

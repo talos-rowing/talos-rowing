@@ -20,7 +20,7 @@
 package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 

@@ -18,8 +18,8 @@
 
 package org.nargila.robostroke.jst;
 
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.RecordDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.RecordDataInput;
 
 import com.fluendo.jkate.Event;
 import com.fluendo.jst.Buffer;
@@ -50,18 +50,7 @@ public class TalosSink extends Sink
 
 		String line = new String(ke.text);
 
-		String[] vals = line.split(" +");
-
-		DataRecord.Type type = DataRecord.Type.valueOf(vals[0]);
-
-		if (type.isParsableEvent) {		  
-
-			DataRecord record = DataRecord.create(type, Long.parseLong(vals[1]), vals[2]);
-
-			Debug.debug("got Talos data record: " + record);
-			
-			recordPlayer.playRecord(record);
-		}
+		recordPlayer.playRecord(line);
 
 		return Pad.OK;
 	}

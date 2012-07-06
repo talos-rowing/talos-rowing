@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.data.DataRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

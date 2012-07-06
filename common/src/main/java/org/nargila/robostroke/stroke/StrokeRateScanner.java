@@ -23,7 +23,7 @@ import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.acceleration.AccelerationFilter;
-import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;

@@ -16,21 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
+package org.nargila.robostroke.data;
 
-package org.nargila.robostroke;
-
-import org.nargila.robostroke.data.DataRecord;
+import java.io.IOException;
 
 /**
- * consumer of stroke rate updates.
- * Stroke rate updates are provided in strokes per minute
+ * Error type for replayed data version mismatch 
  * @author tshalif
  *
  */
-public interface BusEventListener {
-	/**
-	 * process stroke rate notification
-	 * @param spm stroke rate value in strokes per minute
-	 */
-	void onBusEvent(DataRecord event);
+public class SessionFileVersionError extends IOException {
+
+
+	private static final long serialVersionUID = 1L;
+	
+	private final int version;
+	
+	public SessionFileVersionError() {
+		this(-1);
+	}
+
+	public SessionFileVersionError(int version) {
+		this.version = version;
+	}
+
+	@Override
+	public String getMessage() {
+		return version == -1 ? "session file version number missing" : "incompatible session file version " + version;
+	}
 }

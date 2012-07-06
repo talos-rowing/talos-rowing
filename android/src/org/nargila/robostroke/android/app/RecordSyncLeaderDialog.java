@@ -1,6 +1,6 @@
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.data.DataRecord;
 
 import android.app.Dialog;
 import android.graphics.Color;

@@ -20,8 +20,8 @@
 package org.nargila.robostroke.ui.graph;
 
 import org.nargila.robostroke.common.filter.LowpassFilter;
-import org.nargila.robostroke.input.DataIdx;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.DataIdx;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.RSPaint;

@@ -19,9 +19,9 @@
 
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.input.DataIdx;
-import org.nargila.robostroke.input.SensorDataInputBase;
-import org.nargila.robostroke.input.SensorDataSource;
+import org.nargila.robostroke.data.DataIdx;
+import org.nargila.robostroke.data.SensorDataInputBase;
+import org.nargila.robostroke.data.SensorDataSource;
 
 import android.app.Activity;
 import android.content.Context;

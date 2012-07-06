@@ -17,20 +17,18 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke;
-
-import org.nargila.robostroke.data.DataRecord;
+package org.nargila.robostroke.data;
 
 /**
- * consumer of stroke rate updates.
- * Stroke rate updates are provided in strokes per minute
+ * An interface describing an object which can accept/process sensor data
  * @author tshalif
  *
  */
-public interface BusEventListener {
+public interface SensorDataSink {
 	/**
-	 * process stroke rate notification
-	 * @param spm stroke rate value in strokes per minute
+	 * Process sensor data event
+	 * @param timestamp timestamp of event
+	 * @param value sensor values
 	 */
-	void onBusEvent(DataRecord event);
+	void onSensorData(long timestamp, Object value);
 }

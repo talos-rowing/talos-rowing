@@ -23,7 +23,7 @@ import java.net.URL;
 
 import javax.swing.JFrame;
 
-import org.nargila.robostroke.input.RecordDataInput;
+import org.nargila.robostroke.data.RecordDataInput;
 
 import com.fluendo.jst.*;
 import com.fluendo.utils.*;

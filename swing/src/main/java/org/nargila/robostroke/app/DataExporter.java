@@ -18,9 +18,9 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.common.Pair;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.DataRecord.Type;
-import org.nargila.robostroke.input.FileDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.DataRecord.Type;
+import org.nargila.robostroke.data.FileDataInput;
 
 class DataExporter {
 

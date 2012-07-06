@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.DoubleGenerator;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.RSPaint;

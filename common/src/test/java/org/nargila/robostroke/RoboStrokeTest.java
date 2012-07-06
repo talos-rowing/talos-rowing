@@ -38,8 +38,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nargila.robostroke.common.LocationUtil;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.FileDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.DistanceResolver;
 

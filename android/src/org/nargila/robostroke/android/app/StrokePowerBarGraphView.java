@@ -21,7 +21,7 @@ package org.nargila.robostroke.android.app;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.input.DataRecord;
+import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 import android.content.Context;

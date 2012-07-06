@@ -18,7 +18,7 @@ import javax.swing.JProgressBar;
 import javax.swing.border.EmptyBorder;
 
 import org.nargila.robostroke.common.DataStreamCopier;
-import org.nargila.robostroke.input.version.DataVersionConverter;
+import org.nargila.robostroke.data.version.DataVersionConverter;
 
 public class PrepareFileDialog extends JDialog {
 

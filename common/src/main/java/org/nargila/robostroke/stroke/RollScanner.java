@@ -23,10 +23,10 @@ package org.nargila.robostroke.stroke;
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.nargila.robostroke.common.filter.LowpassFilter;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.DataIdx;
-import org.nargila.robostroke.input.SensorDataFilter;
-import org.nargila.robostroke.input.SensorDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.DataIdx;
+import org.nargila.robostroke.data.SensorDataFilter;
+import org.nargila.robostroke.data.SensorDataInput;
 
 /**
  * Sensor data pipeline component for detecting boat tilt.

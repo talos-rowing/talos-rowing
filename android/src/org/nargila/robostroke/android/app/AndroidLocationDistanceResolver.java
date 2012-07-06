@@ -19,7 +19,7 @@
 
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.input.DataIdx;
+import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.way.DistanceResolver;
 
 import android.location.Location;

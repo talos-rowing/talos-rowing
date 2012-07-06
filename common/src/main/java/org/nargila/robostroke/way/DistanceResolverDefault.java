@@ -20,7 +20,7 @@
 package org.nargila.robostroke.way;
 
 import org.nargila.robostroke.common.LocationUtil;
-import org.nargila.robostroke.input.DataIdx;
+import org.nargila.robostroke.data.DataIdx;
 
 /**
  * resolves GPS location distance diffs

@@ -23,7 +23,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 
 /**

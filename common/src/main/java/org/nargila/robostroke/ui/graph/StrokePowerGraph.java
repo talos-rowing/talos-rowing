@@ -25,8 +25,8 @@ import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.NumberHelper;
 import org.nargila.robostroke.common.filter.LowpassFilter;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.SensorDataSink;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.ui.UILiaison;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 

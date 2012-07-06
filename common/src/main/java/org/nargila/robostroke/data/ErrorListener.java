@@ -17,20 +17,13 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke;
-
-import org.nargila.robostroke.data.DataRecord;
+package org.nargila.robostroke.data;
 
 /**
- * consumer of stroke rate updates.
- * Stroke rate updates are provided in strokes per minute
+ * Generic error listener
  * @author tshalif
  *
  */
-public interface BusEventListener {
-	/**
-	 * process stroke rate notification
-	 * @param spm stroke rate value in strokes per minute
-	 */
-	void onBusEvent(DataRecord event);
+public interface ErrorListener {
+	public void onError(Exception e);
 }

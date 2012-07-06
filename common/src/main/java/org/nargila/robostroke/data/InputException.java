@@ -17,20 +17,29 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke;
-
-import org.nargila.robostroke.data.DataRecord;
+package org.nargila.robostroke.data;
 
 /**
- * consumer of stroke rate updates.
- * Stroke rate updates are provided in strokes per minute
+ * Exception tag to wrap exceptions originated from sensor data input implementations
  * @author tshalif
  *
  */
-public interface BusEventListener {
-	/**
-	 * process stroke rate notification
-	 * @param spm stroke rate value in strokes per minute
-	 */
-	void onBusEvent(DataRecord event);
+public class InputException extends Exception {
+
+	private static final long serialVersionUID = 6925513526728045138L;
+
+	public InputException() {
+	}
+
+	public InputException(String detailMessage) {
+		super(detailMessage);
+	}
+
+	public InputException(Throwable throwable) {
+		super(throwable);
+	}
+
+	public InputException(String detailMessage, Throwable throwable) {
+		super(detailMessage, throwable);
+	}
 }

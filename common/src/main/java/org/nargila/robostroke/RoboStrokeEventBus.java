@@ -22,8 +22,8 @@ import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.DataRecord.Type;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.DataRecord.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

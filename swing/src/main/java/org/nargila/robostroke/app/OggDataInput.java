@@ -7,8 +7,8 @@ import java.net.MalformedURLException;
 import javax.swing.JFrame;
 
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.input.DataRecord;
-import org.nargila.robostroke.input.RecordDataInput;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.jst.TalosPipeline;
 
 import com.fluendo.jst.BusHandler;
@@ -26,7 +26,6 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 	private final Canvas videoCanvas = new Canvas();
 	private final TalosPipeline jst = new TalosPipeline();
 	private long duration;
-	private boolean seekable;
 	private boolean isBuffering;
 	private int pipeState = Pipeline.NONE;
 	
@@ -94,7 +93,7 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 
                 Debug.log(Debug.INFO, "got duration: " + duration + " (src=" + src + ")");
                 
-                seekable = duration != -1;
+                setSeakable(duration != -1);
 
                 break;
             case Message.BUFFERING:
@@ -173,16 +172,12 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 
 	@Override
 	protected void onSetPosPending(double pos) {
-		if (seekable) {
-			jst.setState(Pipeline.PAUSE);
-		}
+		jst.setState(Pipeline.PAUSE);
 	}
 
 	@Override
 	protected void onSetPosFinish(double pos) {
-		if (seekable) {
-			jst.setPos(pos);
-			jst.setState(Pipeline.PLAY);			
-		}
+		jst.setPos(pos);
+		jst.setState(Pipeline.PLAY);			
 	}
 }
