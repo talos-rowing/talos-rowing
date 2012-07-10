@@ -64,14 +64,14 @@ public class ParamRegistration {
 	};
 	
 	private final Parameter<?>[] SESSION_PARAMS = {
-			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 	
-			"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false),
 			new Parameter.STRING(ParamKeys.PARAM_SESSION_BROADCAST_HOST, 	
 			"session broadcast host", "Remote device to receive real-time session data from", "Session", ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_HOST),
 			new Parameter.INTEGER(ParamKeys.PARAM_SESSION_BROADCAST_PORT, 	
 			"session broadcast port", "Port number on which to braodcast/receive real-time device sensor data", "Session", ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_PORT),
 			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE, 	
 			"session recording sync mark", "Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", "Session", ParameterLevel.BASIC, false),
+			new Parameter.BOOLEAN(ParamKeys.PARAM_SESSION_RECORDING_ON, 	
+					"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false)
 	};
 	
 	private final Parameter<?>[] DETECTOR_PARAMS = {
@@ -115,7 +115,7 @@ public class ParamRegistration {
 					"stroke amplitude filter", 
 					"Lowpass filter to 'smooth' the rowing sinusoids and establish single rise-above/drop-below zero points in each rowing cycle", 
 					"Stroke", 
-					ParameterLevel.ADVANCED, .05f),
+					ParameterLevel.ADVANCED, .025f),
 			new Parameter.FLOAT(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR,
 					"stroke amplitude change filter", 
 					"Lowpass filter to stabalize stroke rate and protect against displaying erratic changes",
