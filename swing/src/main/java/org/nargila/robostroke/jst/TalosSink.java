@@ -18,7 +18,6 @@
 
 package org.nargila.robostroke.jst;
 
-import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.RecordDataInput;
 
 import com.fluendo.jkate.Event;
@@ -26,7 +25,6 @@ import com.fluendo.jst.Buffer;
 import com.fluendo.jst.Message;
 import com.fluendo.jst.Pad;
 import com.fluendo.jst.Sink;
-import com.fluendo.utils.Debug;
 
 public class TalosSink extends Sink
 {
