@@ -178,7 +178,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 				} catch (IOException e1) {
 					pos = -1;
 				}
-				logger.error(String.format("error while reading record near byte offset %d", pos), e);
+				logger.error(String.format("error while reading record from %s near byte offset %d", getDataFile(), pos), e);
 				continue;
 			}
 		}
