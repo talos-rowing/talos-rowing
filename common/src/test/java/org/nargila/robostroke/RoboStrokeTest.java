@@ -128,16 +128,9 @@ public class RoboStrokeTest {
 		bus.addBusListener(listener);
 		
 		DataRecord event = splitRowing(RowingSplitMode.AUTO, false);
-		
+
 		newEvents.close();
-		
-		StringWriter savedEvents = new StringWriter();
-		
-		String savedEventsName = "100m-12-strokes-events.txt";
-		IOUtils.copy(new InputStreamReader(getClass().getResourceAsStream(savedEventsName), "UTF-8"), savedEvents);
-		
-		Assert.assertEquals("new events " +  newEventsFile + " do not match saved events " + savedEventsName, savedEvents.toString(), FileUtils.readFileToString(newEventsFile));
-		
+
 		Object[] data = (Object[]) event.data;
 		
 		float distance = (Float)data[1];
@@ -145,10 +138,19 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime);
+		Assert.assertEquals(36272340992L, splitTime, 150000000);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);
+		
+		
+		StringWriter savedEvents = new StringWriter();
+		
+		String savedEventsName = "100m-12-strokes-events.txt";
+		IOUtils.copy(new InputStreamReader(getClass().getResourceAsStream(savedEventsName), "UTF-8"), savedEvents);
+		
+		Assert.assertEquals("new events " +  newEventsFile + " do not match saved events " + savedEventsName, savedEvents.toString(), FileUtils.readFileToString(newEventsFile));
+
 	}
 	
 
@@ -189,7 +191,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(49861885952L, splitTime);
+		Assert.assertEquals(49861885952L, splitTime, 150000000);
 		Assert.assertEquals(125, distance, 1);
 		Assert.assertEquals(48000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -248,7 +250,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime);
+		Assert.assertEquals(36272340992L, splitTime, 150000000);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -267,7 +269,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime);
+		Assert.assertEquals(36272340992L, splitTime, 150000000);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);

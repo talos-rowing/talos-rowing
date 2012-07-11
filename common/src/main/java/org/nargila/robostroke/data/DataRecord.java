@@ -43,7 +43,7 @@ public class DataRecord {
 			public Object doParse(String s) {
 				String[] tokens = s.split(",");
 				/* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-				return new Object[] {new Long(tokens[0]), new Float(tokens[2]), new Long(tokens[0]), new Long(tokens[0]), new Integer(tokens[0])};
+				return new Object[] {new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
 			}			
 		}),
 		ROWING_START_TRIGGERED,
