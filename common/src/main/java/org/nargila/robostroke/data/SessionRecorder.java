@@ -50,7 +50,7 @@ public class SessionRecorder extends SensorBinder implements SessionRecorderCons
 				
 				logEvent(new DataRecord(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
 
-				for (Parameter<?> param: roboStroke.getParameters().getParamMap().values()) {
+				for (Parameter param: roboStroke.getParameters().getParamMap().values()) {
 
 					logEvent(DataRecord.create(DataRecord.Type.SESSION_PARAMETER, -1, 
 							new ParameterBusEventData(param.getId() + "|" + param.convertToString())));

@@ -43,31 +43,31 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
 
-			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STOP_TIMEOUT, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer)param.getValue());					
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer)param.getValue());					
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_MODE, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_MODE.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					rowingMode = RowingSplitMode.valueOf((String) param.getValue());			
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					paramStartMinAmplitude = (Float)param.getValue();					
 				}
 			})
@@ -127,13 +127,13 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 		
 		this.params = params;
 
-		rowingMode = RowingSplitMode.valueOf((String) params.getValue(ParamKeys.PARAM_ROWING_MODE));
+		rowingMode = RowingSplitMode.valueOf((String) params.getValue(ParamKeys.PARAM_ROWING_MODE.getId()));
 		
-		paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_STOP_TIMEOUT));
+		paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId()));
 
-		paramStartMinAmplitude = params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD);
+		paramStartMinAmplitude = params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId());
 
-		paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME));
+		paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId()));
 
 		bus = roboStroke.getBus();
 		

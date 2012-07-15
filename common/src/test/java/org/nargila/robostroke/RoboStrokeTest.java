@@ -172,7 +172,7 @@ public class RoboStrokeTest {
 				switch (event.type) {
 				case ROWING_COUNT:
 					if ((Integer)event.data == 12) {
-						roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE, RowingSplitMode.AUTO + "");
+						roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE.getId(), RowingSplitMode.AUTO + "");
 					}
 
 					break;
@@ -308,8 +308,8 @@ public class RoboStrokeTest {
 					
 					ParameterBusEventData pd = (ParameterBusEventData) event.data;
 					
-					if (!pd.id.equals(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE) &&  
-							!pd.id.equals(ParamKeys.PARAM_ROWING_MODE)) {
+					if (!pd.id.equals(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId()) &&  
+							!pd.id.equals(ParamKeys.PARAM_ROWING_MODE.getId())) {
 						roboStroke.getParameters().setParam(pd.id, pd.value);
 					}
 					break;
@@ -336,8 +336,8 @@ public class RoboStrokeTest {
 		
 		try {
 			bus.addBusListener(listener);
-			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE, straightMode);
-			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE, mode.name());
+			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId(), straightMode);
+			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE.getId(), mode.name());
 			start();
 			
 			synchronized (startEvent) {				

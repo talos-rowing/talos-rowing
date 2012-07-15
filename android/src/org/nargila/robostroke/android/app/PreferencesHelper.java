@@ -201,7 +201,7 @@ public class PreferencesHelper {
 
 			try {
 				
-				Parameter<?> param = ps.getParam(key);
+				Parameter param = ps.getParam(key);
 				Object defaultValue = param.getDefaultValue();
 				Object val = preferences.getAll().get(key);
 				String value = val == null ? defaultValue.toString() : val.toString(); //preferences.edit().remove(key).commit()

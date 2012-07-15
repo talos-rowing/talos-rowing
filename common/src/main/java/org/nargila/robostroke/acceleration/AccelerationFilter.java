@@ -52,7 +52,7 @@ public class AccelerationFilter extends SensorDataFilter implements ParameterLis
 	public AccelerationFilter(RoboStroke owner) {
 		this.params = owner.getParameters();
 		
-		accelMode = (Boolean)params.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED) ? COAX_MODE : ROWER_MODE;
+		accelMode = (Boolean)params.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId()) ? COAX_MODE : ROWER_MODE;
 
 		params.addListeners(this);
 
@@ -88,10 +88,10 @@ public class AccelerationFilter extends SensorDataFilter implements ParameterLis
 	}
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					boolean coaxMode = (Boolean)param.getValue();
 					logger.info("setting coax mode to {}", coaxMode);
 					accelMode = coaxMode ?  COAX_MODE : ROWER_MODE;

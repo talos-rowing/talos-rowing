@@ -45,17 +45,17 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 	
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					setAmplitudeFiltering((Float)param.getValue());
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_POWER_MIN_POWER, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_POWER_MIN_POWER.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					strokePowerTreshold = (Float)param.getValue();
 				}
 			})
@@ -92,12 +92,12 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 	private final ParameterService params;
 
 	public StrokePowerScanner(RoboStroke owner, StrokeRateScanner rateScanner) {
-		super(owner.getBus(), (Float) owner.getParameters().getValue(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR));
+		super(owner.getBus(), (Float) owner.getParameters().getValue(ParamKeys.PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR.getId()));
 		
 		this.params = owner.getParameters();
 		this.bus = owner.getBus();
 		
-		strokePowerTreshold = params.getValue(ParamKeys.PARAM_STROKE_POWER_MIN_POWER);
+		strokePowerTreshold = params.getValue(ParamKeys.PARAM_STROKE_POWER_MIN_POWER.getId());
 		
 		bus.addBusListener(this);
 

@@ -78,7 +78,7 @@ public class RoboStrokeSwing {
 		
 		final Preferences pref = Preferences.userNodeForPackage(getClass());
 		
-		for (Entry<String, Parameter<?>> p: parameters.getParamMap().entrySet()) {
+		for (Entry<String, Parameter> p: parameters.getParamMap().entrySet()) {
 			String value = pref.get(p.getKey(), p.getValue().convertToString());
 			parameters.setParam(p.getKey(), value);
 		}
@@ -86,7 +86,7 @@ public class RoboStrokeSwing {
 		parameters.addListener("*", new ParameterChangeListener() {
 			
 			@Override
-			public void onParameterChanged(Parameter<?> param) {
+			public void onParameterChanged(Parameter param) {
 				pref.put(param.getId(), param.convertToString());
 			}
 		});

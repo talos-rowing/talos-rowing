@@ -42,7 +42,7 @@ public class ParameterService {
 
 	private final HashMap<String,HashSet<ParameterChangeListener>> listeners = new HashMap<String, HashSet<ParameterChangeListener>>();
 	
-	private final HashMap<String, Parameter<?>> paramMap = new HashMap<String, Parameter<?>>();
+	private final HashMap<String, Parameter> paramMap = new HashMap<String, Parameter>();
 
 	private boolean recursionOn;
 	
@@ -52,7 +52,7 @@ public class ParameterService {
 		addListener("*", new ParameterChangeListener() {
 			
 			@Override
-			public void onParameterChanged(Parameter<?> param) {
+			public void onParameterChanged(Parameter param) {
 				eventBus.fireEvent(DataRecord.Type.PARAMETER_CHANGE, new ParameterBusEventData(param.getId(), param.convertToString()));
 			}
 		});
@@ -126,9 +126,9 @@ public class ParameterService {
 		listenerSet.add(listener);		
 	}
 	
-	public synchronized void registerParam(Parameter<?> ... param) {
+	public synchronized void registerParam(Parameter ... param) {
 		
-		for (Parameter<?> p: param) {
+		for (Parameter p: param) {
 			final String id = p.getId();
 		
 			if (paramMap.containsKey(id)) {
@@ -136,13 +136,13 @@ public class ParameterService {
 			}
 		}
 
-		for (Parameter<?> p: param) {
+		for (Parameter p: param) {
 			p.parameterService = this;
 			paramMap.put(p.getId(), p);
 		}
 	}
 	
-	public synchronized void setParam(Parameter<?> param, Object value) {
+	public synchronized void setParam(Parameter param, Object value) {
 		
 		// check either param is registered
 		if (getParam(param.getId()) != param) {
@@ -165,7 +165,7 @@ public class ParameterService {
 	}
 	
 	
-	private void onParamChanged(Parameter<?> param) {
+	private void onParamChanged(Parameter param) {
 		
 		HashSet<ParameterChangeListener> paramChangeListeners = listeners.get(param.getId());
 		
@@ -185,7 +185,7 @@ public class ParameterService {
 	}
 	
 	public synchronized void setParam(String id, Object value) {
-		Parameter<?> param = getParam(id);
+		Parameter param = getParam(id);
 		
 		Object val;
 		if (value instanceof String) {
@@ -202,12 +202,12 @@ public class ParameterService {
 		return (T) getParam(id).getValue();
 	}
 	
-	public Map<String, Parameter<?>> getParamMap() {
+	public Map<String, Parameter> getParamMap() {
 		return Collections.unmodifiableMap(paramMap);
 	}
 	
-	public synchronized Parameter<?> getParam(String id) {
-		Parameter<?> param = paramMap.get(id);
+	public synchronized Parameter getParam(String id) {
+		Parameter param = paramMap.get(id);
 		if (param == null) {
 			throw new IllegalArgumentException("param " + id + " is not registered");
 		}	

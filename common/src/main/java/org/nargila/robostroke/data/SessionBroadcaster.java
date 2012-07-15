@@ -47,7 +47,7 @@ public class SessionBroadcaster extends SensorBinder {
 						writeRecord(new DataRecord(Type.LOGFILE_VERSION, -1,
 								SessionRecorderConstants.LOGFILE_VERSION));
 						
-						for (Parameter<?> param: roboStroke.getParameters().getParamMap().values()) {
+						for (Parameter param: roboStroke.getParameters().getParamMap().values()) {
 							
 							if (!s.isConnected()) {
 								break;

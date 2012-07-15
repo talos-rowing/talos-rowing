@@ -47,31 +47,31 @@ public class StrokeRateScanner extends StrokeScannerBase implements ParameterLis
 	private final RoboStrokeEventBus bus;
 	
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					setAmplitudeFiltering((Float)param.getValue());					
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_MIN_AMPLITUDE, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_MIN_AMPLITUDE.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					setMinAmplitude((Float)param.getValue());					
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					setAmplitudeChangeDamperFactor((Float)param.getValue());					
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_ACCEPT_FACTOR, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_CHANGE_ACCEPT_FACTOR.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					setAmplitudeChangeAcceptFactor((Float)param.getValue());					
 				}
 			})
@@ -80,7 +80,7 @@ public class StrokeRateScanner extends StrokeScannerBase implements ParameterLis
 	private final ParameterService params;
 	
 	public StrokeRateScanner(RoboStroke owner) {
-		super(owner.getBus(), (Float) owner.getParameters().getValue(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR));
+		super(owner.getBus(), (Float) owner.getParameters().getValue(ParamKeys.PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR.getId()));
 		
 		this.params = owner.getParameters();
 		this.bus = owner.getBus();

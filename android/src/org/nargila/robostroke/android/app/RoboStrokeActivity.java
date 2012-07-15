@@ -108,10 +108,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	private static final Logger logger = LoggerFactory.getLogger(TAG);
 	
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_SESSION_RECORDING_ON, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					final boolean recording = (Boolean)param.getValue();
 					
 					setRecordingOn(recording);
@@ -167,7 +167,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
 					
-					if (preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE, false)) {
+					if (preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), false)) {
 						if (recordLeaderDialog == null) {
 							recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
 						}
@@ -607,7 +607,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			@Override
 			public void onClick(View arg0) {
 				if (!isReplaying() && FileHelper.hasExternalStorage()) {
-					roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON, !recording);
+					roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), !recording);
 					recording = !recording;
 				}
 			}
@@ -875,7 +875,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private synchronized void start(DataInputInfo replayFile) {
 		roboStroke.getParameters().setParam(
-				ParamKeys.PARAM_SESSION_RECORDING_ON, false);
+				ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), false);
 		
 		enableScheduler(true);
 
@@ -1072,7 +1072,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			break;
 		case R.id.menu_record_start:
 			if (recheckExternalStorage()) {
-				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON, true);
+				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), true);
 			}
 			
 			break;
@@ -1081,7 +1081,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			if (isReplaying()) {
 				restart(new DataInputInfo(false));
 			} else if (recordingOn) {
-				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON, false);
+				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), false);
 			}
 
 			return true;

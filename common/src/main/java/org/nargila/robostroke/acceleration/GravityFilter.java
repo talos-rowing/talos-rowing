@@ -57,10 +57,10 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 	
 	
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					orientationDamper.setFilteringFactor((Float)param.getValue());
 				}
 			})
@@ -76,7 +76,7 @@ public class GravityFilter extends SensorDataFilter implements ParameterListener
 		
 		this.params = owner.getParameters();
 		
-		orientationDamper = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR));
+		orientationDamper = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_DAMP_FACTOR.getId()));
 		
 		this.bus = owner.getBus();
 		

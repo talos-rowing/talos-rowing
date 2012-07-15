@@ -26,17 +26,157 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.param.Parameter.BOOLEAN;
-import org.nargila.robostroke.param.Parameter.FLOAT;
-import org.nargila.robostroke.param.Parameter.INTEGER;
 
 public class ParameterServiceTest {
 	
-	private static final BOOLEAN BOOLEAN_PARAM = new Parameter.BOOLEAN("bool", null, null, null, null, true);
+	private static final ParameterInfo BOOLEAN_PARAM = new ParameterInfo() {
+		
+		@Override
+		public Object[] makeChoices() {
+			return null;
+		}
+		
+		@Override
+		public String getName() {
+			return null;
+		}
+		
+		@Override
+		public ParameterLevel getLevel() {
+			return null;
+		}
+		
+		@Override
+		public String getId() {
+			return "bool";
+		}
+		
+		@Override
+		public String getDescription() {
+			return null;
+		}
+		
+		@Override
+		public Object getDefaultValue() {
+			return true;
+		}
+		
+		@Override
+		public String getCategory() {
+			return null;
+		}
+		
+		@Override
+		public String convertToString(Object val) {
+			return String.valueOf(val);
+		}
+		
+		@Override
+		public Object convertFromString(String val) {
+			return new Boolean(val);
+		}
+	}; 
 
-	private static final INTEGER INTEGER_PARAM = new Parameter.INTEGER("int", null, null, null, null, 5);
+	private static final ParameterInfo INTEGER_PARAM = new ParameterInfo() {
+		
+		@Override
+		public Object[] makeChoices() {
+			return null;
+		}
+		
+		@Override
+		public String getName() {
+			return null;
+		}
+		
+		@Override
+		public ParameterLevel getLevel() {
+			return null;
+		}
+		
+		@Override
+		public String getId() {
+			return "int";
+		}
+		
+		@Override
+		public String getDescription() {
+			return null;
+		}
+		
+		@Override
+		public Object getDefaultValue() {
+			return 5;
+		}
+		
+		@Override
+		public String getCategory() {
+			return null;
+		}
+		
+		@Override
+		public String convertToString(Object val) {
+			return String.valueOf(val);
+		}
+		
+		@Override
+		public Object convertFromString(String val) {
+			return new Integer(val);
+		}
+	}; 
 
-	private static final FLOAT FLOAT_PARAM = new Parameter.FLOAT("float", null, null, null, null, .5f);
+	private static final ParameterInfo FLOAT_PARAM = new ParameterInfo() {
+		
+		@Override
+		public Object[] makeChoices() {
+			return null;
+		}
+		
+		@Override
+		public String getName() {
+			return null;
+		}
+		
+		@Override
+		public ParameterLevel getLevel() {
+			return null;
+		}
+		
+		@Override
+		public String getId() {
+			return "float";
+		}
+		
+		@Override
+		public String getDescription() {
+			return null;
+		}
+		
+		@Override
+		public Object getDefaultValue() {
+			return 0.5f;
+		}
+		
+		@Override
+		public String getCategory() {
+			return null;
+		}
+		
+		@Override
+		public String convertToString(Object val) {
+			return String.valueOf(val);
+		}
+		
+		@Override
+		public Object convertFromString(String val) {
+			return new Float(val);
+		}
+	}; 
+
+	
+	Parameter f = new Parameter(FLOAT_PARAM);
+	Parameter i = new Parameter(INTEGER_PARAM);
+	Parameter b = new Parameter(BOOLEAN_PARAM);
 
 	private ParameterService ps;
 	private final RoboStrokeEventBus bus = new RoboStrokeEventBus();
@@ -45,20 +185,20 @@ public class ParameterServiceTest {
 			new ParameterListenerRegistration("float", new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 				}
 			}),
 			new ParameterListenerRegistration("int", new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					intVal = (Integer)param.getValue();					
 				}
 			}),
 			new ParameterListenerRegistration("bool", new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 				}
 			})
 	};
@@ -73,10 +213,7 @@ public class ParameterServiceTest {
 	@Before
 	public void setUp() throws Exception {
 		ps = new ParameterService(bus);
-		ps.registerParam(
-				FLOAT_PARAM,
-				INTEGER_PARAM,
-				BOOLEAN_PARAM);
+		ps.registerParam(f, i, b);
 		
 		ps.addListener(listenerRegistration);
 	}
@@ -88,11 +225,11 @@ public class ParameterServiceTest {
 
 	@Test
 	public void testSetParam() {
-		assertEquals(.5f, FLOAT_PARAM.getDefaultValue(), 0);
+		assertEquals(.5f, (Float)f.getDefaultValue(), 0);
 		ps.setParam("float", "0.7");
-		assertEquals(.7f, FLOAT_PARAM.getValue(), 0);
-		ps.setParam(FLOAT_PARAM, 0.8f);
-		assertEquals(.8f, FLOAT_PARAM.getValue(), 0);		
+		assertEquals(.7f, (Float)f.getValue(), 0);
+		ps.setParam(f, 0.8f);
+		assertEquals(.8f, (Float)f.getValue(), 0);		
 	}
 	
 	@Test
@@ -109,7 +246,7 @@ public class ParameterServiceTest {
 			new ParameterListenerRegistration("bool", new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					ps.setParam("int", "0");					
 				}
 			});

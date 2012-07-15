@@ -36,6 +36,7 @@ import org.nargila.robostroke.param.ParameterService;
 
 public class ParamEditDialog extends JDialog {
 
+	private static final long serialVersionUID = 1L;
 	private final JPanel contentPanel = new JPanel();
 	private ParameterService ps;
 
@@ -116,8 +117,8 @@ public class ParamEditDialog extends JDialog {
 	}
 
 	protected void resetParams() {
-		for (Entry<String, Parameter<?>> p: ps.getParamMap().entrySet()) {
-			Parameter<?> param = p.getValue();
+		for (Entry<String, Parameter> p: ps.getParamMap().entrySet()) {
+			Parameter param = p.getValue();
 			ps.setParam(param, param.getDefaultValue());
 		}			
 	}
@@ -133,7 +134,7 @@ public class ParamEditDialog extends JDialog {
 				
 				int gridy = -1;
 				
-				for (Entry<String, Parameter<?>> param: ps.getParamMap().entrySet()) {
+				for (Entry<String, Parameter> param: ps.getParamMap().entrySet()) {
 					
 					gridy++;
 					
@@ -200,7 +201,7 @@ public class ParamEditDialog extends JDialog {
 				ps.addListener("*", new ParameterChangeListener() {
 
 					@Override
-					public void onParameterChanged(final Parameter<?> param) {
+					public void onParameterChanged(final Parameter param) {
 						EventQueue.invokeLater(new Runnable() {
 
 							@Override

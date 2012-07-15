@@ -140,10 +140,10 @@ public class RoboStroke {
 		
 		initPipeline(distanceResolver);
 		
-		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_PORT, new ParameterChangeListener() {
+		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_PORT.getId(), new ParameterChangeListener() {
 			
 			@Override
-			public void onParameterChanged(Parameter<?> param) {
+			public void onParameterChanged(Parameter param) {
 				broadcastPort = (Integer)param.getValue();
 				
 			}

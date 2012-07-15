@@ -27,151 +27,87 @@ import java.util.LinkedHashSet;
  *
  * @param <T> data type of parameter value
  */
-public abstract class Parameter<T> {
+public class Parameter {
 	
-	public static class BOOLEAN extends Parameter<Boolean> {
-
-		public BOOLEAN(String id, String name, String description, String category, ParameterLevel level,
-				boolean defaultValue) {
-			super(id, name, description, category, level, defaultValue);
-		}
-
-		@Override
-		protected Boolean convertFromString(String val) {
-			return new Boolean(val);
-		}
-	}
+	private final ParameterInfo info;
 	
-	public static class STRING extends Parameter<String> {
-
-		
-		public STRING(String id, String name, String description, String category, ParameterLevel level,
-				String defaultValue) {
-			super(id, name, description, category, level, defaultValue);
-		}
-
-		@Override
-		protected String convertFromString(String val) {
-			return val;
-		}
-	}
-	
-	public static class FLOAT extends Parameter<Float> {
-
-		public FLOAT(String id, String name, String description, String category, ParameterLevel level,
-				Float defaultValue) {
-			super(id, name, description, category, level, defaultValue);
-		}
-
-		@Override
-		protected Float convertFromString(String val) {
-			return new Float(val);
-		}
-	}
-	
-	public static class INTEGER extends Parameter<Integer> {
-
-		public INTEGER(String id, String name, String description, String category, ParameterLevel level,
-				Integer defaultValue) {
-			super(id, name, description, category, level, defaultValue);
-		}
-		@Override
-		protected Integer convertFromString(String val) {
-			return new Integer(val);
-		}
-	}
-	public static class LONG extends Parameter<Long> {
-
-		public LONG(String id, String name, String description, String category, ParameterLevel level,
-				Long defaultValue) {
-			super(id, name, description, category, level, defaultValue);
-		}
-		@Override
-		protected Long convertFromString(String val) {
-			return new Long(val);
-		}
-	}
-	
-	private final String id;
-	private final String name;
-	private final String description;
-	private final String category;
-	private final ParameterLevel level;
-	private final T defaultValue;
-	private T value;
+	private Object value;
 	
 	ParameterService parameterService; // is set by ParameterService when this param instance is registered
 	
-	public Parameter(String id, String name, String description, String category,
-			ParameterLevel level, T defaultValue) {
-		this.id = id;
-		this.name = name;
-		this.description = description;
-		this.category = category;
-		this.level = level;
-		this.defaultValue = value = defaultValue;
-	}
-	
-	public Parameter(String id) {
-		this(id, null, null, null, null, null);
-	}
-	
-	public T getValue() {
-		return value;
-	}
-	
-	
-	public final void setValue(T value) {
-		parameterService.setParam(this, value); 
+	public Parameter(ParameterInfo info) {
+		
+		this.info = info;
+		
+		value = info.getDefaultValue();
 	}
 	
 	@SuppressWarnings("unchecked")
+	public <T> T getValue() {
+		return (T) value;
+	}
+	
+	
+	public final void setValue(Object value) {
+		parameterService.setParam(this, value); 
+	}
+	
 	boolean setParameterValue(Object value) {
-		if (!this.value.equals(value)) {
-			T newValue = (T) value;
-			this.value = newValue;
-			return true;
+		
+		boolean hasChanged;
+		
+		if (this.value == null || value == null) {
+			hasChanged = this.value != value; 
+		} else {
+			hasChanged = !this.value.equals(value);
 		}
 		
-		return false;
+		
+		this.value = value;
+		
+		return hasChanged;
 	}
 	
 	public String getId() {
-		return id;
+		return info.getId();
 	}
 	public String getName() {
-		return name;
+		return info.getName();
 	}
 	public String getDescription() {
-		return description;
+		return info.getDescription();
 	}
 	public String getCategory() {
-		return category;
+		return info.getCategory();
 	}
 	public ParameterLevel getLevel() {
-		return level;
+		return info.getLevel();
 	}
-	public T getDefaultValue() {
-		return defaultValue;
+	@SuppressWarnings("unchecked")
+	public <T> T getDefaultValue() {
+		return (T) info.getDefaultValue();
 	}
 	
-	protected abstract T convertFromString(String val);
+	@SuppressWarnings("unchecked")
+	public <T> T convertFromString(String val) {
+		return (T) info.convertFromString(val);
+	}
 	
 	public String convertToString() {
-		return value.toString();
+		return info.convertToString(value);
 	}
 	
-	protected T[] makeChoices() {
-		return null;
+	protected Object[] makeChoices() {
+		return info.makeChoices();
 	}
 	
 	public final Object[] getChoices() {
 		
-		LinkedHashSet<T> res = new LinkedHashSet<T>();
+		LinkedHashSet<Object> res = new LinkedHashSet<Object>();
 		res.add(getDefaultValue());
 		res.add(getValue());
 		
-		T[] choices = makeChoices();
+		Object[] choices = makeChoices();
 		
 		if (choices != null) {
 			res.addAll(Arrays.asList(choices));

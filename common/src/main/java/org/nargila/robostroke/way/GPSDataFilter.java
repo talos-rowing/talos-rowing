@@ -87,13 +87,13 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		
 		this.distanceResolver = distanceResolver;
 		
-		speedChangeDamperFilter = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER));
+		speedChangeDamperFilter = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId()));
 		
-		straightLineModeOn = params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE);
+		straightLineModeOn = params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId());
 		
-		minDistance = (Integer)params.getValue(ParamKeys.PARAM_GPS_MIN_DISTANCE);
+		minDistance = (Integer)params.getValue(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId());
 		
-		maxSpeed = params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED);
+		maxSpeed = params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId());
 		
 		params.addListeners(this);
 		
@@ -207,37 +207,37 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 	}
 	
 	private final ParameterListenerRegistration[] listenerRegistrations = {
-			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					float value = (Float)param.getValue();
 					logger.info("setting speedChangeDamperFilter to {}", value);
 					speedChangeDamperFilter.setFilteringFactor(value);
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_MIN_DISTANCE, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					float value = (Integer)param.getValue();
 					logger.info("setting minDistance to {}", value);
 					minDistance = value;
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId(), new ParameterChangeListener() {
 				
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					float value = (Float)param.getValue();
 					logger.info("setting maxSpeed to {}", value);
 					maxSpeed = value;
 				}
 			}),
-			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE, new ParameterChangeListener() {
+			new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId(), new ParameterChangeListener() {
 
 				@Override
-				public void onParameterChanged(Parameter<?> param) {
+				public void onParameterChanged(Parameter param) {
 					straightLineModeOn = (Boolean) param.getValue();
 				}
 			})

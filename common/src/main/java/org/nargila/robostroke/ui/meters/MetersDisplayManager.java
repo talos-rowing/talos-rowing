@@ -409,7 +409,7 @@ public class MetersDisplayManager implements SensorDataSink {
 	}
 	
 	private RowingSplitMode queryRowingMode() {
-		Object val = rs.getParameters().getValue(ParamKeys.PARAM_ROWING_MODE);
+		Object val = rs.getParameters().getValue(ParamKeys.PARAM_ROWING_MODE.getId());
 		return RowingSplitMode.valueOf(val.toString());
 	}
 
