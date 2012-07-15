@@ -55,7 +55,7 @@ class RecordSyncLeaderDialog extends Dialog {
 						});
 						
 						tg.startTone(ToneGenerator.TONE_PROP_BEEP);
-						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, i - colors.length);
+						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, i - colors.length + 1);
 						Thread.sleep(1000);						
 					}					
 				} catch (Exception e) {
