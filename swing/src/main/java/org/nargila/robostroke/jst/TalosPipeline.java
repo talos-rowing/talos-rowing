@@ -17,16 +17,29 @@
  */
 
 package org.nargila.robostroke.jst;
-import java.util.*;
-import java.awt.*;
+import java.awt.Canvas;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.net.URL;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 
 import org.nargila.robostroke.data.RecordDataInput;
 
-import com.fluendo.jst.*;
-import com.fluendo.utils.*;
+import com.fluendo.jst.Caps;
+import com.fluendo.jst.CapsListener;
+import com.fluendo.jst.Clock;
+import com.fluendo.jst.Element;
+import com.fluendo.jst.ElementFactory;
+import com.fluendo.jst.Format;
+import com.fluendo.jst.Message;
+import com.fluendo.jst.Pad;
+import com.fluendo.jst.PadListener;
+import com.fluendo.jst.Pipeline;
+import com.fluendo.jst.Query;
+import com.fluendo.utils.Debug;
 
 public class TalosPipeline extends Pipeline implements PadListener,
 		CapsListener {

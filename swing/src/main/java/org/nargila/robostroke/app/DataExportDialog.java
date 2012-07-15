@@ -19,8 +19,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.DataRecord;

@@ -20,8 +20,8 @@ package org.nargila.robostroke.android.app;
 
 import java.util.concurrent.TimeUnit;
 
-import org.nargila.robostroke.data.DataRecord.Type;
 import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.data.DataRecord.Type;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
