@@ -12,12 +12,15 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
 class RecordSyncLeaderDialog extends Dialog {
+	
 	private final View view; 
 	private final RoboStrokeActivity owner;
 	private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
 	private final ColorDrawable[] colors = {new ColorDrawable(Color.RED), new ColorDrawable(Color.YELLOW), new ColorDrawable(Color.GREEN)};
 	private boolean stopped;
 	private final Handler handler = new Handler();
+	
+	private Runnable runAfter;
 	
 	RecordSyncLeaderDialog(RoboStrokeActivity owner) {
 		super(owner);
@@ -65,8 +68,16 @@ class RecordSyncLeaderDialog extends Dialog {
 	}
 	
 	@Override
-	protected void onStop() {
-		stopped = true;
+	protected void onStop() {		
+		stopped = true;		
 		super.onStop();
+		
+		if (runAfter != null) {
+			runAfter.run();
+		}
+	}
+	
+	void setRunAfter(Runnable runAfter) {
+		this.runAfter = runAfter;
 	}
 }

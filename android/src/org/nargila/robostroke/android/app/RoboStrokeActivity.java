@@ -157,6 +157,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	
 	private class SessionFileHandler {
 		
+		boolean wasRecording;
+		
 		private void resetSessionRecording() {
 
 			try {
@@ -167,20 +169,58 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
 					
-					if (preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), false)) {
-						if (recordLeaderDialog == null) {
-							recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
-						}
-						
-						recordLeaderDialog.show();
-					}
+					showFilmLeaderDialog(null);
 							
+					wasRecording = true;
+					
 				} else {
-					roboStroke.setDataLogger(null);
+					
+					final AtomicReference<IOException> error = new AtomicReference<IOException>();
+					
+					Runnable runAfter = new Runnable() {
+						
+						@Override
+						public void run() {
+							try {
+								roboStroke.setDataLogger(null);
+							} catch (IOException e) {
+								error.set(e);
+							} finally {
+							}
+						}
+					};
+					
+					if (!wasRecording || !showFilmLeaderDialog(runAfter)) {
+						runAfter.run();
+					}
+					
+					if (error.get() != null) {
+						throw error.get();
+					}
+
+					wasRecording = false;
 				}
+				
 			} catch (IOException e) {
 				logger.error("failed to start session data logger", e);
 			}
+		}
+
+		private boolean showFilmLeaderDialog(Runnable runAfter) {
+			Boolean enabled = preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), false);
+			
+			if (enabled) {
+				
+				if (recordLeaderDialog == null) {
+					recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
+				}
+				
+				recordLeaderDialog.setRunAfter(runAfter);
+				
+				recordLeaderDialog.show();				
+			}
+			
+			return enabled;
 		}
 		
 		private void shareSession() {
