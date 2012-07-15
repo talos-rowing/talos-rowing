@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +62,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
 	private final File dataFile;
 	
-	public FileDataInput(RoboStrokeEventBus bus, File dataFile) throws IOException {
-		super(bus);
+	public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
+		super(roboStroke);
 		this.dataFile = dataFile;
 		this.reader = new RandomAccessFile(dataFile, "r");
 		fileLength = dataFile.length();

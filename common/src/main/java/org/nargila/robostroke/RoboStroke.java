@@ -191,7 +191,7 @@ public class RoboStroke {
 	 * @throws IOException
 	 */
 	public void setFileInput(File file) throws IOException {
-		setInput(new FileDataInput(bus, file));
+		setInput(new FileDataInput(this, file));
 	}
 	
 	/**

@@ -333,7 +333,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		if (host != null && !host.equals("")) {
 			RemoteDataInput dataInput;
 			try {
-				dataInput = new RemoteDataInput(rs.getBus(), host);
+				dataInput = new RemoteDataInput(rs, host);
 				start(dataInput, false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -396,10 +396,10 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		if (ogg) {
 			
-			dataInput = new OggDataInput(f, rs.getBus());			
+			dataInput = new OggDataInput(f, rs);			
 			
 		} else {
-			dataInput = new FileDataInput(rs.getBus(), f);
+			dataInput = new FileDataInput(rs, f);
 		}
 		
 		

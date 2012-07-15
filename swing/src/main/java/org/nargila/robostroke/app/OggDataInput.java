@@ -6,7 +6,7 @@ import java.net.MalformedURLException;
 
 import javax.swing.JFrame;
 
-import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.jst.TalosPipeline;
@@ -29,9 +29,9 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 	private boolean isBuffering;
 	private int pipeState = Pipeline.NONE;
 	
-	OggDataInput(File f, RoboStrokeEventBus bus) {
+	OggDataInput(File f, RoboStroke roboStroke) {
 		
-		super(bus);
+		super(roboStroke);
 		
 		videoCanvas.setSize(500, 400);
 		videoFrame.getContentPane().add(videoCanvas);

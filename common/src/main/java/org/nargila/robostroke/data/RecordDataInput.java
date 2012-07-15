@@ -1,5 +1,6 @@
 package org.nargila.robostroke.data;
 
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 
 public abstract class RecordDataInput extends SensorDataInputBase {
@@ -7,10 +8,12 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 	private long currenSeekId;
 	private boolean seakable;
 	
+	protected final RoboStroke roboStroke;
 	protected final RoboStrokeEventBus bus;
 
-	public RecordDataInput(RoboStrokeEventBus bus) {
-		this.bus = bus;
+	public RecordDataInput(RoboStroke roboStroke) {
+		this.roboStroke = roboStroke;
+		this.bus = roboStroke.getBus();
 	}
 
 	public void setSeakable(boolean seakable) {
@@ -61,7 +64,6 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 	protected abstract void onSetPosFinish(double pos);	
 	
 	public void playRecord(DataRecord record) {
-		if (record.type.isReplayableEvent) {
 			switch (record.type) {
 			case GPS:
 				gpsDataSource.pushData(record.timestamp, record.data);		
@@ -72,12 +74,15 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 			case ORIENT:
 				orientationDataSource.pushData(record.timestamp, record.data);
 				break;
+			default:				
+				if (record.type.isReplayableEvent) {
+					if (record.type.isBusEvent && bus != null) {
+						bus.fireEvent(record);
+					}					
+				}
+				
+				break;
 			}
-	
-			if (record.type.isBusEvent && bus != null) {
-				bus.fireEvent(record);
-			}
-		}
 	}
 
 	public void playRecord(String line) {

@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.RoboStroke;
 
 public class RemoteDataInput extends RecordDataInput {
 
@@ -15,13 +15,13 @@ public class RemoteDataInput extends RecordDataInput {
 	private final String host;
 	private final int port;
 		
-	public RemoteDataInput(RoboStrokeEventBus bus, String host) throws IOException {
-		this(bus, host, SessionRecorderConstants.BROADCAST_PORT);
+	public RemoteDataInput(RoboStroke roboStroke, String host) throws IOException {
+		this(roboStroke, host, SessionRecorderConstants.BROADCAST_PORT);
 	}
 	
-	public RemoteDataInput(RoboStrokeEventBus bus, String host, int port) throws IOException {
+	public RemoteDataInput(RoboStroke roboStroke, String host, int port) throws IOException {
 		
-		super(bus);
+		super(roboStroke);
 		
 		this.host = host;
 		this.port = port;		

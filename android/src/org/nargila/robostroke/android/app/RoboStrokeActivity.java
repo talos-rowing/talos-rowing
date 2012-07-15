@@ -984,8 +984,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			case FILE:
 			case REMOTE:
 				dataInput = dataInputInfo.inputType == DataInputInfo.InputType.FILE ? 
-						new FileDataInput(roboStroke.getBus(), dataInputInfo.file) :
-							new RemoteDataInput(roboStroke.getBus(), dataInputInfo.host, dataInputInfo.port);
+						new FileDataInput(roboStroke, dataInputInfo.file) :
+							new RemoteDataInput(roboStroke, dataInputInfo.host, dataInputInfo.port);
 				padding = HIGHLIGHT_PADDING_SIZE;
 				replay = true;
 				recordingIndicatorHilight = REPLAYING_ON_COLOUR;
