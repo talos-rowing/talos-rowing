@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.nargila.robostroke.common.LocationUtil;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.DistanceResolver;
 
@@ -95,7 +96,7 @@ public class RoboStrokeTest {
 
 	private void start() throws IOException {
 		
-		roboStroke.setInput(new FileDataInput(null, inputFile));
+		roboStroke.setInput(new FileDataInput(roboStroke, inputFile));
 		
 		roboStroke.setDataLogger(logFile);		
 	}
@@ -116,11 +117,18 @@ public class RoboStrokeTest {
 			
 			@Override
 			public void onBusEvent(DataRecord event) {
-				try {
-					newEvents.write(String.format("%s %s", event.type, event.dataToString()));
-					newEvents.write("\n");
-				} catch (IOException e) {
-					e.printStackTrace();
+				
+				switch (event.type) {
+				case REPLAY_PROGRESS:
+				case SESSION_PARAMETER:
+					break;
+					default:
+						try {
+							newEvents.write(String.format("%s %s", event.type, event.dataToString()));
+							newEvents.write("\n");
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 				}
 			}
 		};
@@ -138,7 +146,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime, 150000000);
+		Assert.assertEquals(36378872000L, splitTime);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -191,7 +199,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(49861885952L, splitTime, 150000000);
+		Assert.assertEquals(49979969000L, splitTime);
 		Assert.assertEquals(125, distance, 1);
 		Assert.assertEquals(48000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -230,7 +238,7 @@ public class RoboStrokeTest {
 		try {					
 			splitRowing(RowingSplitMode.AUTO, true);
 			
-			Assert.assertEquals(8, strokeRate[0]);
+			Assert.assertEquals(7, strokeRate[0]);
 			Assert.assertEquals(19.25, (strokeRate[1] / (double)strokeRate[0]), 0.25);
 			
 		} finally {
@@ -250,7 +258,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime, 150000000);
+		Assert.assertEquals(36378872000L, splitTime);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -269,7 +277,7 @@ public class RoboStrokeTest {
 		long travelTime = (Long) data[3];
 		int strokes = (Integer) data[4];
 		
-		Assert.assertEquals(36272340992L, splitTime, 150000000);
+		Assert.assertEquals(36378872000L, splitTime);
 		Assert.assertEquals(114, distance, 1);
 		Assert.assertEquals(37000L, travelTime);
 		Assert.assertEquals(12, strokes);
@@ -283,9 +291,9 @@ public class RoboStrokeTest {
 		
 		final AtomicReference<DataRecord> startEvent = new AtomicReference<DataRecord>();
 		final AtomicReference<DataRecord> stopEvent = new AtomicReference<DataRecord>();
-		
+				
 		BusEventListener listener = new BusEventListener() {
-			
+						
 			@Override
 			public void onBusEvent(DataRecord event) {
 				System.out.println(event);
@@ -295,6 +303,16 @@ public class RoboStrokeTest {
 				}
 				
 				switch (event.type) {
+				
+				case SESSION_PARAMETER:					
+					
+					ParameterBusEventData pd = (ParameterBusEventData) event.data;
+					
+					if (!pd.id.equals(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE) &&  
+							!pd.id.equals(ParamKeys.PARAM_ROWING_MODE)) {
+						roboStroke.getParameters().setParam(pd.id, pd.value);
+					}
+					break;
 				case ROWING_START:
 					synchronized (startEvent) {
 						startEvent.set(event);

@@ -50,6 +50,7 @@ public class DataRecord {
 		ROWING_START(false, new DataRecordSerializer.LONG()),
 		ROWING_COUNT(false, new DataRecordSerializer.INT()),
 		PARAMETER_CHANGE(false, new DataRecordSerializer.PARAMETER()),
+		SESSION_PARAMETER(true, new DataRecordSerializer.PARAMETER()),
 		STROKE_POWER_END(false, true, new DataExporter() {
 
 			@Override

@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.SensorBinder;
 import org.nargila.robostroke.data.DataRecord.Type;
+import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterBusEventData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +43,20 @@ public class SessionBroadcaster extends SensorBinder {
 						recordQueue.clear();
 						
 						recordOut = new OutputStreamWriter(s.getOutputStream());
+						
 						writeRecord(new DataRecord(Type.LOGFILE_VERSION, -1,
 								SessionRecorderConstants.LOGFILE_VERSION));
+						
+						for (Parameter<?> param: roboStroke.getParameters().getParamMap().values()) {
+							
+							if (!s.isConnected()) {
+								break;
+							}
+							
+							writeRecord(DataRecord.create(DataRecord.Type.SESSION_PARAMETER, -1, 
+									new ParameterBusEventData(param.getId() + "|" + param.convertToString())));
+						}
+
 						while (s.isConnected()) {
 
 							DataRecord record = recordQueue.poll(10,

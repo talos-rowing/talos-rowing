@@ -26,6 +26,8 @@ import java.io.IOException;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.SensorBinder;
 import org.nargila.robostroke.data.DataRecord.Type;
+import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterBusEventData;
 
 public class SessionRecorder extends SensorBinder implements SessionRecorderConstants {
 	
@@ -48,6 +50,12 @@ public class SessionRecorder extends SensorBinder implements SessionRecorderCons
 				
 				logEvent(new DataRecord(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
 
+				for (Parameter<?> param: roboStroke.getParameters().getParamMap().values()) {
+
+					logEvent(DataRecord.create(DataRecord.Type.SESSION_PARAMETER, -1, 
+							new ParameterBusEventData(param.getId() + "|" + param.convertToString())));
+				}
+				
 				connect();
 			}
 	}
