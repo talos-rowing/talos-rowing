@@ -158,11 +158,15 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	private class SessionFileHandler {
 		
 		boolean wasRecording;
+		Date sessionTimestamp = new Date();
 		
 		private void resetSessionRecording() {
 
 			try {
 				if (recordingOn && !isReplaying()) {
+					
+					sessionTimestamp = new Date();
+					
 					File logFile = recordingOn ? FileHelper.getFile(ROBOSTROKE_DATA_DIR, "" + System.currentTimeMillis() + "-dataInput.txt") : null;
 							
 					roboStroke.setDataLogger(logFile);
@@ -215,6 +219,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
 				}
 				
+				recordLeaderDialog.setTag(DateFormat.format("kk:mm:ss", sessionTimestamp) + "");
 				recordLeaderDialog.setRunAfter(runAfter);
 				
 				recordLeaderDialog.show();				
