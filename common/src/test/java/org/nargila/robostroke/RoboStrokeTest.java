@@ -40,6 +40,8 @@ import org.junit.Test;
 import org.nargila.robostroke.common.LocationUtil;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
+import org.nargila.robostroke.data.RemoteDataInput;
+import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.stroke.RowingSplitMode;
 import org.nargila.robostroke.way.DistanceResolver;
@@ -82,6 +84,7 @@ public class RoboStrokeTest {
 
 	@Before
 	public void setUp() throws Exception {
+		
 		roboStroke = new RoboStroke(new DistanceResolver() {
 			
 			@Override
@@ -93,12 +96,20 @@ public class RoboStrokeTest {
 		bus = roboStroke.getBus();
 
 	}
-
-	private void start() throws IOException {
+	
+	private void start(SensorDataInput dataInput) throws IOException {
 		
-		roboStroke.setInput(new FileDataInput(roboStroke, inputFile));
+		if (dataInput == null) {
+			dataInput = fileInput();
+		}
+		
+		roboStroke.setInput(dataInput);
 		
 		roboStroke.setDataLogger(logFile);		
+	}
+
+	private FileDataInput fileInput() throws IOException {
+		return new FileDataInput(roboStroke, inputFile);
 	}
 	
 	@After
@@ -284,10 +295,14 @@ public class RoboStrokeTest {
 	}
 	
 	private DataRecord splitRowing(RowingSplitMode mode, boolean straightMode) throws Exception {
-		return splitRowing(mode, straightMode, null);
+		return splitRowing(null, mode, straightMode);
 	}
 	
-	private DataRecord splitRowing(RowingSplitMode mode, boolean straightMode, final BusEventListener testEventListener) throws Exception {
+	private DataRecord splitRowing(SensorDataInput dataInput, RowingSplitMode mode, boolean straightMode) throws Exception {
+		return splitRowing(dataInput, mode, straightMode, null);
+	}
+	
+	private DataRecord splitRowing(SensorDataInput dataInput, RowingSplitMode mode, boolean straightMode, final BusEventListener testEventListener) throws Exception {
 		
 		final AtomicReference<DataRecord> startEvent = new AtomicReference<DataRecord>();
 		final AtomicReference<DataRecord> stopEvent = new AtomicReference<DataRecord>();
@@ -338,7 +353,7 @@ public class RoboStrokeTest {
 			bus.addBusListener(listener);
 			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId(), straightMode);
 			roboStroke.getParameters().setParam(ParamKeys.PARAM_ROWING_MODE.getId(), mode.name());
-			start();
+			start(dataInput);
 			
 			synchronized (startEvent) {				
 								
@@ -366,5 +381,28 @@ public class RoboStrokeTest {
 		}
 		
 		return stopEvent.get();
+	}
+	
+	@Test
+	public void testBroadcasting() throws Exception {
+				
+		final RoboStroke rs = new RoboStroke();
+		rs.setInput(fileInput());
+		rs.setBroadcast(true);
+		
+		DataRecord event = splitRowing(new RemoteDataInput(roboStroke, "localhost"), RowingSplitMode.AUTO, false);
+		
+		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
+		Object[] data = (Object[]) event.data;
+		
+		float distance = (Float)data[1];
+		long splitTime = (Long) data[2];
+		long travelTime = (Long) data[3];
+		int strokes = (Integer) data[4];
+		
+		Assert.assertEquals(36378872000L, splitTime);
+		Assert.assertEquals(114, distance, 1);
+		Assert.assertEquals(37000L, travelTime);
+		Assert.assertEquals(12, strokes);
 	}
 }
