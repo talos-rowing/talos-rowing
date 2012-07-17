@@ -68,7 +68,10 @@ public class RoboStrokeEventBus extends Thread {
 				}
 				
 				synchronized (listeners) {
-					for (BusEventListener listener: listeners) {
+					
+					BusEventListener[] list = listeners.toArray(new BusEventListener[listeners.size()]);
+					
+					for (BusEventListener listener: list) {
 						if (shutdown) {
 							break;
 						}
