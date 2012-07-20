@@ -17,6 +17,7 @@
     <jnlp.main.class>org.nargila.robostroke.app.RoboStrokeSwing</jnlp.main.class>
     <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
     <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
+    <cortado.version>0.6.0-18-g68fbc7c</cortado.version>
   </properties>
 
   <dependencies>
@@ -37,6 +38,54 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
       <version>1.6.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-codecs</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-jst</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-jheora</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-jcraft</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-jkate</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-jtiger</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-plugin</artifactId>
+      <version>${cortado.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.nargila.robostroke.cortado</groupId>
+      <artifactId>cortado-utils</artifactId>
+      <version>${cortado.version}</version>
     </dependency>
 
     <dependency>
