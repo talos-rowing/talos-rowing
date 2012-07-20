@@ -22,9 +22,11 @@ package org.nargila.robostroke.data.version;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
@@ -168,16 +170,19 @@ public abstract class DataVersionConverter {
 	}
 	
 	public static void usage() {
-		System.err.println("usage: DataVersionConverter <file>");
+		System.err.println("usage: DataVersionConverter <infile> <outfile|stdout>");
 		System.exit(1);		
 	}
 	
 	public static void main(String[] args) throws Exception {
 		
-		if (args.length != 1) {
+		if (args.length != 2) {
 			usage();
 		}
+		
 		File input = new File(args[0]);
+		OutputStream out = args[1].equals("stdout") ? System.out : new FileOutputStream(args[1]);
+		
 		File res = input;
 		
 		DataVersionConverter converter = getConvertersFor(input);
@@ -189,11 +194,16 @@ public abstract class DataVersionConverter {
 		InputStream in = new FileInputStream(res);
 		
 		try {
-			copy(in, System.out);
+			copy(in, out);
 		} finally {
 			
 			try {
 				in.close();
+			} catch (Exception e) {				
+			}
+			
+			try {
+				out.close();
 			} catch (Exception e) {				
 			}
 			
@@ -203,7 +213,7 @@ public abstract class DataVersionConverter {
 		}
 	}
 
-	private static void copy(InputStream in, PrintStream out) throws IOException {
+	private static void copy(InputStream in, OutputStream out) throws IOException {
 		
 		byte[] buff = new byte[4096];
 		
