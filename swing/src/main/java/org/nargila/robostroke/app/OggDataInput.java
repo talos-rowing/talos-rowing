@@ -19,11 +19,12 @@
 
 package org.nargila.robostroke.app;
 
+import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Container;
+import java.awt.event.ComponentAdapter;
 import java.io.File;
 import java.net.MalformedURLException;
-
-import javax.swing.JFrame;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.DataRecord;
@@ -41,24 +42,22 @@ import com.fluendo.utils.Debug;
 
 class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 	
-	private final JFrame videoFrame = new JFrame();
 	private final Canvas videoCanvas = new Canvas();
 	private final TalosPipeline jst = new TalosPipeline();
 	private long duration;
 	private boolean isBuffering;
 	private int pipeState = Pipeline.NONE;
+	private final Container container;
 	
-	OggDataInput(File f, RoboStroke roboStroke) {
+	OggDataInput(File f, RoboStroke roboStroke, Container container) {
 		
 		super(roboStroke);
 		
-		videoCanvas.setSize(500, 400);
-		videoFrame.getContentPane().add(videoCanvas);
-		videoFrame.pack();
-		videoFrame.setLocationRelativeTo(null);
-		
+		this.container = container;
+		container.add(videoCanvas, BorderLayout.CENTER);
 		jst.setComponent(videoCanvas);
 		jst.setTalosRecordPlayer(this);
+		jst.setKeepAspect(true);
 		
 		try {
 			jst.setUrl(f.toURI().toURL().toString());
@@ -69,6 +68,12 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 		jst.addPadListener(this);
 			
 		jst.getBus().addHandler(this);
+		
+		videoCanvas.addComponentListener(new ComponentAdapter() {
+			public void componentResized(java.awt.event.ComponentEvent e) {
+				jst.resizeVideo();
+			}
+		});
 	}
 
 	@Override
@@ -81,7 +86,7 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 	
 	@Override
 	public void noMorePads() {	
-		videoFrame.setVisible(jst.hasVideo());
+		container.setVisible(jst.hasVideo());
 	}
 
 	@Override
@@ -171,7 +176,8 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 
 	@Override
 	public void stop() {
-		videoFrame.setVisible(false);
+		container.remove(videoCanvas);
+		container.setVisible(false);
 		jst.setState(Pipeline.NONE);
 	}
 

@@ -50,7 +50,7 @@ public class RoboStrokeSwing {
 			public void run() {
 				try {
 					RoboStrokeSwing window = new RoboStrokeSwing();
-					
+
 					centerOnScreen(window.frmTalosRowing);
 					
 					window.frmTalosRowing.setVisible(true);
@@ -117,10 +117,10 @@ public class RoboStrokeSwing {
 	private void initialize() {
 		frmTalosRowing = new JFrame();
 		frmTalosRowing.setTitle("Talos Rowing");
-		frmTalosRowing.setBounds(100, 100, 450, 300);
 		frmTalosRowing.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		roboStrokeAppPanel = new RoboStrokeAppPanel();
+		frmTalosRowing.getContentPane().setLayout(new BorderLayout());
 		frmTalosRowing.getContentPane().add(roboStrokeAppPanel, BorderLayout.CENTER);
 		frmTalosRowing.pack();
 	}

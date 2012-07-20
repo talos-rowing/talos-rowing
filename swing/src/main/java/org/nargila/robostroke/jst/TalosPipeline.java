@@ -452,6 +452,15 @@ public class TalosPipeline extends Pipeline implements PadListener,
 	public boolean hasVideo() {
 		return enableVideo && videosink != null;
 	}
+
+	/**
+	 * force video sink to resize
+	 */
+	public void resizeVideo() {
+		if (hasVideo()) {			
+			videosink.setProperty("bounds", component.getBounds()	);
+		}
+	}
 	
 	public TalosPipeline() {
 		super("pipeline");

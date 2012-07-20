@@ -25,6 +25,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -42,7 +44,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -76,6 +80,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JPanel accellGraphContainer;
 	private JPanel analysisGraphContainer;
 	private JPanel strokeGraphContainer;
+	private JPanel videoPanel;
 	
 	private RoboStroke rs;
 
@@ -95,6 +100,8 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JCheckBoxMenuItem chckbxmntmAnalysis;
 
 	private JCheckBoxMenuItem chckbxmntmAccel;
+
+	private JSplitPane splitPane;
 
 	/**
 	 * Create the panel.
@@ -201,11 +208,44 @@ public class RoboStrokeAppPanel extends JPanel {
 				strokeAnalysisGraph.getParent().setVisible(chckbxmntmAnalysis.isSelected());
 			}
 		});
+		
 		mnView.add(chckbxmntmAnalysis);
 		
-		JPanel panel = new JPanel();
+		videoPanel = new JPanel();
+		videoPanel.setBackground(Color.BLACK);
+		
+		videoPanel.setPreferredSize(new Dimension(0, 0));
+		videoPanel.setMinimumSize(new Dimension(0, 0));
+		
+		final JPanel panel = new JPanel();
+		panel.setPreferredSize(new Dimension(300, 600));
 		panel.setBackground(Color.BLACK);
-		add(panel, BorderLayout.CENTER);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel, videoPanel);
+		videoPanel.setLayout(new BorderLayout(0, 0));
+		videoPanel.addContainerListener(new ContainerAdapter() {
+			@Override
+			public void componentAdded(ContainerEvent e) {
+				videoPanel.setPreferredSize(new Dimension(640, 420));
+				splitPane.setDividerSize(10);
+				SwingUtilities.getWindowAncestor(splitPane).pack();
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						splitPane.setDividerLocation(-1);
+					}
+				});
+			}
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+				splitPane.setDividerSize(0);
+				videoPanel.setPreferredSize(new Dimension(0, 0));
+				SwingUtilities.getWindowAncestor(splitPane).pack();
+			}
+		});
+		
+		splitPane.setDividerSize(0);
+		add(splitPane, BorderLayout.CENTER);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
 		meterView = new SwingMeterView();
@@ -363,6 +403,7 @@ public class RoboStrokeAppPanel extends JPanel {
 
 	private void prepareFile(final File f) {
 		
+		@SuppressWarnings("serial")
 		final PrepareFileDialog pfd = new PrepareFileDialog() {
 			protected void onFinish(File res) {
 				
@@ -415,7 +456,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		if (ogg) {
 			
-			dataInput = new OggDataInput(f, rs);			
+			dataInput = new OggDataInput(f, rs, videoPanel);			
 			
 		} else {
 			dataInput = new FileDataInput(rs, f);
@@ -489,6 +530,8 @@ public class RoboStrokeAppPanel extends JPanel {
 				}
 			}
 		});
+		
+		splitPane.resetToPreferredSizes();
 	}
 	public JMenuItem getMntmExport() {
 		return mntmExport;
