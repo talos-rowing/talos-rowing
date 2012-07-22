@@ -53,14 +53,22 @@ public class ParamRegistration {
 		
 		for (Parameter p: params) {
 			
-			LinkedList<Parameter> group = paramGroups.get(p.getCategory());
-			
-			if (group == null) {
-				group = new LinkedList<Parameter>();
-				paramGroups.put(p.getCategory(), group);
+			switch (p.getLevel()) {
+			case DEBUG:
+			case PRIVATE:
+				break;
+			default: 
+				LinkedList<Parameter> group = paramGroups.get(p.getCategory());
+
+				if (group == null) {
+					group = new LinkedList<Parameter>();
+					paramGroups.put(p.getCategory(), group);
+				}
+
+				group.add(p);
+				
+				break;
 			}
-			
-			group.add(p);
 		}
 		
 		for (Entry<String, LinkedList<Parameter>> e: paramGroups.entrySet()) {
