@@ -21,8 +21,12 @@ package org.nargila.robostroke.data;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class RecordDataInput extends SensorDataInputBase {
+	
+	private static final Logger logger = LoggerFactory.getLogger(RecordDataInput.class);
 	
 	private long currenSeekId;
 	private boolean seakable;
@@ -116,7 +120,19 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 		
 		String[] vals = line.split(" +");
 
-		DataRecord.Type type = DataRecord.Type.valueOf(vals[0]);
+		if (vals.length < 3) {
+			logger.warn("corrupt record line [" + line + "]");
+			return;			
+		}
+		
+		DataRecord.Type type;
+		
+		try {
+			type = DataRecord.Type.valueOf(vals[0]);
+		} catch (IllegalArgumentException e) {
+			logger.warn("unknown record type [" + vals[0] + "]", e);
+			return;
+		}
 
 		if (type.isParsableEvent) {		  
 
