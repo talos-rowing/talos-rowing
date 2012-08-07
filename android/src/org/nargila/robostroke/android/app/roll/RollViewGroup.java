@@ -203,10 +203,10 @@ public class RollViewGroup extends LinearLayout implements DataUpdatable {
 	public void disableUpdate(boolean disable) {
 		if (this.disabled != disable) {
 			if (!disable) {
-				roboStroke.getRollScanner().addSensorDataSink(privateListener);
+				roboStroke.getOrientationSource().addSensorDataSink(privateListener);
 				roboStroke.getBus().addBusListener(privateListener);
 			} else {
-				roboStroke.getRollScanner().removeSensorDataSink(privateListener);
+				roboStroke.getOrientationSource().removeSensorDataSink(privateListener);
 				roboStroke.getBus().removeBusListener(privateListener);
 			}
 

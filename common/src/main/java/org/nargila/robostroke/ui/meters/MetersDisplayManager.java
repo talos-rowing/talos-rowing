@@ -250,7 +250,7 @@ public class MetersDisplayManager implements SensorDataSink {
 		});
 		
 		
-		rs.getAccelerationFilter().addSensorDataSink(this);
+		rs.getAccelerationSource().addSensorDataSink(this);
 	}
 	
 	

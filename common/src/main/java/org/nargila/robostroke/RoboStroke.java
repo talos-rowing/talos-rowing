@@ -25,6 +25,9 @@ import java.io.IOException;
 
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.acceleration.GravityFilter;
+import org.nargila.robostroke.data.AxisDataReverseFilter;
+import org.nargila.robostroke.data.AxisDataSwapFilter;
+import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.ErrorListener;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.SensorDataFilter;
@@ -122,6 +125,14 @@ public class RoboStroke {
 	private final SessionBroadcaster sessionBroadcaster =  new SessionBroadcaster(this);
 
 	private int broadcastPort = SessionRecorderConstants.BROADCAST_PORT;
+
+	private AxisDataReverseFilter coaxModeAccelFilter;
+
+	private AxisDataReverseFilter coaxModeOrientationFilter;
+	
+	private AxisDataSwapFilter landscapeAccelFilter;
+
+	private AxisDataSwapFilter landscapeOrientationFilter;
 	
 	/**
 	 * constructor with the <code>DistanceResolverDefault</code>
@@ -148,6 +159,36 @@ public class RoboStroke {
 				
 			}
 		});
+		
+		parameters.addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				setCoaxMode((Boolean)param.getValue());
+				
+			}
+		});
+		
+		parameters.addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				setLandscapeMode((Boolean)param.getValue());
+				
+			}
+		});
+		
+		setCoaxMode((Boolean)parameters.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId()));
+	}
+
+	private void setLandscapeMode(boolean value) {
+		landscapeOrientationFilter.setEnabled(value);
+		landscapeAccelFilter.setEnabled(value);
+	}
+
+	private void setCoaxMode(boolean value) {
+		coaxModeAccelFilter.setEnabled(value);
+		coaxModeOrientationFilter.setEnabled(value);
 	}
 
 	/**
@@ -171,8 +212,16 @@ public class RoboStroke {
 	 * @param distanceResolver
 	 */
 	private void initPipeline(DistanceResolver distanceResolver) {
-		accelerationFilter = new AccelerationFilter(this);
+
+		landscapeAccelFilter = new AxisDataSwapFilter(DataIdx.ACCEL_Y, DataIdx.ACCEL_X);
+		landscapeOrientationFilter = new AxisDataSwapFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
+
+		coaxModeAccelFilter = new AxisDataReverseFilter(DataIdx.ACCEL_Z, DataIdx.ACCEL_X);
+		coaxModeOrientationFilter = new AxisDataReverseFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
+
+		accelerationFilter = new AccelerationFilter();
 		gravityFilter = new GravityFilter(this, accelerationFilter);
+		
 		strokeRateScanner = new StrokeRateScanner(this);
 		rowingDetector = new RowingDetector(this); 
 		strokePowerScanner = new StrokePowerScanner(this, strokeRateScanner);
@@ -183,6 +232,7 @@ public class RoboStroke {
 		rollScanner = new RollScanner(bus);
 	}
 	
+
 	/**
 	 * Set the sensor data input to replay from a file.
 	 * look at the code in {@link LoggingSensorDataInput#logData} to see what
@@ -258,7 +308,7 @@ public class RoboStroke {
 	 * <code>AccelerationFilter</code> combines the gravity-filtered acceleration forces to uni-directional acceleration/deceleration data
 	 * @return AccelerationFilter object
 	 */
-	public SensorDataFilter getAccelerationFilter() {
+	public SensorDataSource getAccelerationSource() {
 		return accelerationFilter;
 	}
 
@@ -275,7 +325,7 @@ public class RoboStroke {
 	 * get roll scanner
 	 * @return roll scanner
 	 */
-	public RollScanner getRollScanner() {
+	public SensorDataSource getOrientationSource() {
 		return rollScanner;
 	}
 
@@ -283,7 +333,16 @@ public class RoboStroke {
 	 * connects a new DataInputSource to the sensor data pipelines
 	 */
 	private void connectPipeline() {
+		
 		dataInput.setErrorListener(errorListener);		
+		
+		if (dataInput.isLocalSensorInput()) {
+			dataInput.getOrientationDataSource().addSensorDataSink(landscapeOrientationFilter, 0.0);
+			dataInput.getAccelerometerDataSource().addSensorDataSink(landscapeAccelFilter, 0.0);	
+			dataInput.getOrientationDataSource().addSensorDataSink(coaxModeOrientationFilter, 0.0);
+			dataInput.getAccelerometerDataSource().addSensorDataSink(coaxModeAccelFilter, 0.0);	
+		}
+		
 		dataInput.getOrientationDataSource().addSensorDataSink(gravityFilter.getOrientationDataSink());
 		dataInput.getOrientationDataSource().addSensorDataSink(rollScanner);
 		dataInput.getAccelerometerDataSource().addSensorDataSink(gravityFilter);	

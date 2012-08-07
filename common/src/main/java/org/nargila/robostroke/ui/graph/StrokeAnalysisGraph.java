@@ -166,8 +166,8 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 	private void detachSensors() {
 		
 		if (attached) {
-			roboStroke.getAccelerationFilter().removeSensorDataSink(privateAccelDataSink);
-			roboStroke.getRollScanner().removeSensorDataSink(privateRollDataSink);
+			roboStroke.getAccelerationSource().removeSensorDataSink(privateAccelDataSink);
+			roboStroke.getOrientationSource().removeSensorDataSink(privateRollDataSink);
 			roboStroke.getBus().removeBusListener(privateBusListener);
 			attached = false;
 		}
@@ -179,8 +179,8 @@ public class StrokeAnalysisGraph implements UpdatableGraphBase {
 	private void attachSensors() {
 		if (!attached) {
 			roboStroke.getBus().addBusListener(privateBusListener);
-			roboStroke.getAccelerationFilter().addSensorDataSink(privateAccelDataSink);
-			roboStroke.getRollScanner().addSensorDataSink(privateRollDataSink);
+			roboStroke.getAccelerationSource().addSensorDataSink(privateAccelDataSink);
+			roboStroke.getOrientationSource().addSensorDataSink(privateRollDataSink);
 			
 			attached = true;
 		}

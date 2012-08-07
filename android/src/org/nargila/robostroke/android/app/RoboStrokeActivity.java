@@ -72,6 +72,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -644,7 +645,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		graphPanelDisplayManager.init();
 		
-		roboStroke.getAccelerationFilter().addSensorDataSink(metersDisplayManager);
+		roboStroke.getAccelerationSource().addSensorDataSink(metersDisplayManager);
 		
 		View.OnClickListener recordingClickListener = new View.OnClickListener() {
 			boolean recording;
@@ -667,10 +668,23 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			}
 		});
 		
+		roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), 
+				getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+
 		start(new DataInputInfo(false));
 
 	}
 
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+
+		boolean landscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+		roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), landscape);
+				
+		super.onConfigurationChanged(newConfig);
+	}
+	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		sessionFileHandler.startPreviewIntent(getIntent());		

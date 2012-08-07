@@ -57,6 +57,9 @@ public enum ParamKeys implements ParameterInfo {
 			"Sensors", 
 			ParameterLevel.ADVANCED, 0.01f),
 	
+	PARAM_SENSOR_ORIENTATION_LANDSCAPE("org.nargila.talos.rowing.sensor.orientationLandscape",
+					"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false),
+					
 	PARAM_SENSOR_ORIENTATION_REVERSED("org.nargila.talos.rowing.sensor.reverseDeviceOrientation",
 			"coax mode", 
 			"indicates the device user is forward facing - such as a coax or trainer. Normally the rower sits with her back to the front of the boat", 
@@ -131,7 +134,7 @@ public enum ParamKeys implements ParameterInfo {
 			
 	PARAM_SESSION_RECORDING_ON("org.nargila.talos.rowing.android.sessionRecordingOn",
 			"session recording on", "", "{internal}", ParameterLevel.PRIVATE, false),
-			
+								
     PARAM_SESSION_RECORDING_LEADER_ENABLE("org.nargila.talos.rowing.android.record.leader.enable",
 			"session recording sync mark", 
 			"Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", 

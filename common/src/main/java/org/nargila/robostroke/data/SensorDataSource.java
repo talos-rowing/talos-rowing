@@ -19,7 +19,9 @@
 
 package org.nargila.robostroke.data;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ListIterator;
 
 /**
  * a handy class to ease building of sensor data processing pipelines.
@@ -37,7 +39,12 @@ public class SensorDataSource {
 	/**
 	 * holder of event sinks when there are more then one
 	 */
-	private LinkedList<SensorDataSink>	sinkList;
+	private LinkedList<SensorDataSink> sinkList;
+	
+	/**
+	 * holder of event sinks when there are more then one
+	 */
+	private final HashMap<SensorDataSink, Double> weightMap = new HashMap<SensorDataSink, Double>();
 	
 	/**
 	 * construct with no initial event sinks
@@ -57,14 +64,14 @@ public class SensorDataSource {
 	 * @param sink event sink
 	 */
 	public void addSensorDataSink(SensorDataSink sink) {
-		addSensorDataSink(sink, false);
+		addSensorDataSink(sink, 1.0);
 	}
 	/**
 	 * add an event sink, optionally prepend to head of sink list (to ensure getting of unfiltered raw data)
 	 * @param sink event sink
-	 * @param prepend prepend to head of sink list insteed of appending
+	 * @param weight position the new sink in weight order - e.g. 0.0 to prepend sink to head of sink queue, 1.0 to append
 	 */
-	public synchronized void addSensorDataSink(SensorDataSink sink, boolean prepend) {
+	public synchronized void addSensorDataSink(SensorDataSink sink, double weight) {
 		if (this.sink == null) {
 			this.sink = sink;		
 		} else {
@@ -79,12 +86,26 @@ public class SensorDataSource {
 				throw new IllegalArgumentException("sink is already registered");
 			}
 			
-			if (prepend) {
-				sinkList.addFirst(sink);
-			} else {
-				sinkList.add(sink);
+			ListIterator<SensorDataSink> it = sinkList.listIterator();
+			
+			int idx = 0;
+			while (it.hasNext()) {
+				
+				SensorDataSink s = it.next();
+				
+				double w = weightMap.get(s);
+				
+				if (weight < w) {
+					break;
+				}
+				
+				idx++;
 			}
+
+			sinkList.add(idx, sink);
 		}
+		
+		weightMap.put(sink, weight);
 	}
 	
 	/**
@@ -92,6 +113,7 @@ public class SensorDataSource {
 	 * @param sink event sink
 	 */
 	public synchronized void removeSensorDataSink(SensorDataSink sink) {
+		
 		boolean removed = false;
 		
 		if (sinkList != null) {
@@ -111,6 +133,9 @@ public class SensorDataSource {
 		if (!removed) {
 			throw new IllegalArgumentException("trying to remove non-existing sink");
 		}
+		
+		weightMap.remove(sink);
+
 	}
 	
 	/**

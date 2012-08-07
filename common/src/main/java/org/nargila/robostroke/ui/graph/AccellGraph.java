@@ -201,13 +201,13 @@ public class AccellGraph extends SensorGraphBase  {
 
 	@Override
 	protected void detachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationFilter().removeSensorDataSink(lineDataSink);
-		roboStroke.getRollScanner().removeSensorDataSink(rollGraph);
+		roboStroke.getAccelerationSource().removeSensorDataSink(lineDataSink);
+		roboStroke.getOrientationSource().removeSensorDataSink(rollGraph);
 	}
 
 	@Override
 	protected void attachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationFilter().addSensorDataSink(lineDataSink);
-		roboStroke.getRollScanner().addSensorDataSink(rollGraph);
+		roboStroke.getAccelerationSource().addSensorDataSink(lineDataSink);
+		roboStroke.getOrientationSource().addSensorDataSink(rollGraph);
 	}
 }

@@ -37,7 +37,7 @@ public abstract class SensorBinder implements BusEventListener {
 		SensorDataSourceBinder(SensorDataSource src, DataRecord.Type type) {
 			this.src = src;
 			this.type = type;
-			src.addSensorDataSink(this, true);
+			src.addSensorDataSink(this, 0.1);
 		}
 		
 		@Override

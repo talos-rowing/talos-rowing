@@ -66,4 +66,10 @@ public interface SensorDataInput {
 	 * @param pause true to pause false to continue
 	 */
 	public void setPaused(boolean pause);
+	
+	/**
+	 * tell either this is a live sensor input from local device
+	 */
+	public boolean isLocalSensorInput();
+	
 }

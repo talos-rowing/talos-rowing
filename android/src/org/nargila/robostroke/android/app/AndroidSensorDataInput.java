@@ -73,6 +73,11 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		gpsThread.quit();
 	}
 
+	@Override
+	public boolean isLocalSensorInput() {
+		return true;
+	}
+	
 	private static class CompatHandlerThread extends HandlerThread {
 		public CompatHandlerThread(String name) {
 			super(name);

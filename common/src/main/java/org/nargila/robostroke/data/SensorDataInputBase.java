@@ -55,4 +55,8 @@ public abstract class SensorDataInputBase implements SensorDataInput {
 		return orientationDataSource;
 	}
 
+	@Override
+	public boolean isLocalSensorInput() {
+		return false;
+	}
 }
