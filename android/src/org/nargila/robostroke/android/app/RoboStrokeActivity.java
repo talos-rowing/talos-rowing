@@ -70,6 +70,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
@@ -667,6 +668,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				cleanTmpDir();
 			}
 		});
+		
 		
 		roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), 
 				getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
@@ -1325,5 +1327,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	public RoboStroke getRoboStroke() {
 		return roboStroke;
+	}
+
+	public void setLandscapeLayout(boolean landscape) {
+		setRequestedOrientation(landscape ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 	}
 }

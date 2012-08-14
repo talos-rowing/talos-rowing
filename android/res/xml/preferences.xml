@@ -41,7 +41,13 @@
 			android:defaultValue="@string/defaults_layout_show_graphs" 
 			android:summary="Display/hide graph view" 
 			android:persistent="true"/>
-    </PreferenceCategory>
+		<CheckBoxPreference 
+			android:key="org.nargila.talos.rowing.android.layout.mode.landscape" 
+			android:title="Landscape Mode" 
+			android:defaultValue="false" 
+			android:summary="Run in landscape mode" 
+			android:persistent="true"/>
+		</PreferenceCategory>
 	<PreferenceCategory android:title="Split Rowing">
 		<ListPreference android:title="Activation Mode"
 			android:key="org.nargila.talos.rowing.stroke.detector.startMode"

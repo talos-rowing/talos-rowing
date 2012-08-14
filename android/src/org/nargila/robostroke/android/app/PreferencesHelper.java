@@ -47,6 +47,8 @@ public class PreferencesHelper {
 
 	public static final String METERS_LAYOUT_MODE_KEY = "org.nargila.talos.rowing.android.layout.meters.layoutMode";
 
+	public static final String PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE = "org.nargila.talos.rowing.android.layout.mode.landscape";
+
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	private final SharedPreferences preferences;
@@ -70,6 +72,8 @@ public class PreferencesHelper {
 				String defaultValue = owner.getString(R.string.defaults_layout_meter_mode);
 				String val = preferences.getString(METERS_LAYOUT_MODE_KEY, defaultValue);
 				owner.metersDisplayManager.setLayoutMode(val);
+			} else if (key.equals(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE)) {				
+				owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
 			} else if (key.equals(GRAPHS_SHOW_PREFERENCE_KEY)) {
 				boolean defaultValue = new Boolean(owner.getString(R.string.defaults_layout_show_graphs));
 				boolean val = preferences.getBoolean(GRAPHS_SHOW_PREFERENCE_KEY, defaultValue);
@@ -177,6 +181,7 @@ public class PreferencesHelper {
 		}
 		
 		owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), false);
+		owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
 	}
 
 	private void syncParametersFromPreferences() {
