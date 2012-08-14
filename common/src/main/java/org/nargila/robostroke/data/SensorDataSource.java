@@ -39,7 +39,7 @@ public class SensorDataSource {
 	/**
 	 * holder of event sinks when there are more then one
 	 */
-	private LinkedList<SensorDataSink> sinkList;
+	LinkedList<SensorDataSink> sinkList;
 	
 	/**
 	 * holder of event sinks when there are more then one
