@@ -18,20 +18,44 @@
  */
 package org.nargila.robostroke.acceleration;
 
+import org.nargila.robostroke.ParamKeys;
+import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataFilter;
+import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterChangeListener;
+import org.nargila.robostroke.param.ParameterListenerOwner;
+import org.nargila.robostroke.param.ParameterListenerRegistration;
+import org.nargila.robostroke.param.ParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Joins gravity-filtered 3 axis sensor data into acceleration amplitude value
  * @author tshalif
  *
  */
-public class AccelerationFilter extends SensorDataFilter {
+public class AccelerationFilter extends SensorDataFilter implements ParameterListenerOwner {
+	
+	private final static int ROWER_MODE = 1;
+	private final static int COAX_MODE = -1;
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
 	private final LowpassFilter ZERO_SHIFT_HACK_FILTER = new LowpassFilter(0.005f);
-			
-	public AccelerationFilter() {
+	
+	private int accelMode = ROWER_MODE;
+	
+	private final ParameterService params;
+	
+	public AccelerationFilter(RoboStroke owner) {
+		this.params = owner.getParameters();
+		
+		accelMode = (Boolean)params.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId()) ? COAX_MODE : ROWER_MODE;
+
+		params.addListeners(this);
+
 	}
 	
 	@Override
@@ -54,13 +78,36 @@ public class AccelerationFilter extends SensorDataFilter {
 		
 		final double accelOrDecelDeterminer = Math.abs(ay) > Math.abs(az) ? -ay : az;
 		
-		final int accelDir = accelOrDecelDeterminer < 0 ? -1 : 1;
+		final int accelDir = accelMode * accelOrDecelDeterminer < 0 ? -1 : 1;
 		
 		final float a = (float)(accelDir * Math.sqrt(ay*ay + az*az));
 		
 		final float ZERO_SHIFT_HACK = ZERO_SHIFT_HACK_FILTER.filter(new float[]{a})[0];//.075f; // TODO: calculation of a average is -.1f for some reason..
 		
 		return a - ZERO_SHIFT_HACK;
+	}
+
+	private final ParameterListenerRegistration[] listenerRegistrations = {
+			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
+				
+				@Override
+				public void onParameterChanged(Parameter param) {
+					boolean coaxMode = (Boolean)param.getValue();
+					logger.info("setting coax mode to {}", coaxMode);
+					accelMode = coaxMode ?  COAX_MODE : ROWER_MODE;
+				}
+			})
+	};
+	
+	@Override
+	public ParameterListenerRegistration[] getListenerRegistrations() {
+		return listenerRegistrations;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		params.removeListeners(this);
+		super.finalize();
 	}
 }
 
