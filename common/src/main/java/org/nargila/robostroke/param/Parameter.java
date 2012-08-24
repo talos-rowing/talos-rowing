@@ -20,6 +20,7 @@ package org.nargila.robostroke.param;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Parameter object with param ID, value and default value
@@ -32,6 +33,7 @@ public class Parameter {
 	private final ParameterInfo info;
 	
 	private Object value;
+	private AtomicReference<Object> savedValue;
 	
 	ParameterService parameterService; // is set by ParameterService when this param instance is registered
 	
@@ -47,6 +49,24 @@ public class Parameter {
 		return (T) value;
 	}
 	
+	/**
+	 * save current value
+	 */
+	public synchronized void saveValue() {
+		savedValue = new AtomicReference<Object>(this.value);		
+	}
+	
+	/**
+	 * restore value from savedValue
+	 */
+	public synchronized void restoreValue() {
+		
+		if (savedValue != null) {
+			Object tmp = savedValue.get();
+			savedValue = null;
+			setValue(tmp);
+		}
+	}
 	
 	public final void setValue(Object value) {
 		parameterService.setParam(this, value); 
@@ -61,7 +81,6 @@ public class Parameter {
 		} else {
 			hasChanged = !this.value.equals(value);
 		}
-		
 		
 		this.value = value;
 		
