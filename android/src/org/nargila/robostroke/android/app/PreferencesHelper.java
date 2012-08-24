@@ -20,7 +20,9 @@ package org.nargila.robostroke.android.app;
 
 import java.util.UUID;
 
+import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,6 +197,13 @@ public class PreferencesHelper {
 	private void attachPreferencesListener() {
 		
 		preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+		owner.getRoboStroke().getParameters().addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				preferences.edit().putBoolean(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), (Boolean)param.getValue()).commit();
+			}
+		});
 	}
 	
 	private void setParameterFromPreferences(String key) {
