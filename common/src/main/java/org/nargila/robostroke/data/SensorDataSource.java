@@ -152,4 +152,9 @@ public class SensorDataSource {
 			this.sink.onSensorData(timestamp, value);		
 		}
 	}
+	
+	public synchronized void clearSensorDataSinks() {
+		sinkList = null;
+		this.sink = null;
+	}
 }
