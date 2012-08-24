@@ -130,12 +130,6 @@
 			android:summary="For example When device is used by a forward facing coax" 
 			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation"/>
 		<CheckBoxPreference
-			android:title="Force Coax mode"
-			android:persistent="true" 
-			android:defaultValue="false"
-			android:summary="Force above Coax mode on/off on external data input" 
-			android:key="org.nargila.talos.rowing.sensor.reverseDeviceOrientation.force"/>
-		<CheckBoxPreference
 			android:title="Reset settings"
 			android:persistent="true" 
 			android:defaultValue="false"

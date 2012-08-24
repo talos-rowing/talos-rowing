@@ -66,11 +66,6 @@ public enum ParamKeys implements ParameterInfo {
 			"Sensors", ParameterLevel.BASIC, false),
 			
 			
-	PARAM_SENSOR_ORIENTATION_FORCE("org.nargila.talos.rowing.sensor.reverseDeviceOrientation.force",
-			"force coax mode", 
-			"normally coax mode preference is not applied to recorded/remote data. This parameter forces the settings of above coax mode also to external input data", 
-			"Sensors", ParameterLevel.BASIC, false),
-			
     PARAM_STROKE_RATE_AMPLITUDE_FILTER_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeFilterFactor",
 			"stroke amplitude filter", 
 			"Lowpass filter to 'smooth' the rowing sinusoids and establish single rise-above/drop-below zero points in each rowing cycle", 
