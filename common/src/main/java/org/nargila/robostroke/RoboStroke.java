@@ -216,7 +216,7 @@ public class RoboStroke {
 		landscapeAccelFilter = new AxisDataSwapFilter(DataIdx.ACCEL_Y, DataIdx.ACCEL_X);
 		landscapeOrientationFilter = new AxisDataSwapFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
-		coaxModeAccelFilter = new AxisDataReverseFilter(DataIdx.ACCEL_Z, DataIdx.ACCEL_X);
+		coaxModeAccelFilter = new AxisDataReverseFilter(-1, DataIdx.ACCEL_Y);
 		coaxModeOrientationFilter = new AxisDataReverseFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
 		accelerationFilter = new AccelerationFilter();
@@ -248,10 +248,11 @@ public class RoboStroke {
 	 * Set the sensor data input to a real device dependant implementation
 	 * @param impl device input implementation
 	 */
-	public void setInput(SensorDataInput dataInput) {
+	public synchronized void setInput(SensorDataInput dataInput) {
 		stop();
 		
 		if (dataInput != null) {
+			
 			this.dataInput = dataInput;
 			connectPipeline();
 			dataInput.start();
@@ -261,10 +262,17 @@ public class RoboStroke {
 	/**
 	 * Stop processing
 	 */
-	public void stop() {
+	public synchronized void stop() {
+		
 		if (dataInput != null) {
 			dataInput.setErrorListener(null);
 			dataInput.stop();
+		
+			coaxModeAccelFilter.clearSensorDataSinks();
+			coaxModeOrientationFilter.clearSensorDataSinks();
+			landscapeAccelFilter.clearSensorDataSinks();
+			landscapeOrientationFilter.clearSensorDataSinks();
+
 		}		
 	}
 	
@@ -339,6 +347,9 @@ public class RoboStroke {
 		if (dataInput.isLocalSensorInput()) {
 			dataInput.getOrientationDataSource().addSensorDataSink(landscapeOrientationFilter, 0.0);
 			dataInput.getAccelerometerDataSource().addSensorDataSink(landscapeAccelFilter, 0.0);	
+		}
+
+		if (dataInput.isLocalSensorInput() || (Boolean)parameters.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_FORCE.getId())) {
 			dataInput.getOrientationDataSource().addSensorDataSink(coaxModeOrientationFilter, 0.0);
 			dataInput.getAccelerometerDataSource().addSensorDataSink(coaxModeAccelFilter, 0.0);	
 		}
