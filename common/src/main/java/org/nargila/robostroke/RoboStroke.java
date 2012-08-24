@@ -28,6 +28,7 @@ import org.nargila.robostroke.acceleration.GravityFilter;
 import org.nargila.robostroke.data.AxisDataReverseFilter;
 import org.nargila.robostroke.data.AxisDataSwapFilter;
 import org.nargila.robostroke.data.DataIdx;
+import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.ErrorListener;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.SensorDataFilter;
@@ -38,6 +39,7 @@ import org.nargila.robostroke.data.SessionBroadcaster;
 import org.nargila.robostroke.data.SessionRecorder;
 import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 import org.nargila.robostroke.stroke.RollScanner;
@@ -126,14 +128,19 @@ public class RoboStroke {
 
 	private int broadcastPort = SessionRecorderConstants.BROADCAST_PORT;
 
-	private AxisDataReverseFilter coaxModeAccelFilter;
-
 	private AxisDataReverseFilter coaxModeOrientationFilter;
 	
 	private AxisDataSwapFilter landscapeAccelFilter;
 
 	private AxisDataSwapFilter landscapeOrientationFilter;
+
+	private final BusEventListener sessionParamChangeListener;
 	
+	private final ParamKeys[] sessionParamList = {
+			ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED
+	};
+	
+
 	/**
 	 * constructor with the <code>DistanceResolverDefault</code>
 	 */
@@ -179,6 +186,25 @@ public class RoboStroke {
 		});
 		
 		setCoaxMode((Boolean)parameters.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId()));
+		
+		sessionParamChangeListener = new BusEventListener() {
+			
+			@Override
+			public void onBusEvent(DataRecord event) {
+				switch (event.type) {
+				case SESSION_PARAMETER:
+					
+					ParameterBusEventData pd = (ParameterBusEventData) event.data;
+					
+					if (pd.id.equals(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId())) {						
+						parameters.setParam(pd.id, pd.value);
+					}
+					
+					break;
+
+				}
+			}
+		};
 	}
 
 	private void setLandscapeMode(boolean value) {
@@ -187,7 +213,6 @@ public class RoboStroke {
 	}
 
 	private void setCoaxMode(boolean value) {
-		coaxModeAccelFilter.setEnabled(value);
 		coaxModeOrientationFilter.setEnabled(value);
 	}
 
@@ -216,10 +241,9 @@ public class RoboStroke {
 		landscapeAccelFilter = new AxisDataSwapFilter(DataIdx.ACCEL_Y, DataIdx.ACCEL_X);
 		landscapeOrientationFilter = new AxisDataSwapFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
-		coaxModeAccelFilter = new AxisDataReverseFilter(-1, DataIdx.ACCEL_Y);
 		coaxModeOrientationFilter = new AxisDataReverseFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
-		accelerationFilter = new AccelerationFilter();
+		accelerationFilter = new AccelerationFilter(this);
 		gravityFilter = new GravityFilter(this, accelerationFilter);
 		
 		strokeRateScanner = new StrokeRateScanner(this);
@@ -252,6 +276,16 @@ public class RoboStroke {
 		stop();
 		
 		if (dataInput != null) {
+		
+			if (!dataInput.isLocalSensorInput()) {
+				
+				for (ParamKeys k: sessionParamList) {
+					parameters.getParam(k.getId()).saveValue();
+				}
+				
+				bus.addBusListener(sessionParamChangeListener);
+			}
+			
 			
 			this.dataInput = dataInput;
 			connectPipeline();
@@ -268,12 +302,20 @@ public class RoboStroke {
 			dataInput.setErrorListener(null);
 			dataInput.stop();
 		
-			coaxModeAccelFilter.clearSensorDataSinks();
 			coaxModeOrientationFilter.clearSensorDataSinks();
 			landscapeAccelFilter.clearSensorDataSinks();
 			landscapeOrientationFilter.clearSensorDataSinks();
-
-		}		
+			
+			if (!dataInput.isLocalSensorInput()) {
+				
+				for (ParamKeys k: sessionParamList) {
+					parameters.getParam(k.getId()).restoreValue();
+				}
+				
+				bus.removeBusListener(sessionParamChangeListener);
+			}			
+		}
+		
 	}
 	
 	/**
@@ -348,15 +390,15 @@ public class RoboStroke {
 			dataInput.getOrientationDataSource().addSensorDataSink(landscapeOrientationFilter, 0.0);
 			dataInput.getAccelerometerDataSource().addSensorDataSink(landscapeAccelFilter, 0.0);	
 		}
-
-		if (dataInput.isLocalSensorInput() || (Boolean)parameters.getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_FORCE.getId())) {
-			dataInput.getOrientationDataSource().addSensorDataSink(coaxModeOrientationFilter, 0.0);
-			dataInput.getAccelerometerDataSource().addSensorDataSink(coaxModeAccelFilter, 0.0);	
-		}
 		
 		dataInput.getOrientationDataSource().addSensorDataSink(gravityFilter.getOrientationDataSink());
+		
+		dataInput.getOrientationDataSource().addSensorDataSink(coaxModeOrientationFilter);
+
 		dataInput.getOrientationDataSource().addSensorDataSink(rollScanner);
-		dataInput.getAccelerometerDataSource().addSensorDataSink(gravityFilter);	
+		
+		dataInput.getAccelerometerDataSource().addSensorDataSink(gravityFilter);
+		
 		dataInput.getGPSDataSource().addSensorDataSink(gpsFilter);
 	}
 
