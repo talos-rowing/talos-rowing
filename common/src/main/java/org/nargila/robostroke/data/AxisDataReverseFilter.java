@@ -13,7 +13,12 @@ public class AxisDataReverseFilter extends AxisDataFilter {
 	
 	@Override
 	protected void applyFilter(float[] vals) {
-		vals[dataIndex1] *= -1;
-		vals[dataIndex2] *= -1;
+		if (dataIndex1 != -1) {
+			vals[dataIndex1] *= -1;
+		}
+		
+		if (dataIndex2 != -1) {
+			vals[dataIndex2] *= -1;
+		}
 	}
 }
