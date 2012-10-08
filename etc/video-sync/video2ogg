@@ -1,0 +1,5 @@
+#! /bin/bash
+
+usage="$0 <videofile> <oggoutfile>"
+
+gst-launch filesrc location="$1" ! progressreport name=oggconvert ! decodebin2 name=dec ! queue2 ! theoraenc ! oggmux name=mux ! filesink location="$2" dec. ! queue2 ! audioconvert ! vorbisenc ! mux. 

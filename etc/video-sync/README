@@ -1,0 +1,13 @@
+This directory contains the scripts used to merge Talos Rowing data
+session file with a video file.
+
+System requirements: 
+------------------- 
+
+These scripts were tested to
+work on Ubuntu 12.04.1 with the following package dependancies:
+
+ * python
+ * gstreamer
+ * libkate-tools
+ * oggz-tools

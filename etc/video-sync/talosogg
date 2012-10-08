@@ -1,0 +1,53 @@
+#! /bin/bash
+
+usage="$0 {dataInput.txt | dataInput.trsd} {videofile} {outfile.ogg}"
+
+set -e
+
+function error() {
+    echo 1>& 2 "$@"
+    exit 1
+}
+
+tmpdir=/tmp/talosogg.$$
+
+trap "rm -rf $tmpdir" 0
+
+test $# -eq 3 || error $usage
+
+input="$1"
+video="$2"
+outfile="$3"
+
+talos2kate=$(dirname $0)/talos2kate
+video2ogg=$(dirname $0)/video2ogg
+
+test -x ${talos2kate} || error "'${talos2kate}'" is either missing or is not executable
+test -x ${video2ogg} || error "'${video2ogg}'" is either missing or is not executable
+test -r $input || error sensor input datafile "'${input}'" is not readable
+test -r $video || error video file "'${video}'" is not readable
+
+mkdir -p $tmpdir
+
+case "$video" in
+    *.ogg|*.ogv|*.OGG|*.OGV) ogg="$video";;
+    *) ogg=$tmpdir/video.ogg;
+        ${video2ogg} "$video" $ogg;
+        ;;
+esac
+
+function catinput() {
+    case "$input" in
+        *.txt) cat "$input";;
+        *.trsd) zcat "$input";;
+        *) error "unrecognized file extension detected on Talos Rowing input data file '$input'";;
+    esac
+}
+
+readonly KATE_DUMMY_LANG=ja
+
+catinput | ${talos2kate}  > $tmpdir/kate.txt
+
+kateenc -t kate -o $tmpdir/kate.ogg -c robostroke -l $KATE_DUMMY_LANG $tmpdir/kate.txt
+
+oggz merge -o "$outfile" "$ogg" $tmpdir/kate.ogg
