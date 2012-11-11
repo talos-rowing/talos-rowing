@@ -143,6 +143,7 @@ public class AccellGraph extends SensorGraphBase  {
 
 		@Override
 		public void onSensorData(long timestamp, Object value) {
+			
 			synchronized (multySeries) {
 				float[] values = (float[]) value;
 
@@ -163,6 +164,7 @@ public class AccellGraph extends SensorGraphBase  {
 
 				rollSeries.add(timestamp, y);
 			}
+			
 		}
 	}
 

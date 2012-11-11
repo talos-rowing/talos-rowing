@@ -179,10 +179,15 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 		container.remove(videoCanvas);
 		container.setVisible(false);
 		jst.setState(Pipeline.NONE);
+		
+		super.stop();
 	}
 
 	@Override
 	public void start() {
+		
+		super.start();
+		
 		jst.setState(Pipeline.PLAY);
 	}
 

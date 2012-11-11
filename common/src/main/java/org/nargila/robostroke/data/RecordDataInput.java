@@ -19,6 +19,8 @@
 
 package org.nargila.robostroke.data;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.slf4j.Logger;
@@ -26,7 +28,67 @@ import org.slf4j.LoggerFactory;
 
 public abstract class RecordDataInput extends SensorDataInputBase {
 	
+	private class OrientQueueProcessor extends Thread {
+		
+		private static final int ORIENT_QUEUE_SIZE = 20;
+
+		private LinkedBlockingQueue<DataRecord> orientQueue = new LinkedBlockingQueue<DataRecord>();
+
+		private boolean acceptData = true;
+		
+		private boolean stop;
+		
+		public OrientQueueProcessor() {
+			super("Orientation Queue Processor");
+		}
+		
+		@Override
+		public void run() {
+			
+			while (!stop) {
+				try {
+					DataRecord record = orientQueue.take();
+					orientationDataSource.pushData(record.timestamp, record.data);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		
+		void setAcceptData(boolean acceptData) {
+			
+			synchronized (orientQueue) {
+				this.acceptData = acceptData;
+				if (!acceptData) {
+					orientQueue.clear();
+				}
+			}
+		}
+		
+		void add(DataRecord rec) {
+			
+			synchronized (orientQueue) {
+				
+				if (acceptData) {
+					if (orientQueue.size() > ORIENT_QUEUE_SIZE) {
+						logger.warn("orientQueue size overflow: {}",
+								ORIENT_QUEUE_SIZE);
+						orientQueue.poll();
+					}
+					orientQueue.offer(rec);
+				}
+			}
+		}
+		
+		void abort() {
+			
+			setAcceptData(false);
+			
+			stop = true;
+		}
+	}
+	
 	private static final Logger logger = LoggerFactory.getLogger(RecordDataInput.class);
+	
 	
 	private long currenSeekId;
 	private boolean seakable;
@@ -34,6 +96,8 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 	protected final RoboStroke roboStroke;
 	protected final RoboStrokeEventBus bus;
 
+	private final OrientQueueProcessor orientQueueProcessor = new OrientQueueProcessor();
+	
 	public RecordDataInput(RoboStroke roboStroke) {
 		this.roboStroke = roboStroke;
 		this.bus = roboStroke.getBus();
@@ -58,6 +122,9 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 		}
 		
 		if (seakable) {
+			
+			orientQueueProcessor.setAcceptData(false);
+			
 			onSetPosPending(pos);
 
 			new Thread("deffered seek job") {
@@ -73,6 +140,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 						if (seekId == currenSeekId) {
 							bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 							onSetPosFinish(pos);
+							orientQueueProcessor.setAcceptData(true);
 						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -95,7 +163,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 				accelerometerDataSource.pushData(record.timestamp, record.data);
 				break;
 			case ORIENT:
-				orientationDataSource.pushData(record.timestamp, record.data);
+				orientQueueProcessor.add(record);
 				break;
 			default:				
 				if (record.type.isReplayableEvent) {
@@ -108,6 +176,16 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 			}
 	}
 
+	@Override
+	public void start() {
+		orientQueueProcessor.start();
+	}
+	
+	@Override
+	public void stop() {
+		orientQueueProcessor.abort();
+	}
+	
 	public void playRecord(String line) {
 		playRecord(line, null);
 	}

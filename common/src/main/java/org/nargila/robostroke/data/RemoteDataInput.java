@@ -56,10 +56,15 @@ public class RemoteDataInput extends RecordDataInput {
 				e.printStackTrace();
 			}
 		}
+		
+		super.stop();
 	}
 
 	@Override
 	public void start() {
+		
+		super.start();
+		
 		socket = new Socket();		
 		
 		try {

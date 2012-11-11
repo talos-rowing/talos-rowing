@@ -279,6 +279,9 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
 	@Override
 	public synchronized void start() {
+		
+		super.start();
+		
 	    runThread = new Thread(this, "MocDataFeeder") {
 		    {
 			setDaemon(true);
@@ -300,5 +303,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 			
 			runThread = null;
 		}
+		
+		super.stop();
 	}
 }
