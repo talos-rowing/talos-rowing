@@ -54,11 +54,11 @@ public class MetersDisplayManager implements SensorDataSink {
 
 	private static final Logger logger = LoggerFactory.getLogger(MetersDisplayManager.class);
 	
-	private static final int GPS_ACCURACY_BAD_COLOUR = Color.argb(150, 255, 0, 0);//Color.RED;
+	private static final int GPS_BAD_COLOUR = Color.argb(150, 255, 0, 0);//Color.RED;
 
-	private static final int GPS_ACCURACY_FAIR_COLOUR = Color.argb(170, 255, 255, 0);//Color.YELLOW;
+	private static final int GPS_FAIR_COLOUR = Color.argb(170, 255, 255, 0);//Color.YELLOW;
 
-	private static final int GPS_ACCURACY_GOOD_COLOUR = Color.argb(150, 0, 255, 0);//Color.GREEN;
+	private static final int GPS_GOOD_COLOUR = Color.argb(150, 0, 255, 0);//Color.GREEN;
 
 	private static final int ROWING_OFF_COLOUR = Color.DKGRAY;
 
@@ -82,6 +82,7 @@ public class MetersDisplayManager implements SensorDataSink {
 	private final TextView speedAvg;
 	private final View accuracyHighlighter;
 	private final TextView strokeCountTxt;
+	private final TextView strokeDistanceTxt;
 	private final TextView distanceSubTxt;
 	private final TextView distanceMainTxt;
 	private TextView distanceTxt;
@@ -132,6 +133,8 @@ public class MetersDisplayManager implements SensorDataSink {
 
 	protected boolean lockLayoutMode;
 
+	private int spm;
+
 	/**
 	 * @param owner the RoboStroke Activity
 	 */
@@ -143,6 +146,7 @@ public class MetersDisplayManager implements SensorDataSink {
 		timeTxt = (TextView) owner.findViewById(R.id.time);
 		splitTimeTxt = (TextView) owner.findViewById(R.id.split_time);
 		strokeCountTxt = (TextView) owner.findViewById(R.id.stroke_count);
+		strokeDistanceTxt = (TextView) owner.findViewById(R.id.stroke_distance);
 		spmTxt = (TextView) owner.findViewById(R.id.spm);
 		spmAvg = (TextView) owner.findViewById(R.id.spm_avg);
 		speedTxt = (TextView) owner.findViewById(R.id.speed);
@@ -291,6 +295,9 @@ public class MetersDisplayManager implements SensorDataSink {
 	}
 	
 	private void updateSpm(final int spm) {
+		
+		this.spm = spm;
+		
 		handler.post(new Runnable() {
 
 			@Override
@@ -373,18 +380,35 @@ public class MetersDisplayManager implements SensorDataSink {
 
 
 
-	private void updateSpeed(long speed, double accuracy) {
+	private void updateSpeed(final long speed, double accuracy) {
 		
 		final String display = formatSpeed(speed);
 		
-		final int color = (accuracy <= 2.0 ? GPS_ACCURACY_GOOD_COLOUR
-				: (accuracy <= 4.0 ? GPS_ACCURACY_FAIR_COLOUR : GPS_ACCURACY_BAD_COLOUR));
+		final int color = (accuracy <= 2.0 ? GPS_GOOD_COLOUR
+				: (accuracy <= 4.0 ? GPS_FAIR_COLOUR : GPS_BAD_COLOUR));
+		
 		
 		handler.post(new Runnable() {
 
 			@Override
 			public void run() {
 				speedTxt.setText(display);
+								
+				if (spm > 0 && speed > 0) {
+					
+					double millisPerMeter = speed / 500.0;
+					
+					double millisPerStroke = 60000.0 / spm;
+					
+					double metersPerStroke = millisPerStroke / millisPerMeter;
+					
+					int strokeDistanceColor = (metersPerStroke < 8 ? Color.RED 
+							: (metersPerStroke < 10 ? Color.YELLOW : Color.GREEN));
+					
+					strokeDistanceTxt.setText(String.format("%.1fm", metersPerStroke));
+					strokeDistanceTxt.setTextColor(strokeDistanceColor);
+				}
+				
 				accuracyHighlighter.setBackgroundColor(color);
 			}});
 	}
@@ -452,6 +476,7 @@ public class MetersDisplayManager implements SensorDataSink {
 		spmAccum = spmCount = 0;
 		baseDistance = 0;
 		baseDistanceTime = 0;
+		spm = 0;
 	}
 	
 	void reset() {

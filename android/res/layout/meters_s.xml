@@ -267,18 +267,41 @@
                     android:layout_weight="1"
                     android:orientation="horizontal" >
 
-                    <TextView
-                        nargila:maxTextSize="48.0"
-                        android:id="@+id/stroke_count"
+                    <LinearLayout
+                        android:id="@+id/stroke_stats"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:layout_weight="1"
-                        android:gravity="top"
-                        android:paddingLeft="10dp"
                         android:tag="extraView"
-                        android:text="0"
-                        android:textColor="#ffffff"
-                        android:textSize="32dp" />
+                        android:orientation="vertical" >
+
+                        <TextView
+                            android:id="@+id/stroke_count"
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1"
+                            android:gravity="top"
+                            android:paddingLeft="10dp"
+                            android:tag="extraView"
+                            android:text="0"
+                            android:textColor="#ffffff"
+                            android:textSize="32dp"
+                            nargila:maxTextSize="48.0" />
+
+                        <TextView
+                            android:id="@+id/stroke_distance"
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1"
+                            android:gravity="top"
+                            android:paddingLeft="10dp"
+                            android:tag="extraView"
+                            android:text="0m"
+                            android:textColor="#ffffff"
+                            android:textSize="32dp"
+                            nargila:maxTextSize="48.0" />
+
+                    </LinearLayout>
 
                     <org.nargila.robostroke.android.common.AutoResizeTextView
                         android:id="@+id/split_time"
