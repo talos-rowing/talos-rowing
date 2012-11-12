@@ -47,7 +47,12 @@ public class LowpassFilter extends PassFilterBase {
 	@Override
 	protected float[] doFilter(float[] values) {
 		for (int i = 0; i < values.length; ++i) {
-			filteredValues[i] = (values[i] * filteringFactor) + (filteredValues[i] * (1.0f - filteringFactor));
+			
+			float f = (values[i] * filteringFactor) + (filteredValues[i] * (1.0f - filteringFactor));
+			
+			if (!Float.isNaN(f)) {
+				filteredValues[i] = f;
+			}
 		}
 		
 		return filteredValues;
