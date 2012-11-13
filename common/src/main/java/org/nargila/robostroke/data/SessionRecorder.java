@@ -33,6 +33,7 @@ public class SessionRecorder extends SensorBinder implements SessionRecorderCons
 	
 	private ErrorListener errorListener;
 	private BufferedWriter logger;
+	private boolean initialized;
 	
 	public SessionRecorder(RoboStroke roboStroke) {
 		super(roboStroke);
@@ -45,34 +46,31 @@ public class SessionRecorder extends SensorBinder implements SessionRecorderCons
 				logger = null;
 			}
 
+			initialized = false;
+			
 			if (file != null) {
 				logger = new BufferedWriter(new FileWriter(file));
-				
-				logEvent(new DataRecord(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
-
-				for (Parameter param: roboStroke.getParameters().getParamMap().values()) {
-
-					logEvent(DataRecord.create(DataRecord.Type.SESSION_PARAMETER, -1, 
-							new ParameterBusEventData(param.getId() + "|" + param.convertToString())));
-				}
-				
 				connect();
 			}
 	}
+
+	private void initDataLogger() {
+		
+		initialized = true;
+
+		logEvent(new DataRecord(Type.LOGFILE_VERSION, -1, LOGFILE_VERSION));
+
+		for (Parameter param: roboStroke.getParameters().getParamMap().values()) {
+
+			logEvent(DataRecord.create(DataRecord.Type.SESSION_PARAMETER, -1, 
+					new ParameterBusEventData(param.getId() + "|" + param.convertToString())));
+		}		
+	}
+
 	
 	@Override
 	protected synchronized void onSensorData(DataRecord record) {
-		if (logger != null) {
-			try {
-				logger.write("" + System.currentTimeMillis() + " " + record.type + " " + record.timestamp + " ");
-				logger.write(record.dataToString());
-				logger.write(END_OF_RECORD + "\n");
-			} catch (IOException e) {
-				if (errorListener != null) {
-					errorListener.onError(e);
-				}
-			}
-		}
+		logEvent(record);
 	}
 
 	public void setErrorListener(ErrorListener errorListener) {
@@ -81,26 +79,32 @@ public class SessionRecorder extends SensorBinder implements SessionRecorderCons
 
 	@Override
 	public synchronized void onBusEvent(DataRecord event) {
-		if (logger != null) {
-			logEvent(event);
-		}		
+		
+		if (event.type == DataRecord.Type.RECORDING_START) {
+			initDataLogger();
+		}
+		
+		logEvent(event);
 	}
 
-	private void logEvent(DataRecord event) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(System.currentTimeMillis()).append(" ")
-		.append(event);
+	private synchronized void logEvent(DataRecord event) {
+		
+		if (initialized) {
+			StringBuffer sb = new StringBuffer();
+			sb.append(System.currentTimeMillis()).append(" ")
+			.append(event);
 
-		try {
-			logger.write(sb.toString());
-			logger.write(END_OF_RECORD + "\n");
-			
-			if (event.type == Type.CRASH_STACK) {
-				logger.flush();
-			}
-		} catch (IOException e) {
-			if (errorListener != null) {
-				errorListener.onError(e);
+			try {
+				logger.write(sb.toString());
+				logger.write(END_OF_RECORD + "\n");
+
+				if (event.type == Type.CRASH_STACK) {
+					logger.flush();
+				}
+			} catch (IOException e) {
+				if (errorListener != null) {
+					errorListener.onError(e);
+				}
 			}
 		}
 	}

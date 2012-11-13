@@ -92,7 +92,7 @@ class RecordSyncLeaderDialog extends Dialog {
 						});
 						
 						tg.startTone(ToneGenerator.TONE_PROP_BEEP);
-						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, (tag == null ? "" : tag + ",") + (i - colors.length + 1));
+						owner.roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_COUNTDOWN, new Object[] {tag, (i - colors.length + 1)});
 						Thread.sleep(1000);						
 					}					
 				} catch (Exception e) {

@@ -26,7 +26,23 @@ public class DataRecord {
 
 	public enum Type {
 		UUID,
-		RECORDING_COUNTDOWN,
+		RECORDING_START,
+		RECORDING_COUNTDOWN(false, new DataRecordSerializer() {
+
+			@Override
+			protected String doSerialize(Object data) {
+				Object[] vals = (Object[]) data;
+				/* tag, countdown */
+				return String.format("%s,%d", vals);
+			}
+			
+			@Override
+			public Object doParse(String s) {
+				String[] tokens = s.split(",");
+				/* tag, countdown */
+				return new Object[] {tokens[0], new Integer(tokens[1])};
+			}			
+		}), 
 		STROKE_DROP_BELOW_ZERO,
 		STROKE_RISE_ABOVE_ZERO,
 		STROKE_POWER_START,

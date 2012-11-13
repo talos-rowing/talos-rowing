@@ -162,7 +162,13 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		boolean wasRecording;
 		Date sessionTimestamp = new Date();
 		
+		private String sessionTag() {
+			return DateFormat.format("kk:mm:ss", sessionTimestamp) + "";			
+		}
+		
 		private void resetSessionRecording() {
+
+			
 
 			try {
 				if (recordingOn && !isReplaying()) {
@@ -173,9 +179,19 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							
 					roboStroke.setDataLogger(logFile);
 					
-					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
+					Runnable runAfter = new Runnable() {
+						
+						@Override
+						public void run() {
+							roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_START, sessionTag());
+							roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
+						}
+					};
+
 					
-					showFilmLeaderDialog(null);
+					if (!showFilmLeaderDialog(runAfter, sessionTag())) {
+						runAfter.run();
+					}
 							
 					wasRecording = true;
 					
@@ -196,7 +212,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						}
 					};
 					
-					if (!wasRecording || !showFilmLeaderDialog(runAfter)) {
+					if (!wasRecording || !showFilmLeaderDialog(runAfter, sessionTag())) {
 						runAfter.run();
 					}
 					
@@ -212,16 +228,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			}
 		}
 
-		private boolean showFilmLeaderDialog(Runnable runAfter) {
+		private boolean showFilmLeaderDialog(Runnable runAfter, String tag) {
 			Boolean enabled = preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), false);
-			
+						
 			if (enabled) {
 				
 				if (recordLeaderDialog == null) {
 					recordLeaderDialog = new RecordSyncLeaderDialog(RoboStrokeActivity.this);
 				}
 				
-				recordLeaderDialog.setTag(DateFormat.format("kk:mm:ss", sessionTimestamp) + "");
+				recordLeaderDialog.setTag(tag);
 				recordLeaderDialog.setRunAfter(runAfter);
 				
 				recordLeaderDialog.show();				
@@ -1123,7 +1139,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			return true;
 
 		case R.id.menu_remote_start:
-			int port = new Integer(preferencesHelper.getPref("org.nargila.talos.rowing.session.broadcast.port", SessionRecorderConstants.BROADCAST_PORT + ""));
+			int port = Integer.valueOf(preferencesHelper.getPref("org.nargila.talos.rowing.session.broadcast.port", SessionRecorderConstants.BROADCAST_PORT + ""));
 			String host = preferencesHelper.getPref("org.nargila.talos.rowing.android.session.remote.host", SessionRecorderConstants.BROADCAST_HOST);
 			restart(new DataInputInfo(host, port));
 			break;
