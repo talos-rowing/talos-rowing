@@ -56,6 +56,8 @@ public class MetersDisplayManager implements SensorDataSink {
 	
 	private static final int GPS_BAD_COLOUR = Color.argb(150, 255, 0, 0);//Color.RED;
 
+	private static final int GPS_NOT_BAD_COLOUR = Color.argb(150, 255, 165, 0);//Color.ORANGE;
+
 	private static final int GPS_FAIR_COLOUR = Color.argb(170, 255, 255, 0);//Color.YELLOW;
 
 	private static final int GPS_GOOD_COLOUR = Color.argb(150, 0, 255, 0);//Color.GREEN;
@@ -385,7 +387,8 @@ public class MetersDisplayManager implements SensorDataSink {
 		final String display = formatSpeed(speed);
 		
 		final int color = (accuracy <= 2.0 ? GPS_GOOD_COLOUR
-				: (accuracy <= 4.0 ? GPS_FAIR_COLOUR : GPS_BAD_COLOUR));
+				: (accuracy <= 4.0 ? GPS_FAIR_COLOUR
+						: (accuracy <= 6.0 ? GPS_NOT_BAD_COLOUR : GPS_BAD_COLOUR)));
 		
 		
 		handler.post(new Runnable() {

@@ -47,20 +47,21 @@ import org.slf4j.LoggerFactory;
  */
 public class MetersDisplayManager implements SensorDataSink {
 
-	private enum GPSAcuracy {
+	private enum GPSAccuracy {
 		
 		BAD(150, 255, 0, 0),
+		NOT_GOOD(150, 255, 165, 0),
 		FAIR(170, 255, 255, 0),
 		GOOD(150, 0, 255, 0),
 		NONE(0xff, 0, 0, 0);
 		
-		GPSAcuracy(int ... color) {
+		GPSAccuracy(int ... color) {
 			this.color = color;
 		}
 		
 		final int[] color;
 		
-		static GPSAcuracy valueOf(double accuracy) {
+		static GPSAccuracy valueOf(double accuracy) {
 			
 			if (accuracy == -1) {
 				return NONE;
@@ -68,6 +69,8 @@ public class MetersDisplayManager implements SensorDataSink {
 				return GOOD;
 			} else if (accuracy <= 4.0) {
 				return FAIR;
+			} else if (accuracy <= 6.0) {
+				return NOT_GOOD;
 			} else {
 				return BAD;
 			}
@@ -326,7 +329,7 @@ public class MetersDisplayManager implements SensorDataSink {
 		
 		final String display = formatSpeed(speed);
 		
-		GPSAcuracy gpsAccuracy = GPSAcuracy.valueOf(accuracy);
+		GPSAccuracy gpsAccuracy = GPSAccuracy.valueOf(accuracy);
 		
 		meters.getSpeedTxt().setText(display);
 		meters.getAccuracyHighlighter().setBackgroundColor(gpsAccuracy.color);
