@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 
-import org.acra.ErrorReporter;
+import org.acra.ACRA;
 import org.nargila.robostroke.data.DataRecord.Type;
 
 public class ErrorHandler implements UncaughtExceptionHandler {
@@ -40,7 +40,7 @@ public class ErrorHandler implements UncaughtExceptionHandler {
 		
 		reportOnBus(e); 
 		
-		ErrorReporter.getInstance().uncaughtException(t, e);
+		ACRA.getErrorReporter().uncaughtException(t, e);
 
 	}
 

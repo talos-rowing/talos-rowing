@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.acra.ErrorReporter;
+import org.acra.ACRA;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.android.common.FileHelper;
@@ -642,9 +642,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 
-		ErrorReporter.getInstance().addCustomData("uuid", preferencesHelper.getUUID());
+		ACRA.getErrorReporter().putCustomData("uuid", preferencesHelper.getUUID());
 		
-
 		roboStroke.setErrorListener(new ErrorListener() {
 
 			@Override
