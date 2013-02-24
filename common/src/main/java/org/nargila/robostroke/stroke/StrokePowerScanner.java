@@ -97,7 +97,7 @@ public class StrokePowerScanner extends StrokeScannerBase implements BusEventLis
 		this.params = owner.getParameters();
 		this.bus = owner.getBus();
 		
-		strokePowerTreshold = params.getValue(ParamKeys.PARAM_STROKE_POWER_MIN_POWER.getId());
+		strokePowerTreshold = (Float)params.getValue(ParamKeys.PARAM_STROKE_POWER_MIN_POWER.getId());
 		
 		bus.addBusListener(this);
 

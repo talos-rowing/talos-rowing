@@ -131,7 +131,7 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 		
 		paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId()));
 
-		paramStartMinAmplitude = params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId());
+		paramStartMinAmplitude = (Float)params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId());
 
 		paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId()));
 
