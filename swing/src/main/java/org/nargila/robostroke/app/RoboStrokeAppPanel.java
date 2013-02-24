@@ -281,7 +281,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		panel_2.add(slider);
 		slider.setValue(0);
 		
-		JLabel label = new JLabel("=");
+		final JLabel label = new JLabel("=");
 		label.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -292,6 +292,7 @@ public class RoboStrokeAppPanel extends JPanel {
 						input.setPaused(!paused);
 						paused = !paused;
 					}
+					label.setText(paused ? ">" : "=");
 				}
 			}
 		});
