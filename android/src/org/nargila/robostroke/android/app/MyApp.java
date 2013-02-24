@@ -18,13 +18,20 @@
  */
 package org.nargila.robostroke.android.app;
 
-import org.acra.CrashReportingApplication;
+import org.acra.ACRA;
+import org.acra.annotation.ReportsCrashes;
 
-public class MyApp extends CrashReportingApplication {
+import android.app.Application;
+
+@ReportsCrashes(formKey = "dGF1bUhhNEM4NGFYVFlFZUhhTFoyY0E6MQ")
+public class MyApp extends Application {
+
 
 	@Override
-	public String getFormId() {
-		return "dGF1bUhhNEM4NGFYVFlFZUhhTFoyY0E6MQ";
-	}
+	public void onCreate() {
+		super.onCreate();
 
+		// The following line triggers the initialization of ACRA
+		ACRA.init(this);
+	}
 }

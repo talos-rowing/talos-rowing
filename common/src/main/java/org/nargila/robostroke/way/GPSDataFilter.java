@@ -89,11 +89,11 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		
 		speedChangeDamperFilter = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId()));
 		
-		straightLineModeOn = params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId());
+		straightLineModeOn = (Boolean)params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId());
 		
 		minDistance = (Integer)params.getValue(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId());
 		
-		maxSpeed = params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId());
+		maxSpeed = (Float)params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId());
 		
 		params.addListeners(this);
 		
