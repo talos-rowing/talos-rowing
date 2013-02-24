@@ -194,7 +194,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 			
 			DataRecord.Type type = DataRecord.Type.valueOf(vals[1]);
 
-			if (type.isParsableEvent) {
+			if (type.isReplayableEvent && type.isParsableEvent) {
 				return Pair.create(logTimestamp, DataRecord.create(type, Long.parseLong(vals[2]), vals[3]));
 			}			
 		}
