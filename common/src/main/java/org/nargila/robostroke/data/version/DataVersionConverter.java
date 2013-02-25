@@ -27,7 +27,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
 

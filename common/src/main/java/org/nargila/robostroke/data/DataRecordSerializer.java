@@ -54,6 +54,14 @@ public abstract class DataRecordSerializer {
 		}
 	}
 
+	public static final class DOUBLE extends DataRecordSerializer {
+		
+		@Override
+		public Object doParse(String s) {
+			return new Double(s);
+		}
+	}
+
 	public static final class FLOAT_ARR extends DataRecordSerializer {
 		
 		private final String sep;

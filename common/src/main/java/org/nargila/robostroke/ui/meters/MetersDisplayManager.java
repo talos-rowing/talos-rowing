@@ -245,26 +245,19 @@ public class MetersDisplayManager implements SensorDataSink {
 					long speed = (long) values[1];
 					double accuracy = values[2];
 					
-					updateWay(distance, speed, accuracy);
+					updateSpeed(speed, accuracy);
+					
 				}
 				break;
+				case ACCUM_DISTANCE:
+					updateDistance((Double)event.data);
+					break;
 				}				
 			}
 		});
 		
 		
 		rs.getAccelerationSource().addSensorDataSink(this);
-	}
-	
-	
-	private void updateWay(final double distance, final long speed,
-			final double accuracy) {
-		
-		double validDistance = speed > 0 ? distance : 0;
-		
-		updateDistance(validDistance);
-		
-		updateSpeed(speed, accuracy);
 	}
 	
 	private void updateSpm(final int spm) {
@@ -295,10 +288,8 @@ public class MetersDisplayManager implements SensorDataSink {
 	 *            in meters
 	 */
 	private void updateDistance(final double distance) {
-		if (distance > 0) {
-			accumulatedDistance += distance;
-			meters.getTotalDistanceTxt().setText((int)accumulatedDistance + "");
-		}
+		accumulatedDistance = distance;
+		meters.getTotalDistanceTxt().setText((int)accumulatedDistance + "");
 	}
 
 	/**

@@ -293,6 +293,12 @@ public class RoboStroke {
 		}
 	}
 
+	
+	public boolean isSeekableDataInput() {
+		SensorDataInput di = dataInput;
+		return di != null && di.isSeekable();
+	}
+
 	/**
 	 * Stop processing
 	 */

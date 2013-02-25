@@ -306,4 +306,9 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		
 		super.stop();
 	}
+	
+	@Override
+	public boolean isSeekable() {
+		return true;
+	}
 }
