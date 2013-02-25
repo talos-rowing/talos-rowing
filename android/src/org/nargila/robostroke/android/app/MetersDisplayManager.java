@@ -271,6 +271,7 @@ public class MetersDisplayManager implements SensorDataSink {
 					
 				}
 				break;
+				
 				case WAY: 
 				{
 					double[] values = (double[]) event.data;
@@ -278,24 +279,19 @@ public class MetersDisplayManager implements SensorDataSink {
 					long speed = (long) values[1];
 					double accuracy = values[2];
 					
-					updateWay(distance, speed, accuracy);
+					updateSpeed(speed, accuracy);
+					
 				}
 				break;
-				}
+				case ACCUM_DISTANCE:
+					updateDistance((Double)event.data);
+					break;
+				}								
 			}
 		});				
 	}
 	
-	private void updateWay(final double distance, final long speed,
-			final double accuracy) {
-		
-		double validDistance = speed > 0 ? distance : 0;
-		
-		updateDistance(validDistance);
-		
-		updateSpeed(speed, accuracy);
-	}
-	
+
 	private void updateSpm(final int spm) {
 		
 		this.spm = spm;

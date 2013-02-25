@@ -41,6 +41,7 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
+	private double accumulatedDistance = 0;
 
 	private static class LocationData {
 		long timestamp;
@@ -72,6 +73,8 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 	private LocationData bookMarkedLocation;
 
 	private LocationData lastSensorDataLocation;
+	
+	private RoboStroke owner;	
 
 	private final ParameterService params;
 
@@ -80,8 +83,9 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 	protected float travelDistance;
 
 	protected LocationData lastStrokeLocation;
-	
+
 	public GPSDataFilter(RoboStroke owner, final DistanceResolver distanceResolver) {
+		this.owner = owner;
 		this.params = owner.getParameters();
 		this.bus = owner.getBus();
 		
@@ -191,6 +195,8 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 				
 				if (finalSpeed != -1) {
 					
+					accumulatedDistance += distance;
+					
 					double accuracy = values[DataIdx.GPS_ACCURACY];
 					
 					bus.fireEvent(DataRecord.Type.WAY, timestamp, new double[]{distance, finalSpeed, accuracy});
@@ -201,7 +207,12 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 
 				}
 			}
+			
 
+		}
+		
+		if (!owner.isSeekableDataInput()) { // ACCUM_DISTANCE is replayed when read from recorded file
+			bus.fireEvent(DataRecord.Type.ACCUM_DISTANCE, accumulatedDistance);
 		}
 		
 	}
