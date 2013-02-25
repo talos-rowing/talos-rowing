@@ -59,4 +59,9 @@ public abstract class SensorDataInputBase implements SensorDataInput {
 	public boolean isLocalSensorInput() {
 		return false;
 	}
+	
+	@Override
+	public boolean isSeekable() {
+		return false;
+	}
 }

@@ -56,6 +56,12 @@ public interface SensorDataInput {
 	 * @return sensor data source 
 	 */
 	public SensorDataSource getOrientationDataSource();
+	
+	/**
+	 * check either input data is seakable (i.e. replay mode)
+	 * @return true if input can be rewind/forwarded
+	 */
+	public boolean isSeekable();
 	/**
 	 * seek/skip input depending on positive/negative value
 	 * @param velocityX usually a value from a 'fling' event on the X axis

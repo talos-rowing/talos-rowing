@@ -210,4 +210,9 @@ class OggDataInput extends RecordDataInput implements BusHandler, PadListener {
 		jst.setPos(pos);
 		jst.setState(Pipeline.PLAY);			
 	}
+	
+	@Override
+	public boolean isSeekable() {
+		return true;
+	}
 }
