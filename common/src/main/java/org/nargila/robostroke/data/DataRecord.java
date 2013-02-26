@@ -148,7 +148,7 @@ public class DataRecord {
 
 			@Override
 			public String[] getColumnNames() {
-				return new String[] {"distance", "speed", "accuracy", "accumulatedDistance"};
+				return new String[] {"distance", "speed", "accuracy"};
 			}
 
 			@Override
@@ -156,11 +156,11 @@ public class DataRecord {
 
 				double[] ddata = (double[]) data;
 
-				return new Object[]{ddata[0], ddata[1], ddata[2], ddata[2]};
+				return new Object[]{ddata[0], ddata[1], ddata[2]};
 
 			}
 		}, new DataRecordSerializer.DOUBLE_ARR()), 
-		ACCUM_DISTANCE(true, new DataRecordSerializer.DOUBLE()),
+		ACCUM_DISTANCE,
 		FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()), 
 		HEART_BPM(true, new DataRecordSerializer.INT()), 
 		IMMEDIATE_DISTANCE_REQUESTED,
