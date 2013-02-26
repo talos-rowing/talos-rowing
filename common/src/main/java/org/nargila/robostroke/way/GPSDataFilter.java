@@ -170,6 +170,7 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 		return calcSpeed(speed);
 	}
 	
+	// TODO add synchronized
 	@Override
 	public void onSensorData(long timestamp, Object value) {
 		double[] values = (double[]) value;
@@ -263,5 +264,9 @@ public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 	protected void finalize() throws Throwable {
 		params.removeListeners(this);
 		super.finalize();
+	}
+
+	public synchronized void reset() {
+		accumulatedDistance = 0;
 	}
 }
