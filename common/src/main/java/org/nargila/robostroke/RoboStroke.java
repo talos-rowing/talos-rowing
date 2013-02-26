@@ -311,6 +311,7 @@ public class RoboStroke {
 			coaxModeOrientationFilter.clearSensorDataSinks();
 			landscapeAccelFilter.clearSensorDataSinks();
 			landscapeOrientationFilter.clearSensorDataSinks();
+			gpsFilter.reset();
 			
 			if (!dataInput.isLocalSensorInput()) {
 				
