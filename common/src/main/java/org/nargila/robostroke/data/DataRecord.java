@@ -160,7 +160,7 @@ public class DataRecord {
 
 			}
 		}, new DataRecordSerializer.DOUBLE_ARR()), 
-		ACCUM_DISTANCE,
+		ACCUM_DISTANCE(true, new DataRecordSerializer.DOUBLE()),
 		FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()), 
 		HEART_BPM(true, new DataRecordSerializer.INT()), 
 		IMMEDIATE_DISTANCE_REQUESTED,
