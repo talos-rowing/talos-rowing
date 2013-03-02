@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="split_mode_display">
+        <item>Auto Start</item>
+        <item>Semi Auto</item>
+        <item>Manual</item>
+        <item>Allways On</item>
+    </string-array>
+    <string-array name="split_mode_values">
+        <item>AUTO</item>
+        <item>SEMI_AUTO</item>
+        <item>MANUAL</item>
+        <item>CONTINUOUS</item>
+    </string-array>
+    <string-array name="meter_layout_mode_display">
+        <item>Automatic</item>
+        <item>Compact</item>
+        <item>Expanded</item>
+    </string-array>
+    <string-array name="meter_layout_mode_values">
+        <item>AUTO</item>
+        <item>COMPACT</item>
+        <item>EXPANDED</item>
+    </string-array>
+</resources>

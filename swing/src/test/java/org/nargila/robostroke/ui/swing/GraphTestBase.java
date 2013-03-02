@@ -62,7 +62,7 @@ public abstract class GraphTestBase<T extends SwingGraphViewBase<? extends Updat
 	protected void startRs() throws Exception {
 		rs.setFileInput(new File("/home/tshalif/src/ws/talos-rowing/swing/src/test/java/org/nargila/robostroke/ui/swing/1288448996868-dataInput.txt"));		
 
-		Thread.sleep(1000000);
+		Thread.sleep(20000);
 	}
 
 

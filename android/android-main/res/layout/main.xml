@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:robostroke="http://nargila.org/ns/robostroke"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" 
+  android:id="@+id/main_layout"
+  android:background="#000000">
+
+	<LinearLayout 
+	  android:orientation="vertical" android:layout_width="fill_parent"
+	  android:layout_height="fill_parent" 
+	  android:background="#ffffff">
+		<FrameLayout android:id="@+id/meter_container" android:layout_width="fill_parent"
+				android:layout_weight=".5"
+				android:layout_height="fill_parent">
+		    <include android:layout_width="fill_parent" android:id="@+id/meters_container_compact"
+					layout="@layout/meters_s"
+					android:layout_height="fill_parent"/>
+		    <include android:layout_width="fill_parent" android:id="@+id/meters_container_expanded"
+					layout="@layout/meters_m"  android:visibility="gone"
+					android:layout_height="fill_parent"/>
+	   </FrameLayout>   
+	   
+		<LinearLayout android:id="@+id/graph_container" android:layout_width="fill_parent"
+			android:orientation="vertical" android:layout_height="fill_parent" android:layout_weight=".5">
+			<FrameLayout android:layout_width="fill_parent"
+				xmlns:android="http://schemas.android.com/apk/res/android"
+				android:background="#000000" android:layout_marginTop="1dp"
+				android:id="@+id/graph_frame1" android:layout_weight="1" android:layout_height="fill_parent"/>
+			<FrameLayout android:layout_width="fill_parent"
+				xmlns:android="http://schemas.android.com/apk/res/android"
+				android:background="#000000" android:layout_marginTop="1dp"
+				android:id="@+id/graph_frame2" android:layout_weight="1" android:layout_height="fill_parent"/>
+			<FrameLayout android:layout_width="fill_parent"
+				xmlns:android="http://schemas.android.com/apk/res/android"
+				android:background="#000000" android:layout_marginTop="1dp"
+				android:id="@+id/graph_frame3" android:layout_weight="1" android:layout_height="fill_parent"/>
+		</LinearLayout>
+	</LinearLayout>
+</FrameLayout>

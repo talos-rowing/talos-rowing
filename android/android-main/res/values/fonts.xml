@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="font_large_resize_max">72sp</dimen>
+	<dimen name="font_x_large_resize_max">92sp</dimen>
+</resources>

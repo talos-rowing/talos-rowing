@@ -2,16 +2,18 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.nargila.robostroke</groupId>
-  <artifactId>robostroke-swing</artifactId>
-  <version>1.0</version>
-  <packaging>jar</packaging>
+  <parent>
+    <groupId>org.nargila.robostroke</groupId>
+    <artifactId>robostroke-top</artifactId>
+    <version>0.9.6-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
 
+  <artifactId>robostroke-swing</artifactId>
+  <packaging>jar</packaging>
   <name>robostroke-swing</name>
-  <url>http://maven.apache.org</url>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jnlp.outfile>talos-rowing.jnlp</jnlp.outfile>
     <jnlp.codebase>http://nargila.org/trac/robostroke/raw-attachment/wiki/WikiStart/</jnlp.codebase>
     <jnlp.main.class>org.nargila.robostroke.app.RoboStrokeSwing</jnlp.main.class>
@@ -23,8 +25,8 @@
   <dependencies>
 
     <dependency>
-  	  <groupId>org.nargila.robostroke</groupId>
-  	  <version>1.0</version>
+      <groupId>org.nargila.robostroke</groupId>
+      <version>${project.version}</version>
       <artifactId>robostroke-common</artifactId>
     </dependency>
 
@@ -87,32 +89,9 @@
       <artifactId>cortado-utils</artifactId>
       <version>${cortado.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.1</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   <build>    
     <plugins>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-compiler-plugin</artifactId>
-	<configuration>
-	  <source>1.6</source>
-	  <target>1.6</target>
-	  <encoding>UTF-8</encoding>
-	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-resources-plugin</artifactId>
-	<configuration>
-	  <encoding>UTF-8</encoding>
-	</configuration>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>webstart-maven-plugin</artifactId>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="defaults_layout_meter_mode">COMPACT</string>
+    <string name="defaults_layout_show_graphs">true</string>    
+</resources>
