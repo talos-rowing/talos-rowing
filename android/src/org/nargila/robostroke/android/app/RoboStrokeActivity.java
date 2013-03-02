@@ -46,13 +46,15 @@ import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
+import org.nargila.robostroke.android.remote.TalosReceiverServiceClient;
+import org.nargila.robostroke.android.remote.ServiceNotExist;
+import org.nargila.robostroke.android.remote.TalosTransmitterServiceClient;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.ErrorListener;
 import org.nargila.robostroke.data.FileDataInput;
-import org.nargila.robostroke.data.RemoteDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.nargila.robostroke.data.version.DataVersionConverter;
@@ -561,7 +563,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		final boolean temporary;
 		final String host;
 		final int port;
-		final boolean broadcast;
+		boolean broadcast;
 		
 		DataInputInfo(File file, boolean temporary) {
 			this.inputType = InputType.FILE;
@@ -1059,21 +1061,45 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			switch (dataInputInfo.inputType) {
 			case FILE:
 			case REMOTE:
-				dataInput = dataInputInfo.inputType == DataInputInfo.InputType.FILE ? 
-						new FileDataInput(roboStroke, dataInputInfo.file) :
-							new RemoteDataInput(roboStroke, dataInputInfo.host, dataInputInfo.port);
+				SensorDataInput input;
+
+				if (dataInputInfo.inputType == DataInputInfo.InputType.FILE) {
+					input = new FileDataInput(roboStroke, dataInputInfo.file);
+				} else {
+					try {
+						input = new TalosReceiverServiceClient(this, roboStroke, dataInputInfo.host, dataInputInfo.port);
+					} catch (ServiceNotExist e) {
+						showTalosRemote();
+						throw e;
+					}
+				}
+
+				this.dataInputInfo = dataInputInfo;
+				dataInput = input;
 				padding = HIGHLIGHT_PADDING_SIZE;
 				replay = true;
 				recordingIndicatorHilight = REPLAYING_ON_COLOUR;
 				break;	
 			}
 		} catch (Exception e) {
+			this.dataInputInfo = new DataInputInfo(false);
 			logger.error("failed to set input to " + dataInputInfo.inputType, e);
 		}
 		
 		roboStroke.setInput(dataInput);
 
-		roboStroke.setBroadcast(dataInputInfo.broadcast);
+		if (dataInputInfo.broadcast) {
+			try {
+				TalosTransmitterServiceClient transportImpl = new TalosTransmitterServiceClient(this);
+				roboStroke.startBroadcast(transportImpl);
+			} catch (ServiceNotExist e) {
+				padding = 0;
+				dataInputInfo.broadcast = false;
+				showTalosRemote();
+			}			
+		} else {
+			roboStroke.stopBroadcast();
+		}
 		
 		if (!replay) {
 			registerBpmReceiver();
@@ -1175,6 +1201,34 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 
 		return false;
+	}
+
+	public void showTalosRemote() {
+		if (m_AlertDlg != null) {
+			m_AlertDlg.cancel();
+		}
+		
+		m_AlertDlg = new AlertDialog.Builder(this)
+		.setMessage(getString(R.string.talos_remote_missing_text))
+		.setTitle(R.string.talos_remote_missing)
+		.setIcon(R.drawable.icon)
+		.setCancelable(true)
+		.setPositiveButton(R.string.install, new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				String appName = "org.nargila.robostroke.android.app";
+
+				try {
+					startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appName)));
+				} catch (android.content.ActivityNotFoundException anfe) {
+					startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appName)));
+				}
+
+				startActivity(intent);
+			}
+		}).show();
 	}
 
 	public void showAbout() {

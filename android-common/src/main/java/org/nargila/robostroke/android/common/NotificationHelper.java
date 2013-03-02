@@ -19,7 +19,6 @@
 
 package org.nargila.robostroke.android.common;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -33,11 +32,11 @@ import android.widget.Toast;
  *
  */
 public class NotificationHelper {
-	private final Activity owner;
+	private final Context owner;
 	private final int icon;
 	private final NotificationManager mNotificationManager;
 	
-	public NotificationHelper(Activity owner, int icon) {
+	public NotificationHelper(Context owner, int icon) {
 		this.owner = owner;
 		this.icon = icon;
 		String ns = Context.NOTIFICATION_SERVICE;

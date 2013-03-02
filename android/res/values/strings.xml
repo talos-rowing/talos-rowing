@@ -9,6 +9,7 @@
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
     <string name="play">Play</string>
+    <string name="install">Install</string>
     <string name="open_guide">Open Guide</string>
     <string name="app_name">Talos Rowing</string>
     <string name="preference_reset_dialog_message">Would you like to reset your old Talos Rowing settings (recommended)?</string>
@@ -28,6 +29,16 @@
     	\nCopyright &#169; 2013 Tal Shalif
     	\n
     	\nUse at your own risk.</string>
+    <string name="talos_remote_missing">
+        Talos Remote required
+    </string>
+    <string name="talos_remote_missing_text">
+        In order to use Talos broadcast/receive functionality, you need to install Talos Remote.
+        \n
+        \nTalos Remote will ask for Networking permissions.
+        \n
+        \nTalos Remote is free - would you like to try it? 
+    </string>    
     <string name="default_session_record_dispatch_address">tshalif+talos-rowing@gmail.com</string>
     <string name="session_record_upload_size_too_large">File too large. Please record sessions shorter than %d minutes in length</string>
     <string name="file_too_large">File Too Large</string>

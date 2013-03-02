@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FileDataInput extends RecordDataInput implements Runnable {
 	
+	private final boolean batchMode = Boolean.getBoolean(FileDataInput.class.getName() + ".batchMode");
+	
 	private static final Logger logger = LoggerFactory.getLogger(FileDataInput.class);
 	
 	private static final int SKIP_BYTES = 300;
@@ -225,12 +227,11 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		long normalizedTime = logTimestamp - startTimeDiff;
 
 
-		if (normalizedTime > currentTime + 20) {					
+		if (!batchMode && normalizedTime > currentTime + 20) {					
 			Thread.sleep(normalizedTime - currentTime);
 		} else {
 			Thread.yield();
 		}
-
 
 		playRecord(record);
 	}
