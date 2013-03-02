@@ -11,18 +11,19 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <platform.version>4.1.1.4</platform.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.google.android</groupId>
       <artifactId>android</artifactId>
-      <version>4.1.1.4</version>
+      <version>${platform.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.nargila.robostroke</groupId>
-      <artifactId>robostroke-common</artifactId>
+      <artifactId>android-common</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -66,8 +67,9 @@
           <sdk>
             <path>/home/tshalif/packages/android-sdk-linux_x86</path>
             <!-- platform or api level (api level 4 = platform 1.6) -->
-            <platform>4</platform>
+            <platform>15</platform>
           </sdk>
+          <undeployBeforeDeploy>true</undeployBeforeDeploy>
         </configuration>
       </plugin>
       <plugin>
