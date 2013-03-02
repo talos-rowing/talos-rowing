@@ -17,7 +17,7 @@
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.nargila.robostroke.data;
+package org.nargila.robostroke.data.remote;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +26,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.data.RecordDataInput;
+import org.nargila.robostroke.data.SessionRecorderConstants;
 
 public class RemoteDataInput extends RecordDataInput {
 

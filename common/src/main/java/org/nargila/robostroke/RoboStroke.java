@@ -35,9 +35,11 @@ import org.nargila.robostroke.data.SensorDataFilter;
 import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.data.SensorDataSource;
-import org.nargila.robostroke.data.SessionBroadcaster;
 import org.nargila.robostroke.data.SessionRecorder;
 import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.nargila.robostroke.data.remote.DataTransport;
+import org.nargila.robostroke.data.remote.SessionBroadcaster;
+import org.nargila.robostroke.data.remote.SocketDataTransport;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.param.ParameterChangeListener;
@@ -124,7 +126,7 @@ public class RoboStroke {
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
 
-	private final SessionBroadcaster sessionBroadcaster =  new SessionBroadcaster(this);
+	private final SessionBroadcaster sessionBroadcaster = new SessionBroadcaster(this);
 
 	private int broadcastPort = SessionRecorderConstants.BROADCAST_PORT;
 
@@ -268,11 +270,14 @@ public class RoboStroke {
 		setInput(new FileDataInput(this, file));
 	}
 	
+	public synchronized void setInput(SensorDataInput dataInput) {
+		setInput(dataInput, true);
+	}
 	/**
 	 * Set the sensor data input to a real device dependant implementation
 	 * @param impl device input implementation
 	 */
-	public synchronized void setInput(SensorDataInput dataInput) {
+	public synchronized void setInput(SensorDataInput dataInput, boolean start) {
 		stop();
 		
 		if (dataInput != null) {
@@ -289,10 +294,25 @@ public class RoboStroke {
 			
 			this.dataInput = dataInput;
 			connectPipeline();
-			dataInput.start();
+			
+			if (start) {
+				start();
+			}
 		}
 	}
 
+	public synchronized void start() {
+		if (dataInput != null) {
+			
+			dataInput.start();
+			
+			{ // TODO remove
+				if (Boolean.getBoolean("org.nargila.robostroke.RoboStroke.broadcast")) {
+					startBroadcast(null);
+				}
+			}
+		}
+	}
 	
 	public boolean isSeekableDataInput() {
 		SensorDataInput di = dataInput;
@@ -320,8 +340,12 @@ public class RoboStroke {
 				}
 				
 				bus.removeBusListener(sessionParamChangeListener);
-			}			
+			}	
+			
+			
 		}
+		
+		stopBroadcast();
 		
 	}
 	
@@ -413,9 +437,18 @@ public class RoboStroke {
 		recorder.setDataLogger(logFile);	
 	}
 
-	public void setBroadcast(boolean broadcast) {		
-		sessionBroadcaster.setPort(broadcastPort);
-		sessionBroadcaster.setBoradcast(broadcast);
+	public void startBroadcast(DataTransport transportImpl) {
+		
+		if (transportImpl == null) {
+			transportImpl =  new SocketDataTransport(broadcastPort);
+		}
+		
+		sessionBroadcaster.setDataTransmitter(transportImpl);
+		sessionBroadcaster.setBoradcast(true);
+	}
+	
+	public void stopBroadcast() {	
+		sessionBroadcaster.setBoradcast(false);
 	}
 
 	public ParameterService getParameters() {
