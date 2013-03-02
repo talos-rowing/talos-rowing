@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.nargila.robostroke</groupId>
+    <artifactId>robostroke-top</artifactId>
+    <version>0.9.6-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <artifactId>android-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>android-parent</name>
+
+  <properties>
+    <platform.version>4.1.1.4</platform.version>
+    <target.api.level>15</target.api.level>
+    <android.slf4j.version>1.6.1-RC1</android.slf4j.version>
+  </properties>
+
+  <modules>
+    <module>android-common</module>
+    <module>android-remote</module>
+    <module>android-main</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <version>${platform.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <sourceDirectory>src</sourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+          <artifactId>android-maven-plugin</artifactId>
+          <version>3.5.1</version>
+          <extensions>true</extensions>
+          <configuration>
+            <sdk>
+              <path>/home/tshalif/packages/android-sdk-linux_x86</path>
+              <platform>${target.api.level}</platform>
+            </sdk>
+            <undeployBeforeDeploy>true</undeployBeforeDeploy>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
