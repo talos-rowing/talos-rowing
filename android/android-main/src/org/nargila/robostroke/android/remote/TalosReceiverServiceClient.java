@@ -19,8 +19,6 @@
 
 package org.nargila.robostroke.android.remote;
 
-import java.util.List;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SessionRecorderConstants;
@@ -29,7 +27,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 public class TalosReceiverServiceClient extends RecordDataInput {
@@ -51,21 +48,14 @@ public class TalosReceiverServiceClient extends RecordDataInput {
 		
 		super(roboStroke);
 		
-		TalosServiceHelper helper = new TalosServiceHelper(owner, SERVICE_ID);
+		TalosRemoteServiceHelper helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
 		
 		this.owner = owner;
 		
    		service = helper.service;
    		
    		service.putExtra("host", host);
-   		service.putExtra("port", port);
-   		
-
-		List<ResolveInfo> res = owner.getPackageManager().queryIntentServices(service, 0);
-		
-		if (res.isEmpty()) {
-			throw new ServiceNotExist(SERVICE_ID);
-		}
+   		service.putExtra("port", port);   		
 	}
 
 	@Override

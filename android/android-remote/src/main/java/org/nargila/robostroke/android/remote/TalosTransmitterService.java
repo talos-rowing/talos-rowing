@@ -19,8 +19,6 @@
 
 package org.nargila.robostroke.android.remote;
 
-import java.io.IOException;
-
 import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.nargila.robostroke.data.remote.DataTransport;
 import org.nargila.robostroke.data.remote.SocketDataTransport;
@@ -119,7 +117,7 @@ public class TalosTransmitterService extends Service {
 
 			registerReceiver(receiver, new IntentFilter(BROADCAST_ID));
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

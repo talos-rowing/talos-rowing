@@ -19,8 +19,7 @@
 
 package org.nargila.robostroke.android.remote;
 
-import java.io.IOException;
-
+import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.nargila.robostroke.data.remote.DataTransport;
 
 import android.content.Context;
@@ -31,32 +30,59 @@ public class TalosTransmitterServiceClient  implements DataTransport {
 	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosTransmitterService";	
 		
 	private final Context owner;
-	private final Intent service;
-	
-	public TalosTransmitterServiceClient(Context owner) throws ServiceNotExist {
-		this.owner = owner;
-		
-		TalosServiceHelper helper = new TalosServiceHelper(owner, SERVICE_ID);
-		
-		this.service = helper.service;
+	private Intent service;
+	private boolean started;
+	private int port = SessionRecorderConstants.BROADCAST_PORT; 
+			
+	public TalosTransmitterServiceClient(Context owner) {
+		this.owner = owner;		
 	}
 
 	@Override
-	public void start() throws IOException {
+	public synchronized void start() throws Exception {
+
+		TalosRemoteServiceHelper helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
+		
+		service = helper.service;
+
+		service.putExtra("port", port);
+		
 		owner.startService(service);
+		
+		started = true;
 	}
 
 	@Override
-	public void stop() {
+	public synchronized void stop() {
 		owner.stopService(service);
+		
+		started = false;
 	}
 
 
 	@Override
 	public void write(String data) {
 		
-		Intent intent = new Intent(SERVICE_ID);
-		intent.putExtra("data", data);
-		owner.sendBroadcast(intent);
+		if (started) {
+			Intent intent = new Intent(SERVICE_ID);
+			intent.putExtra("data", data);
+			owner.sendBroadcast(intent);
+		}
+	}
+
+	@Override
+	public synchronized void setPort(int port) {
+		
+		this.port = port;
+		
+		if (started) {
+			stop();
+			try {
+				start();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

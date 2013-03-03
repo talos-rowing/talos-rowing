@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.nargila.robostroke.acceleration.AccelerationFilter;
 import org.nargila.robostroke.acceleration.GravityFilter;
+import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.data.AxisDataReverseFilter;
 import org.nargila.robostroke.data.AxisDataSwapFilter;
 import org.nargila.robostroke.data.DataIdx;
@@ -72,6 +73,7 @@ public class RoboStroke {
 	 */
 	private SensorDataInput dataInput;
 	
+	private final SimpleLock inputLock = new SimpleLock();
 	/**
 	 * filters-out gravity from acceleration data 
 	 */
@@ -126,10 +128,10 @@ public class RoboStroke {
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
 
-	private final SessionBroadcaster sessionBroadcaster = new SessionBroadcaster(this);
+	private final SessionBroadcaster sessionBroadcaster;
 
-	private int broadcastPort = SessionRecorderConstants.BROADCAST_PORT;
-
+	private boolean broadcastOn;
+	
 	private AxisDataReverseFilter coaxModeOrientationFilter;
 	
 	private AxisDataSwapFilter landscapeAccelFilter;
@@ -141,7 +143,6 @@ public class RoboStroke {
 	private final ParamKeys[] sessionParamList = {
 			ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED
 	};
-	
 
 	/**
 	 * constructor with the <code>DistanceResolverDefault</code>
@@ -150,21 +151,43 @@ public class RoboStroke {
 		this(new DistanceResolverDefault());
 	}
 	
+	public RoboStroke(DistanceResolver distanceResolver) {
+		this(distanceResolver, new SocketDataTransport(SessionRecorderConstants.BROADCAST_PORT));
+	}
+	
 	/**
 	 * constructor with the <code>DistanceResolver</code> implementation.
 	 * @param distanceResolver a client provided implementation that can extract distance from location events 
 	 */
-	public RoboStroke(DistanceResolver distanceResolver) {
+	public RoboStroke(DistanceResolver distanceResolver, DataTransport transportImpl) {
+		
+		sessionBroadcaster = new SessionBroadcaster(this, transportImpl);
 		
 		ParamRegistration.installParams(parameters);
 		
 		initPipeline(distanceResolver);
 		
+		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				synchronized (inputLock) {
+					
+					broadcastOn = (Boolean) param.getValue();
+					
+					if (dataInput != null) {
+						sessionBroadcaster.enable(broadcastOn);
+					}
+					
+				}				
+			}
+		});
+		
 		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_PORT.getId(), new ParameterChangeListener() {
 			
 			@Override
 			public void onParameterChanged(Parameter param) {
-				broadcastPort = (Integer)param.getValue();
+				sessionBroadcaster.setPort((Integer)param.getValue());
 				
 			}
 		});
@@ -270,46 +293,34 @@ public class RoboStroke {
 		setInput(new FileDataInput(this, file));
 	}
 	
-	public synchronized void setInput(SensorDataInput dataInput) {
-		setInput(dataInput, true);
-	}
+
 	/**
 	 * Set the sensor data input to a real device dependant implementation
 	 * @param impl device input implementation
 	 */
-	public synchronized void setInput(SensorDataInput dataInput, boolean start) {
-		stop();
-		
-		if (dataInput != null) {
-		
-			if (!dataInput.isLocalSensorInput()) {
-				
-				for (ParamKeys k: sessionParamList) {
-					parameters.getParam(k.getId()).saveValue();
-				}
-				
-				bus.addBusListener(sessionParamChangeListener);
-			}
-			
-			
-			this.dataInput = dataInput;
-			connectPipeline();
-			
-			if (start) {
-				start();
-			}
-		}
-	}
+	public void setInput(SensorDataInput dataInput) {
+		synchronized (inputLock) {
+			stop();
 
-	public synchronized void start() {
-		if (dataInput != null) {
-			
-			dataInput.start();
-			
-			{ // TODO remove
-				if (Boolean.getBoolean("org.nargila.robostroke.RoboStroke.broadcast")) {
-					startBroadcast(null);
+			if (dataInput != null) {
+
+				if (!dataInput.isLocalSensorInput()) {
+
+					for (ParamKeys k: sessionParamList) {
+						parameters.getParam(k.getId()).saveValue();
+					}
+
+					bus.addBusListener(sessionParamChangeListener);
 				}
+
+
+				this.dataInput = dataInput;
+				
+				connectPipeline();
+
+				sessionBroadcaster.enable(broadcastOn);
+				
+				dataInput.start();
 			}
 		}
 	}
@@ -322,30 +333,32 @@ public class RoboStroke {
 	/**
 	 * Stop processing
 	 */
-	public synchronized void stop() {
+	public void stop() {
 		
-		if (dataInput != null) {
-			dataInput.setErrorListener(null);
-			dataInput.stop();
-		
-			coaxModeOrientationFilter.clearSensorDataSinks();
-			landscapeAccelFilter.clearSensorDataSinks();
-			landscapeOrientationFilter.clearSensorDataSinks();
-			gpsFilter.reset();
-			
-			if (!dataInput.isLocalSensorInput()) {
-				
-				for (ParamKeys k: sessionParamList) {
-					parameters.getParam(k.getId()).restoreValue();
+		synchronized (inputLock) {
+			if (dataInput != null) {
+
+				sessionBroadcaster.enable(false);
+
+				dataInput.setErrorListener(null);
+				dataInput.stop();
+
+				coaxModeOrientationFilter.clearSensorDataSinks();
+				landscapeAccelFilter.clearSensorDataSinks();
+				landscapeOrientationFilter.clearSensorDataSinks();
+				gpsFilter.reset();
+
+				if (!dataInput.isLocalSensorInput()) {
+
+					for (ParamKeys k : sessionParamList) {
+						parameters.getParam(k.getId()).restoreValue();
+					}
+
+					bus.removeBusListener(sessionParamChangeListener);
 				}
-				
-				bus.removeBusListener(sessionParamChangeListener);
-			}	
-			
-			
+
+			}
 		}
-		
-		stopBroadcast();
 		
 	}
 	
@@ -435,20 +448,6 @@ public class RoboStroke {
 
 	public void setDataLogger(File logFile) throws IOException {
 		recorder.setDataLogger(logFile);	
-	}
-
-	public void startBroadcast(DataTransport transportImpl) {
-		
-		if (transportImpl == null) {
-			transportImpl =  new SocketDataTransport(broadcastPort);
-		}
-		
-		sessionBroadcaster.setDataTransmitter(transportImpl);
-		sessionBroadcaster.setBoradcast(true);
-	}
-	
-	public void stopBroadcast() {	
-		sessionBroadcaster.setBoradcast(false);
 	}
 
 	public ParameterService getParameters() {

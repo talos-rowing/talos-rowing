@@ -21,7 +21,7 @@ public class SocketDataTransport implements DataTransport {
 	
 	private Socket s;
 
-	private final int port;
+	private int port;
 	
 	private Writer recordOut;
 	
@@ -31,6 +31,10 @@ public class SocketDataTransport implements DataTransport {
 		this.port = port;
 	}
 
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
 	@Override
 	public void start() throws IOException {
 		socket = new ServerSocket(port);

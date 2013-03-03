@@ -343,10 +343,8 @@ public class RoboStrokeTest {
 
 		final RoboStroke rs = new RoboStroke();
 
-		rs.setInput(fileInput(), false);
-		rs.startBroadcast(null);
-		Thread.sleep(1000);
-		rs.start();
+		rs.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), true);
+		rs.setInput(fileInput());
 		
 		DataRecord event = splitRowing(new RemoteDataInput(roboStroke, "localhost"), RowingSplitMode.AUTO, false);
 		

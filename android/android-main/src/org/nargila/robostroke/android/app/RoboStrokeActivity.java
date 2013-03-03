@@ -47,7 +47,6 @@ import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
 import org.nargila.robostroke.android.remote.TalosReceiverServiceClient;
-import org.nargila.robostroke.android.remote.ServiceNotExist;
 import org.nargila.robostroke.android.remote.TalosTransmitterServiceClient;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
@@ -134,8 +133,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	ScheduledExecutorService scheduler;
 	
-	final RoboStroke roboStroke = new RoboStroke(
-			new AndroidLocationDistanceResolver());
+	final RoboStroke roboStroke = 
+			new RoboStroke(new AndroidLocationDistanceResolver(), new TalosTransmitterServiceClient(this));
 
 	public NotificationHelper notificationHelper;
 
@@ -563,7 +562,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		final boolean temporary;
 		final String host;
 		final int port;
-		boolean broadcast;
 		
 		DataInputInfo(File file, boolean temporary) {
 			this.inputType = InputType.FILE;
@@ -571,7 +569,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			this.temporary = temporary;
 			this.host = null;
 			this.port = -1;
-			this.broadcast = true;
 		}
 		
 		DataInputInfo(String host, int port) {
@@ -580,23 +577,21 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			this.temporary = false;
 			this.host = host;
 			this.port = port;
-			this.broadcast = false;
 		}
 		
-		DataInputInfo(boolean broadcast) {
+		DataInputInfo() {
 			this.inputType = InputType.SENSORS;
 			this.file = null;
 			this.temporary = false;
 			this.host = null;
 			this.port = -1;			
-			this.broadcast = broadcast;
 		}
 	}
 	
 
 	private final SessionFileHandler sessionFileHandler = new SessionFileHandler();
 
-	private DataInputInfo dataInputInfo = new DataInputInfo(false);
+	private DataInputInfo dataInputInfo = new DataInputInfo();
 
 	public RoboStrokeActivity() {
 		
@@ -690,7 +685,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), 
 				getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
 
-		start(new DataInputInfo(false));
+		start(new DataInputInfo());
 
 	}
 
@@ -897,6 +892,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private synchronized void stop() {
 
+		logger.info("stopping input type {}", dataInputInfo.inputType);
+		
 		enableScheduler(false);
 
 		unregisterBpmReceiver();
@@ -914,6 +911,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 
 	synchronized void restart(DataInputInfo replayFile) {
+		
+		logger.info("restarting input type {}", replayFile.inputType);
+		
 		if (!stopped) {
 			stop();
 		}
@@ -923,6 +923,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private void enableScheduler(boolean enable) {
 		if (enable) {
+			
+			logger.debug("creating new scheduler");
+			
 			if (scheduler != null) {
 				throw new AssertionError("scheduler should have been disabled first");
 			}
@@ -946,12 +949,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				}
 			});
 		} else {
+			logger.debug("shutting scheduler");
 			scheduler.shutdownNow();
 			scheduler = null;
 		}
 	}
 
 	private synchronized void start(DataInputInfo replayFile) {
+		
+		logger.info("starting input type {}", replayFile.inputType);
+		
 		roboStroke.getParameters().setParam(
 				ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), false);
 		
@@ -1016,7 +1023,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			@Override
 			public void run() {
 				
-				DataInputInfo newInfo = null;
+				DataInputInfo newInfo = new DataInputInfo();
 				
 				try {				
 					
@@ -1031,7 +1038,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					}
 					
 				} catch (Exception e) {
-					reportError(e, "error getting data file converter");				
+					reportError(e, "error getting data file converter");
 				} finally {
 					progress.dismiss();
 					realStart(newInfo);
@@ -1043,8 +1050,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	private synchronized void realStart(DataInputInfo dataInputInfo) {
 		
 		boolean replay = false;
-		int padding = dataInputInfo.broadcast ? HIGHLIGHT_PADDING_SIZE : 0;
-		int recordingIndicatorHilight = dataInputInfo.broadcast ? RECORDING_ON_COLOUR : REPLAYING_ON_COLOUR;
+		int padding = 0;
+		int recordingIndicatorHilight = REPLAYING_ON_COLOUR;
 		
 		this.dataInputInfo = dataInputInfo;
 		
@@ -1066,12 +1073,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				if (dataInputInfo.inputType == DataInputInfo.InputType.FILE) {
 					input = new FileDataInput(roboStroke, dataInputInfo.file);
 				} else {
-					try {
-						input = new TalosReceiverServiceClient(this, roboStroke, dataInputInfo.host, dataInputInfo.port);
-					} catch (ServiceNotExist e) {
-						showTalosRemote();
-						throw e;
-					}
+					input = new TalosReceiverServiceClient(this, roboStroke, dataInputInfo.host, dataInputInfo.port);
 				}
 
 				this.dataInputInfo = dataInputInfo;
@@ -1082,25 +1084,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				break;	
 			}
 		} catch (Exception e) {
-			this.dataInputInfo = new DataInputInfo(false);
+			this.dataInputInfo = new DataInputInfo();
 			logger.error("failed to set input to " + dataInputInfo.inputType, e);
 		}
 		
 		roboStroke.setInput(dataInput);
 
-		if (dataInputInfo.broadcast) {
-			try {
-				TalosTransmitterServiceClient transportImpl = new TalosTransmitterServiceClient(this);
-				roboStroke.startBroadcast(transportImpl);
-			} catch (ServiceNotExist e) {
-				padding = 0;
-				dataInputInfo.broadcast = false;
-				showTalosRemote();
-			}			
-		} else {
-			roboStroke.stopBroadcast();
-		}
-		
 		if (!replay) {
 			registerBpmReceiver();
 		}
@@ -1123,7 +1112,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn);
-		menu.findItem(R.id.menu_broadcast_start).setVisible(!replay && !recordingOn);
 		menu.findItem(R.id.menu_record_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
 		
@@ -1135,7 +1123,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 	
 	public boolean isReplaying() {
-		return dataInputInfo.inputType != DataInputInfo.InputType.SENSORS || dataInputInfo.broadcast;
+		return dataInputInfo.inputType != DataInputInfo.InputType.SENSORS;
 	}
 	
 	public Menu getMenu() {
@@ -1169,9 +1157,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			restart(new DataInputInfo(host, port));
 			break;
 			
-		case R.id.menu_broadcast_start:
-			restart(new DataInputInfo(true));
-			break;
+
 		case R.id.menu_record_start:
 			if (recheckExternalStorage()) {
 				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), true);
@@ -1181,7 +1167,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 		case R.id.menu_replay_stop:
 			if (isReplaying()) {
-				restart(new DataInputInfo(false));
+				restart(new DataInputInfo());
 			} else if (recordingOn) {
 				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), false);
 			}
@@ -1201,34 +1187,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 
 		return false;
-	}
-
-	public void showTalosRemote() {
-		if (m_AlertDlg != null) {
-			m_AlertDlg.cancel();
-		}
-		
-		m_AlertDlg = new AlertDialog.Builder(this)
-		.setMessage(getString(R.string.talos_remote_missing_text))
-		.setTitle(R.string.talos_remote_missing)
-		.setIcon(R.drawable.icon)
-		.setCancelable(true)
-		.setPositiveButton(R.string.install, new DialogInterface.OnClickListener() {
-
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				String appName = "org.nargila.robostroke.android.app";
-
-				try {
-					startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appName)));
-				} catch (android.content.ActivityNotFoundException anfe) {
-					startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appName)));
-				}
-
-				startActivity(intent);
-			}
-		}).show();
 	}
 
 	public void showAbout() {

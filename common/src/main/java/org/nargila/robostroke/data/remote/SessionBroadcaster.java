@@ -19,27 +19,28 @@
 
 package org.nargila.robostroke.data.remote;
 
-import java.io.IOException;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.SensorBinder;
 import org.nargila.robostroke.data.DataRecord;
 
 public class SessionBroadcaster extends SensorBinder {
 					
-	private DataTransport dataTransmitter;
+	private final DataTransport dataTransport;
 	
 	private boolean broadcast;
 	
-	public SessionBroadcaster(RoboStroke roboStroke) {
+	public SessionBroadcaster(RoboStroke roboStroke, DataTransport dataTransport) {
+		
 		super(roboStroke);
-	}
-
-	public void setDataTransmitter(DataTransport dataTransmitter) {
-		this.dataTransmitter = dataTransmitter;
+		
+		this.dataTransport = dataTransport;
 	}
 	
-	public void setBoradcast(boolean broadcast) {
+	public void setPort(int port) {
+		dataTransport.setPort(port);
+	}
+
+	public void enable(boolean broadcast) {
 				
 		if (this.broadcast != broadcast) {
 			if (broadcast) {
@@ -57,8 +58,8 @@ public class SessionBroadcaster extends SensorBinder {
 		super.connect();					
 		
 		try {
-			dataTransmitter.start();
-		} catch (IOException e) {
+			dataTransport.start();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -69,7 +70,7 @@ public class SessionBroadcaster extends SensorBinder {
 		
 		super.disconnect();
 		
-		dataTransmitter.stop();
+		dataTransport.stop();
 	}
 	
 	@Override
@@ -88,8 +89,8 @@ public class SessionBroadcaster extends SensorBinder {
 
 	public void write(DataRecord record) {
 				
-		if (dataTransmitter != null) {
-			dataTransmitter.write(record.toString());
+		if (dataTransport != null) {
+			dataTransport.write(record.toString());
 		}
 	}
 }

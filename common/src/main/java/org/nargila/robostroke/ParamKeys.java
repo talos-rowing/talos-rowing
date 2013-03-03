@@ -141,6 +141,12 @@ public enum ParamKeys implements ParameterInfo {
 			"Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", 
 			"Session", ParameterLevel.BASIC, false),
     
+	PARAM_SESSION_BROADCAST_ON("org.nargila.talos.rowing.session.broadcast.on",
+			"session broadcast on", 
+			"Activate broadcasting Talos sensor data, events to a remote Talos device", 
+			"Session",
+			ParameterLevel.BASIC, false),
+					
     PARAM_SESSION_BROADCAST_PORT("org.nargila.talos.rowing.session.broadcast.port",
 			"session broadcast port", 
 			"Port number on which to braodcast/receive real-time device sensor data", 

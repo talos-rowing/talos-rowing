@@ -9,9 +9,6 @@
 	<item android:id="@+id/menu_remote_start" 
 		android:icon="@drawable/menu_remote_start"
 		android:title="Connect"/>
-	<item android:id="@+id/menu_broadcast_start" 
-		android:icon="@drawable/menu_broadcast_start"
-		android:title="Broadcast"/>
 	<item android:id="@+id/menu_replay_stop" 
 		android:icon="@drawable/menu_replay_stop"
 		android:visible="false"
