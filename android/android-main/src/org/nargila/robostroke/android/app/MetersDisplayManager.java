@@ -332,17 +332,15 @@ public class MetersDisplayManager implements SensorDataSink {
 	 *            in meters
 	 */
 	private void updateDistance(final double distance) {
-		if (distance > 0) {
-			accumulatedDistance += distance;
+		accumulatedDistance = distance;
 
-			handler.post(new Runnable() {
+		handler.post(new Runnable() {
 
-				@Override
-				public void run() {
-					distanceTxt.setText((int)accumulatedDistance + "");
-				}
-			});		
-		}
+			@Override
+			public void run() {
+				distanceTxt.setText((int)accumulatedDistance + "");
+			}
+		});		
 	}
 
 	/**
