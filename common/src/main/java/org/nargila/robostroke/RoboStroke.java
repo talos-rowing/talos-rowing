@@ -30,6 +30,7 @@ import org.nargila.robostroke.data.AxisDataReverseFilter;
 import org.nargila.robostroke.data.AxisDataSwapFilter;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.DataRecord.Type;
 import org.nargila.robostroke.data.ErrorListener;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.SensorDataFilter;
@@ -304,6 +305,8 @@ public class RoboStroke {
 
 			if (dataInput != null) {
 
+				bus.fireEvent(Type.INPUT_START, null);
+
 				if (!dataInput.isLocalSensorInput()) {
 
 					for (ParamKeys k: sessionParamList) {
@@ -357,6 +360,7 @@ public class RoboStroke {
 					bus.removeBusListener(sessionParamChangeListener);
 				}
 
+				bus.fireEvent(Type.INPUT_STOP, null);
 			}
 		}
 		

@@ -36,7 +36,7 @@ public class SocketDataTransport implements DataTransport {
 	}
 	
 	@Override
-	public void start() throws IOException {
+	public synchronized void start() throws IOException {
 		socket = new ServerSocket(port);
 		
 		new Thread("SocketDataTransmitterAccept") {
@@ -94,13 +94,16 @@ public class SocketDataTransport implements DataTransport {
 	}
 
 	@Override
-	public void stop() {
-		try {
-			socket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+	public synchronized void stop() {
+		
+		if (socket != null) {
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public void write(String data) {

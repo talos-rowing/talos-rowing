@@ -166,7 +166,9 @@ public class DataRecord {
 		IMMEDIATE_DISTANCE_REQUESTED,
 		BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()), 				
 		ROWING_START_DISTANCE(false, new DistanceEventSerializer()), 
-		CRASH_STACK, 
+		CRASH_STACK,
+		INPUT_START,
+		INPUT_STOP,
 		REPLAY_PROGRESS,
 		REPLAY_SKIPPED,
 		LOGFILE_VERSION(false, new DataRecordSerializer.INT());

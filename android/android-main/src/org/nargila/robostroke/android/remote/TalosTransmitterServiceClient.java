@@ -54,9 +54,12 @@ public class TalosTransmitterServiceClient  implements DataTransport {
 
 	@Override
 	public synchronized void stop() {
-		owner.stopService(service);
 		
-		started = false;
+		if (started) {
+			owner.stopService(service);
+
+			started = false;
+		}
 	}
 
 

@@ -90,6 +90,10 @@ public abstract class PassFilterBase {
 		this.filteredValues = filteredValues;
 	}
 
+	public void reset() {
+		setFilteredValues(null);
+	}
+	
 	/**
 	 * do actual filtering
 	 * @param values data to filter
