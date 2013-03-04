@@ -1,5 +1,5 @@
 Talos Rowing is an open source mobile device application for rowers to monitor their rowing technique. It uses your mobile device Accelerometer and GPS sensors to show your speed, stroke rate, distance and some other metrics about your rowing technique. Currently there are the following front-ends:
- * Android (1.5 or above)
+ * Android (1.6 or above)
  * JDK 1.6 Swing
 
 The Android app is available on the Android market. The user guide is available at http://nargila.org/trac/robostroke/wiki/GuideIntroduction
