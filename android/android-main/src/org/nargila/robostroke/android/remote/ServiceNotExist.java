@@ -5,7 +5,6 @@ public class ServiceNotExist extends Exception {
 
 	public ServiceNotExist(String detailMessage) {
 		super(detailMessage);
-		// TODO Auto-generated constructor stub
 	}
 	
 }

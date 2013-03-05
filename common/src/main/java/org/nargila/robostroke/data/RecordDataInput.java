@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class RecordDataInput extends SensorDataInputBase {
 	
+	// TODO extend ThreadedQueue instead of Thread
 	private class OrientQueueProcessor extends Thread {
 		
 		private static final int ORIENT_QUEUE_SIZE = 20;

@@ -48,7 +48,7 @@ import android.widget.TextView;
  * update itself upon sensor events and does not have to
  * create a timer thread.
  * 
- * TODO: merge with MetersDisplayManager in robostroke-common
+ * FIXME: merge with MetersDisplayManager in robostroke-common
  */
 public class MetersDisplayManager implements SensorDataSink {
 
