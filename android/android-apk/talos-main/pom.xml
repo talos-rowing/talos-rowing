@@ -5,30 +5,25 @@
 
   <parent>
     <groupId>org.nargila.robostroke</groupId>
-    <artifactId>robostroke-top</artifactId>
+    <artifactId>android-apk</artifactId>
     <version>0.9.6-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>android-parent</artifactId>
-  <packaging>pom</packaging>
-  <name>android-parent</name>
-
-  <properties>
-    <platform.version>2.3.3</platform.version>
-  </properties>
-
-  <modules>
-    <module>android-common</module>
-    <module>android-apk</module>
-  </modules>
+  <artifactId>talos-main</artifactId>
+  <packaging>apk</packaging>
+  <name>talos-main</name>
 
   <dependencies>
     <dependency>
-      <groupId>com.google.android</groupId>
-      <artifactId>android</artifactId>
-      <version>${platform.version}</version>
-      <scope>provided</scope>
+      <groupId>ch.acra</groupId>
+      <artifactId>acra</artifactId>
+      <version>4.4.0</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+  </build>
+
 </project>
