@@ -86,13 +86,13 @@ public enum ParamKeys implements ParameterInfo {
 			
 	PARAM_STROKE_RATE_AMPLITUDE_CHANGE_ACCEPT_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeChangeAcceptFactor",
 			"stroke amplitude change accept filter", 
-			"*FIXME*", // TODO
+			"*FIXME*", // FIXME
 			"Stroke", 
 			ParameterLevel.ADVANCED, .5f),			
 	
 	PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR("org.nargila.talos.rowing.stroke.power.amplitudeFilterFactor",
 			"power filter",
-			"*FIXME*", // TODO
+			"*FIXME*", // FIXME
 			"Stroke Power", 
 			ParameterLevel.ADVANCED, .5f),
 			
