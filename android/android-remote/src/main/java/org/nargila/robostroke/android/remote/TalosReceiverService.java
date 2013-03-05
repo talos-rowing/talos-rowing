@@ -155,7 +155,7 @@ public class TalosReceiverService extends Service {
     		this.port = port;		
     	}
 
-    	public void stop() {
+    	private synchronized void stop() {
     		if (socket != null) {
     			try {
     				socket.close();
@@ -163,47 +163,47 @@ public class TalosReceiverService extends Service {
     				// TODO Auto-generated catch block
     				e.printStackTrace();
     			}
+    			
+    			socket = null;
     		}
     	}
 
-    	void start() {
+    	private synchronized void start() {
+    		new Thread("RemoteDataInput") {
+    			public void run() {	
     				
-    		socket = new Socket();		
-    		
-    		try {
-    			
-    			logger.info("connecting >>");
+    				Socket s = null;
+    				
+    				try {
 
-    			socket.connect(new InetSocketAddress(host, port), 1000);
-    			
-    			logger.info("connecting << (OK)");
-    			
-    			new Thread("RemoteDataInput") {
-    				public void run() {					
+    					s = socket = new Socket();		
+
+    					logger.info("connecting >>");
+
+    					s.connect(new InetSocketAddress(host, port), 1000);
+
+    					logger.info("connecting << (OK)");
+
+    					BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+    					String l;
+
+    					while ((l = reader.readLine()) != null) {
+
+    						Intent intent = new Intent(BROADCAST_ID);
+    						intent.putExtra("data", l);
+    						sendBroadcast(intent);
+    						Thread.yield();
+    					}
+    				} catch (IOException e) {
+    					e.printStackTrace();
+    				} finally {
     					try {
-    						BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    						String l;
-    						
-    						while ((l = reader.readLine()) != null) {
-    							
-    							Intent intent = new Intent(BROADCAST_ID);
-    							intent.putExtra("data", l);
-    							sendBroadcast(intent);			
-    						}
+    						if (s != null) s.close();
     					} catch (IOException e) {
-    						e.printStackTrace();
-    					} finally {
-    						try {
-    							socket.close();
-    						} catch (IOException e) {
-    						}
     					}
     				}
-    			}.start();
-    		} catch (IOException e) {
-    			e.printStackTrace();
-    		}
-    		
+    			}
+    		}.start();
     	}
     }
 }

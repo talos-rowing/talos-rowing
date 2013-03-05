@@ -20,8 +20,11 @@
 package org.nargila.robostroke.android.remote;
 
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.common.ThreadedQueue;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,14 +34,19 @@ import android.os.Bundle;
 
 public class TalosReceiverServiceClient extends RecordDataInput {
 
+	private static final Logger logger = LoggerFactory.getLogger(TalosReceiverServiceClient.class);
+	
 	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosReceiverService";
 		
 	private final Context owner;
 
-	private BroadcastReceiver receiver;
-
 	private final Intent service;
 
+	private final ThreadedQueue<String> recordQueue;
+
+	private final BroadcastReceiver receiver;
+
+	private boolean started;	
 		
 	public TalosReceiverServiceClient(Context owner, RoboStroke roboStroke, String host) throws ServiceNotExist {
 		this(owner, roboStroke, host, SessionRecorderConstants.BROADCAST_PORT);
@@ -55,42 +63,52 @@ public class TalosReceiverServiceClient extends RecordDataInput {
    		service = helper.service;
    		
    		service.putExtra("host", host);
-   		service.putExtra("port", port);   		
+   		service.putExtra("port", port);   
+   		
+   		recordQueue = new ThreadedQueue<String>(getClass().getSimpleName(), 100) {
+			
+			@Override
+			protected void handleItem(String o) {
+				playRecord(o, SessionRecorderConstants.END_OF_RECORD);
+			}
+		};
+		
+		receiver = new BroadcastReceiver() {
+
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Bundle data = intent.getExtras();
+				String l = data.getString("data");
+				recordQueue.put(l);
+			}
+		};
+		
 	}
 
 	@Override
 	public synchronized void stop() {
 		
-		if (receiver != null) {
-	    	owner.unregisterReceiver(receiver);
-	    	owner.stopService(service);
-	    	receiver = null;
+		if (started) {
+			recordQueue.setEnabled(false);
+			owner.unregisterReceiver(receiver);
+			owner.stopService(service);
+			super.stop();
+			started = false;
 		}
-		
-		super.stop();
 	}
 
 	@Override
 	public synchronized void start() {
 		
-		super.start();
-		
-   		receiver = new BroadcastReceiver() {
-			
+		if (!started) {
+			super.start();
+			recordQueue.setEnabled(true);
+			owner.registerReceiver(receiver, new IntentFilter(SERVICE_ID));
+			owner.startService(service);
+			started = true;
+		}
 
-   			@Override
-   			public void onReceive(Context context, Intent intent) {
-   				Bundle data = intent.getExtras();
-   				String l = data.getString("data");
-				playRecord(l, SessionRecorderConstants.END_OF_RECORD);
-   			}
-   		};
-   		
-
-		owner.registerReceiver(receiver, new IntentFilter(SERVICE_ID));
-		
-        owner.startService(service);
-        
 	}
 
 	@Override

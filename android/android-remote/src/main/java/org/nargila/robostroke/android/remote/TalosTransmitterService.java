@@ -50,11 +50,20 @@ public class TalosTransmitterService extends Service {
 
 	private DataTransport impl;
 
-
-	private BroadcastReceiver receiver;
+	private boolean started;
+	
+	private final BroadcastReceiver receiver;
 
 	public TalosTransmitterService() {
+		receiver = new BroadcastReceiver() {
 
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Bundle data = intent.getExtras();
+				String l = data.getString("data");
+				impl.write(l);
+			}
+		};
 	}
 	
 	@Override
@@ -95,31 +104,18 @@ public class TalosTransmitterService extends Service {
 	
 	private void startService() {
 
-		logger.debug("starting RemoteTalosService data service");
+		if (!started) {
+			logger.info("starting RemoteTalosService data service");
+			impl = new SocketDataTransport("Talos transmitter service", port);
+			try {
 
-		impl = new SocketDataTransport(port);
-		
-		try {
-			
-			impl.start();
-			
-	   		receiver = new BroadcastReceiver() {
-				
+				impl.start();
 
-	   			@Override
-	   			public void onReceive(Context context, Intent intent) {
-	   				Bundle data = intent.getExtras();
-	   				String l = data.getString("data");
-					impl.write(l);
-	   			}
-	   		};
-	   		
+				registerReceiver(receiver, new IntentFilter(BROADCAST_ID));
 
-			registerReceiver(receiver, new IntentFilter(BROADCAST_ID));
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			} catch (Exception e) {
+				logger.error("failed to start Talos transmitter service", e);
+			}
 		}
 
 	}
@@ -142,9 +138,15 @@ public class TalosTransmitterService extends Service {
 	}
 	
     private void stopService() {
-    	if (null != impl) {
-    		unregisterReceiver(receiver);
-    		impl.stop();
+    	if (started) {
+    		try {
+				unregisterReceiver(receiver);
+				impl.stop();
+			} catch (Exception e) {
+				logger.error("failed to stop Talos transmitter service", e);
+			}
+    		
+    		started = false;
     	}			
     }
 }

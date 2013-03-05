@@ -5,9 +5,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.net.SocketException;
 
+import org.nargila.robostroke.common.ThreadedQueue;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.slf4j.Logger;
@@ -25,96 +25,117 @@ public class SocketDataTransport implements DataTransport {
 	
 	private Writer recordOut;
 	
-	private ArrayBlockingQueue<String> recordQueue = new ArrayBlockingQueue<String>(100);	
+	private final ThreadedQueue<String> recordQueue;
 
-	public SocketDataTransport(int port) {
+	private Thread listenThread;	
+
+	public SocketDataTransport(String name, int port) {
 		this.port = port;
+		recordQueue  = new ThreadedQueue<String>("SocketDataTransport:" + name, 100) {
+
+			@Override
+			protected void handleItem(String o) {
+				writeRecord(o);
+			}
+			
+		};
 	}
 
 	public void setPort(int port) {
 		this.port = port;
 	}
 	
+	private void writeRecord(String o) {
+		try {
+			recordOut.write(o + SessionRecorderConstants.END_OF_RECORD + "\n");
+			recordOut.flush();
+		} catch (SocketException e) {
+			logger.warn("socket error - forcing close", e);
+
+			try {
+				s.close();
+			} catch (IOException e1) {
+			}
+			
+		} catch (IOException e) {
+			logger.warn("error writing out record", e);
+		}
+	}
+	
 	@Override
 	public synchronized void start() throws IOException {
 		socket = new ServerSocket(port);
 		
-		new Thread("SocketDataTransmitterAccept") {
+		listenThread = new Thread("SocketDataTransport listen") {
 			@Override
 			public void run() {
 				
 				while (!socket.isClosed()) {
+					
+					
 					try {
 
-						s = socket.accept();
+						Socket soc = socket.accept();
+						
+						synchronized (SocketDataTransport.this) {							
+							s = soc;
+						}
 						
 						if (s.isConnected()) {
 							
-							recordQueue.clear();
-							
 							recordOut = new OutputStreamWriter(s.getOutputStream());
-							
+
 							writeRecord(new DataRecord(DataRecord.Type.LOGFILE_VERSION, -1,
 									SessionRecorderConstants.LOGFILE_VERSION).toString());
-							while (s.isConnected()) {
 
-								String data = recordQueue.poll(10,
-										TimeUnit.MILLISECONDS);
+							recordQueue.setEnabled(true);
 
-								if (data != null) {
-									writeRecord(data);
-								}
+						}
+						
+						while (!s.isClosed()) {
+							try {
+								Thread.sleep(10);
+							} catch (InterruptedException e) {
 							}
 						}
 						
-
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						logger.warn("error in accept loop", e);
 					} finally {
-						if (s != null) {
-							try {
-								s.close();
-							} catch (IOException e) {
-							}
-						}
+						recordQueue.setEnabled(false);						
 					}
 				}
 			}
-
-			public void writeRecord(String data) throws InterruptedException, IOException {			
-				recordOut.write(data + SessionRecorderConstants.END_OF_RECORD + "\n");
-				recordOut.flush();
-			}
-		}.start();
-
+		};
+		
+		listenThread.start();
+		
 	}
 
 	@Override
 	public synchronized void stop() {
-		
+				
 		if (socket != null) {
 			try {
 				socket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+			
+			if (s != null) {
+				try {
+					s.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		
+		try {
+			listenThread.join();
+		} catch (InterruptedException e) {
 		}
 	}
 	
 	public void write(String data) {
-		
-		if (s != null && !s.isClosed()) {
-			while (!recordQueue.offer(data)) {
-
-				logger.warn("queue overflow");
-
-				recordQueue.poll();			
-			}
-		}
+		recordQueue.put(data);
 	}
 }

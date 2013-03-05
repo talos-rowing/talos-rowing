@@ -153,7 +153,7 @@ public class RoboStroke {
 	}
 	
 	public RoboStroke(DistanceResolver distanceResolver) {
-		this(distanceResolver, new SocketDataTransport(SessionRecorderConstants.BROADCAST_PORT));
+		this(distanceResolver, new SocketDataTransport("sessionBroadcaster", SessionRecorderConstants.BROADCAST_PORT));
 	}
 	
 	/**
