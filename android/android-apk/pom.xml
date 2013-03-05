@@ -81,6 +81,9 @@
                 </execution>
               </executions>
               <configuration>
+                <zipalign>
+                  <skip>false</skip>
+                </zipalign>
                 <sign>
                   <debug>false</debug>
                 </sign>
