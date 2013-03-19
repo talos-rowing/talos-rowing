@@ -120,7 +120,7 @@
                         android:textSize="32dp" />
 
                     <org.nargila.robostroke.android.common.AutofitTextView
-                        android:textSize="@dimen/font_x_large_resize_max"
+                        android:textSize="@dimen/font_large_resize_max"
                         android:id="@+id/spm"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
@@ -308,7 +308,7 @@
                         android:gravity="center"
                         android:text="0:00"
                         android:textColor="#ffffff"
-                        android:textSize="@dimen/font_large_resize_max"
+                        android:textSize="@dimen/font_x_large_resize_max"
                         android:textStyle="bold" />
                 </LinearLayout>
 
