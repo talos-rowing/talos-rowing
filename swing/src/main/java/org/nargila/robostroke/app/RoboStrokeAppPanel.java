@@ -40,7 +40,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -148,8 +147,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		JMenuItem mntmOpenRemote = new JMenuItem("Open (Remote)");
 		mntmOpenRemote.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String host = JOptionPane.showInputDialog("hostname");				
-				openRemoteAction(host);
+				openRemoteAction();
 			}
 		});
 		mnFile.add(mntmOpenRemote);
@@ -387,20 +385,16 @@ public class RoboStrokeAppPanel extends JPanel {
 		}
 	}
 
-	private void openRemoteAction(String host) {		
-		
-		
-		if (host != null && !host.equals("")) {
-			RemoteDataInput dataInput;
-			try {
-				dataInput = new RemoteDataInput(rs, host);
-				start(dataInput, false);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	private void openRemoteAction() {		
+
+		try {
+			RemoteDataInput dataInput = new RemoteDataInput(rs);
+			start(dataInput, false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-	}
+	}	
 
 	private void prepareFile(final File f) {
 		
