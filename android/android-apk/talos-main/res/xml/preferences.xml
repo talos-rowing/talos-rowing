@@ -103,16 +103,10 @@
 	
 	</PreferenceCategory>				
 	<PreferenceCategory android:title="Sharing">
-		<CheckBoxPreference
-			android:title="Broadcast"
-			android:persistent="true" 
-			android:defaultValue="false"
-			android:summary="Broadcast Talos events to a remote device" 
-			android:key="org.nargila.talos.rowing.session.broadcast.on"/>
 		<EditTextPreference
 			android:title="Remote Host"
 			android:persistent="true" 
-			android:defaultValue="192.168.43.1"
+			android:defaultValue="224.0.0.1"
 			android:summary="Remote device to receive real-time session data from" 
 			android:key="org.nargila.talos.rowing.android.session.remote.host"/>		
 		<EditTextPreference

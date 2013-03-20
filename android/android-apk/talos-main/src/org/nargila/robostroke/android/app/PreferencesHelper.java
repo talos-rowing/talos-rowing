@@ -97,19 +97,10 @@ public class PreferencesHelper {
 			String tmpUuid = preferences.getString("uuid", null);
 			uuid =  tmpUuid == null ? UUID.randomUUID().toString() : tmpUuid;
 		}
-		
-		resetBroadcastPreference();
-		
+				
 		resetPreferencesIfNeeded();
 		
 		initializePrefs();		
-	}
-
-	/**
-	 * Always reset broadcast preference to false at the beginning of Talos
-	 */
-	private void resetBroadcastPreference() {
-		preferences.edit().remove(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId()).commit();
 	}
 
 	public void init() {

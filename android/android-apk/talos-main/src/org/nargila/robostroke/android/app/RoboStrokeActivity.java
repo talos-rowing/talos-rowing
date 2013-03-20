@@ -46,8 +46,8 @@ import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
-import org.nargila.robostroke.android.remote.TalosReceiverServiceClient;
-import org.nargila.robostroke.android.remote.TalosTransmitterServiceClient;
+import org.nargila.robostroke.android.remote.TalosReceiverServiceConnector;
+import org.nargila.robostroke.android.remote.TalosBroadcastServiceConnector;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.SimpleLock;
@@ -134,7 +134,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	ScheduledExecutorService scheduler;
 	
 	final RoboStroke roboStroke = 
-			new RoboStroke(new AndroidLocationDistanceResolver(), new TalosTransmitterServiceClient(this));
+			new RoboStroke(new AndroidLocationDistanceResolver(), new TalosBroadcastServiceConnector(this));
 
 	public NotificationHelper notificationHelper;
 
@@ -1073,7 +1073,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				if (dataInputInfo.inputType == DataInputInfo.InputType.FILE) {
 					input = new FileDataInput(roboStroke, dataInputInfo.file);
 				} else {
-					input = new TalosReceiverServiceClient(this, roboStroke, dataInputInfo.host, dataInputInfo.port);
+					input = new TalosReceiverServiceConnector(this, roboStroke, dataInputInfo.host, dataInputInfo.port);
 				}
 
 				this.dataInputInfo = dataInputInfo;
@@ -1110,7 +1110,11 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
+		boolean isBroadcasting = roboStroke.getParameters().getValue(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId());
+		
 		menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
+		menu.findItem(R.id.menu_broadcast_stop).setVisible(isBroadcasting);
+		menu.findItem(R.id.menu_broadcast_start).setVisible(!isBroadcasting);
 		menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn);
 		menu.findItem(R.id.menu_record_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
@@ -1157,7 +1161,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			restart(new DataInputInfo(host, port));
 			break;
 			
-
+		case R.id.menu_broadcast_start:
+			roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), true);
+			break;
+		case R.id.menu_broadcast_stop:
+			roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), false);
+			break;
 		case R.id.menu_record_start:
 			if (recheckExternalStorage()) {
 				roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), true);
