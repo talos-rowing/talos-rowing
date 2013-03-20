@@ -109,7 +109,7 @@ public class PreferencesHelper {
 	 * Always reset broadcast preference to false at the beginning of Talos
 	 */
 	private void resetBroadcastPreference() {
-		preferences.edit().putBoolean(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), false).commit();
+		preferences.edit().remove(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId()).commit();
 	}
 
 	public void init() {
@@ -120,36 +120,54 @@ public class PreferencesHelper {
 
 	private void resetPreferencesIfNeeded() {
 
-		boolean resetPending = !preferences.getAll().isEmpty() && preferences.getBoolean(PREFERENCES_VERSION_RESET_KEY, true);
-		
+		boolean firstRun = preferences.getString(TALOS_APP_VERSION_KEY, "").equals("");
 		boolean newVersion = !preferences.getString(TALOS_APP_VERSION_KEY, "").equals(owner.getVersion());
+		boolean resetRequested = preferences.getBoolean(PREFERENCES_VERSION_RESET_KEY, false);
 		
-		if (resetPending) {
+		boolean resetPending = resetRequested || (newVersion && !firstRun);
+		
+		
+		final Runnable runAtEnd = new Runnable() {
 			
-			preferences.edit().putBoolean(PREFERENCE_KEY_PREFERENCES_RESET, false).commit();
+			@Override
+			public void run() {
+				preferences.edit().putBoolean(PREFERENCE_KEY_PREFERENCES_RESET, false).commit();
+				preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, false).commit();
+				preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).commit();
+			}
+		};
+		
+		if (newVersion) {
+			owner.showAbout();			
+		}
+
+		if (resetPending) {
 			
 			new AlertDialog.Builder(owner)
 			.setMessage(R.string.preference_reset_dialog_message)
             .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                		preferences.edit().clear().putBoolean(PREFERENCES_VERSION_RESET_KEY, false).commit();
+                		preferences.edit().clear().commit();
+                		runAtEnd.run();
                    }
                 })
             .setNeutralButton(R.string.no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                		preferences.edit().clear().putBoolean(PREFERENCES_VERSION_RESET_KEY, false).commit();                		 
+                    	runAtEnd.run();        		 
                     }
                 })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+					
+					@Override
+					public void onCancel(DialogInterface dialog) {
+                    	runAtEnd.run();        		 
+					}
+				})
 			.show();
-			
-			newVersion = true;
 			
 		}
 		
-		if (newVersion) {
-			preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).commit();
-			owner.showAbout();			
-		}
+		runAtEnd.run();
 	}
 
 	public String getUUID() {
