@@ -98,9 +98,18 @@ public class PreferencesHelper {
 			uuid =  tmpUuid == null ? UUID.randomUUID().toString() : tmpUuid;
 		}
 		
+		resetBroadcastPreference();
+		
 		resetPreferencesIfNeeded();
 		
 		initializePrefs();		
+	}
+
+	/**
+	 * Always reset broadcast preference to false at the beginning of Talos
+	 */
+	private void resetBroadcastPreference() {
+		preferences.edit().putBoolean(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), false).commit();
 	}
 
 	public void init() {
@@ -135,12 +144,11 @@ public class PreferencesHelper {
 			
 			newVersion = true;
 			
-		} else if (newVersion) {			
-			owner.showAbout();			
 		}
 		
 		if (newVersion) {
 			preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).commit();
+			owner.showAbout();			
 		}
 	}
 
