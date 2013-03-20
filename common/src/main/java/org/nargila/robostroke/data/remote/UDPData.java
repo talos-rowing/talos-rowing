@@ -27,9 +27,9 @@ import java.net.DatagramSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class MulticasData {
+public abstract class UDPData {
 	
-	private static final Logger logger = LoggerFactory.getLogger(MulticasData.class);
+	private static final Logger logger = LoggerFactory.getLogger(UDPData.class);
 
 	private static final int MAX_PACKET_SIZE = 1400;
 
@@ -45,7 +45,7 @@ public abstract class MulticasData {
 	
 	private boolean stopRequested;
 		
-	protected MulticasData( String address, int port) {		
+	protected UDPData( String address, int port) {		
 		this.address = address;
 		this.port = port;
 	}

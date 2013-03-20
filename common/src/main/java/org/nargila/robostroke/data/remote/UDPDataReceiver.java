@@ -28,13 +28,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class MulticastDataReceiver extends MulticasData implements DataReceiver {
+public class UDPDataReceiver extends UDPData implements DataReceiver {
 
-	private static final Logger logger = LoggerFactory.getLogger(MulticastDataReceiver.class);
+	private static final Logger logger = LoggerFactory.getLogger(UDPDataReceiver.class);
 	
 	private Listener dataListener;
 	
-	public MulticastDataReceiver(String address, int port, Listener dataListener) {
+	public UDPDataReceiver(String address, int port, Listener dataListener) {
 		super(address, port);
 		
 		this.dataListener = dataListener;

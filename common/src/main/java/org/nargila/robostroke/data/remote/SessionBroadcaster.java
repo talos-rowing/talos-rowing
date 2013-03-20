@@ -38,7 +38,7 @@ public class SessionBroadcaster extends SensorBinder {
 		super(roboStroke);
 		
 		if (dataTransport == null) {
-			dataTransport = new MulticastDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+			dataTransport = new UDPDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
 		}
 		
 		this.dataSender = dataTransport;

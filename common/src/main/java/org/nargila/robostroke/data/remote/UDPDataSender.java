@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MulticastDataSender extends MulticasData implements DataSender {
+public class UDPDataSender extends UDPData implements DataSender {
 
 	private final boolean batchMode = Boolean.getBoolean("org.nargila.robostroke.data.FileDataInput.batchMode");
 
-	private static final Logger logger = LoggerFactory.getLogger(MulticastDataSender.class);
+	private static final Logger logger = LoggerFactory.getLogger(UDPDataSender.class);
 
 	private final ArrayBlockingQueue<String> recordQueue = new ArrayBlockingQueue<String>(100);
 
@@ -22,7 +22,7 @@ public class MulticastDataSender extends MulticasData implements DataSender {
 
 	private int sendPort; 
 	
-	public MulticastDataSender(String address, int port) {
+	public UDPDataSender(String address, int port) {
 		super(address, port);
 	}
 	
