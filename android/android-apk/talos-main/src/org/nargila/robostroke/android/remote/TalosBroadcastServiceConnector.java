@@ -20,32 +20,40 @@
 package org.nargila.robostroke.android.remote;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
-import org.nargila.robostroke.data.remote.DataTransport;
+import org.nargila.robostroke.data.remote.DataSender;
 
 import android.content.Context;
 import android.content.Intent;
 
-public class TalosTransmitterServiceClient  implements DataTransport {
+public class TalosBroadcastServiceConnector  implements DataSender {
 
-	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosTransmitterService";	
+	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosBroadcastService";	
 		
 	private final Context owner;
 	private Intent service;
 	private boolean started;
 	private int port = SessionRecorderConstants.BROADCAST_PORT; 
+	private String address = SessionRecorderConstants.BROADCAST_HOST; 
 			
-	public TalosTransmitterServiceClient(Context owner) {
+	public TalosBroadcastServiceConnector(Context owner) {
 		this.owner = owner;		
 	}
 
 	@Override
-	public synchronized void start() throws Exception {
+	public synchronized void start() throws DataRemoteError {
 
-		TalosRemoteServiceHelper helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
+		TalosRemoteServiceHelper helper;
+		
+		try {
+			helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
+		} catch (ServiceNotExist e) {
+			throw new DataRemoteError(e);
+		}
 		
 		service = helper.service;
 
 		service.putExtra("port", port);
+		service.putExtra("address", address);
 		
 		owner.startService(service);
 		
@@ -74,17 +82,23 @@ public class TalosTransmitterServiceClient  implements DataTransport {
 	}
 
 	@Override
-	public synchronized void setPort(int port) {
-		
-		this.port = port;
-		
+	public void setAddress(String address) {		
+		this.address = address;
+		restart();
+	}
+	
+	@Override
+	public synchronized void setPort(int port) {		
+		this.port = port;		
+		restart();
+	}
+
+	private synchronized void restart() {
 		if (started) {
 			stop();
 			try {
 				start();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}

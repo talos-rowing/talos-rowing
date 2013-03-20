@@ -343,10 +343,13 @@ public class RoboStrokeTest {
 
 		final RoboStroke rs = new RoboStroke();
 
+		rs.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_HOST.getId(), "localhost");
+		roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_HOST.getId(), "localhost");
+		
 		rs.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), true);
 		rs.setInput(fileInput());
 		
-		DataRecord event = splitRowing(new RemoteDataInput(roboStroke, "localhost"), RowingSplitMode.AUTO, false);
+		DataRecord event = splitRowing(new RemoteDataInput(roboStroke), RowingSplitMode.AUTO, false);
 		
 		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
 		Object[] data = (Object[]) event.data;

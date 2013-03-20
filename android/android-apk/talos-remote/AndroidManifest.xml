@@ -12,9 +12,9 @@
         <action android:name="org.nargila.robostroke.android.remote.TalosReceiverService"/>
       </intent-filter>
     </service>
-    <service android:exported="false" android:process="org.nargila.robostroke.android.app" android:name="TalosTransmitterService">
+    <service android:exported="false" android:process="org.nargila.robostroke.android.app" android:name="TalosBroadcastService">
       <intent-filter>
-        <action android:name="org.nargila.robostroke.android.remote.TalosTransmitterService"/>
+        <action android:name="org.nargila.robostroke.android.remote.TalosBroadcastService"/>
       </intent-filter>
     </service>
   </application>

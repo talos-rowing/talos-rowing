@@ -19,46 +19,50 @@
 
 package org.nargila.robostroke.android.remote;
 
-import org.nargila.robostroke.data.remote.DataReceiver;
 import org.nargila.robostroke.data.remote.DataRemote;
-import org.nargila.robostroke.data.remote.MulticastDataReceiver;
+import org.nargila.robostroke.data.remote.MulticastDataSender;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 
-public class TalosReceiverService extends TalosService {
+public class TalosBroadcastService extends TalosService {
  
-	private final static String BROADCAST_ID = TalosReceiverService.class.getName();
-	
-	private DataReceiver impl;
-	
+	private final static String BROADCAST_ID = TalosBroadcastService.class.getName();
+		
+	private final BroadcastReceiver receiver;
 
-	public TalosReceiverService() {
+	private MulticastDataSender impl;
+
+	public TalosBroadcastService() {
+		receiver = new BroadcastReceiver() {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Bundle data = intent.getExtras();
+				String l = data.getString("data");
+				impl.write(l);
+			}
+		};
 	}
 	
-
 	@Override
 	protected DataRemote makeImpl(String host, int port) {
-		impl = new MulticastDataReceiver(host, port, new DataReceiver.Listener() {
-			
-			@Override
-			public void onDataReceived(String s) {
-				
-				Intent intent = new Intent(BROADCAST_ID);
-				intent.putExtra("data", s);
-				sendBroadcast(intent);
-			}
-		});
-		
+		impl = new MulticastDataSender(host, port);
 		return impl;
 	}
-
-
+	
+	
 	@Override
-	protected void afterStart() {		
+	protected void afterStart() {
+		registerReceiver(receiver, new IntentFilter(BROADCAST_ID));		
 	}
 
-
+	
 	@Override
 	protected void beforeStop() {
-	}
+    	unregisterReceiver(receiver);
+    }
 }

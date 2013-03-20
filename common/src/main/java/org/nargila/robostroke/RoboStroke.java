@@ -38,10 +38,8 @@ import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.data.SensorDataSource;
 import org.nargila.robostroke.data.SessionRecorder;
-import org.nargila.robostroke.data.SessionRecorderConstants;
-import org.nargila.robostroke.data.remote.DataTransport;
+import org.nargila.robostroke.data.remote.DataSender;
 import org.nargila.robostroke.data.remote.SessionBroadcaster;
-import org.nargila.robostroke.data.remote.SocketDataTransport;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.param.ParameterChangeListener;
@@ -153,18 +151,18 @@ public class RoboStroke {
 	}
 	
 	public RoboStroke(DistanceResolver distanceResolver) {
-		this(distanceResolver, new SocketDataTransport("sessionBroadcaster", SessionRecorderConstants.BROADCAST_PORT));
+		this(distanceResolver, null);
 	}
 	
 	/**
 	 * constructor with the <code>DistanceResolver</code> implementation.
 	 * @param distanceResolver a client provided implementation that can extract distance from location events 
 	 */
-	public RoboStroke(DistanceResolver distanceResolver, DataTransport transportImpl) {
-		
-		sessionBroadcaster = new SessionBroadcaster(this, transportImpl);
-		
+	public RoboStroke(DistanceResolver distanceResolver, DataSender dataSenderImpl) {
+				
 		ParamRegistration.installParams(parameters);
+		
+		sessionBroadcaster = new SessionBroadcaster(this, dataSenderImpl);
 		
 		initPipeline(distanceResolver);
 		
@@ -193,6 +191,15 @@ public class RoboStroke {
 			}
 		});
 		
+		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_HOST.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				sessionBroadcaster.setAddress((String)param.getValue());
+				
+			}
+		});
+
 		parameters.addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
 			
 			@Override
