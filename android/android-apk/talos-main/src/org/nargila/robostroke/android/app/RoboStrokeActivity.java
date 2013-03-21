@@ -1110,7 +1110,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
-		boolean isBroadcasting = roboStroke.getParameters().getValue(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId());
+		boolean isBroadcasting = (Boolean)roboStroke.getParameters().getValue(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId());
 		
 		menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_broadcast_stop).setVisible(isBroadcasting);
