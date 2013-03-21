@@ -63,10 +63,8 @@ public abstract class TalosService extends Service {
 	
 		super.onStart(intent, startId);
 		
-		
-		super.onStart(intent, startId);
-		
 		port = intent.getIntExtra("port", SessionRecorderConstants.BROADCAST_PORT);
+		
 		host = intent.getStringExtra("host");
 		
 		if (host == null) {
