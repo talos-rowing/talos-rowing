@@ -3,7 +3,6 @@ package org.nargila.robostroke.data.remote;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -16,12 +15,11 @@ public class UDPDataSender extends UDPData implements DataSender {
 
 	private static final Logger logger = LoggerFactory.getLogger(UDPDataSender.class);
 
-	private final ArrayBlockingQueue<String> recordQueue = new ArrayBlockingQueue<String>(100);
-
-	private InetAddress sendAddress;
-
-	private int sendPort; 
+	private final ArrayBlockingQueue<String> recordQueue = new ArrayBlockingQueue<String>(30);
 	
+	private final UnicastDataHelper udh = new UnicastDataHelper();
+	
+
 	UDPDataSender(String address, int port) throws DataRemoteError {
 		super(address, port);
 	}
@@ -50,9 +48,7 @@ public class UDPDataSender extends UDPData implements DataSender {
 					
 					inserted = recordQueue.offer(o);
 					
-					if (!inserted) {						
-						logger.warn("queue overflow");
-						
+					if (!inserted) {
 						recordQueue.poll();			
 					}
 				}
@@ -75,43 +71,17 @@ public class UDPDataSender extends UDPData implements DataSender {
 		super.stop();
 		recordQueue.clear();
 	}
-
 	
 	@Override
 	protected DatagramSocket createSocket(String address, int port) throws IOException {
-		return new DatagramSocket(port);
+		return udh.createSocket(address, port);
 	}
-	
+
 	@Override
 	protected void initConnection(String address, int port, byte[] buf) throws IOException {
-		
-		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-		
-		logger.info("accepting connection on port {}", port);
-		
-		socket.receive(packet);
-		
-		InetAddress sendAddress = packet.getAddress();
-		
-		int sendPort = packet.getPort();
-
-		String fromClient = getData(packet);
-		
-		logger.info("accept connection from {}:{} (says: {})", new Object[]{sendAddress, sendPort, fromClient});
-		
-		buf = "Hello back".getBytes();
-		
-		logger.info("sending back hello to {}:{}", new Object[]{sendAddress, sendPort});
-
-		packet = new DatagramPacket(buf, buf.length, sendAddress, sendPort);
-		
-		socket.send(packet);
-		
-		this.sendAddress = sendAddress;
-		this.sendPort = sendPort;
-		
-		
+        
 	}
+	
 
 
 	protected void processNextItem(DatagramSocket socket, byte[] buf) throws IOException {
@@ -120,7 +90,7 @@ public class UDPDataSender extends UDPData implements DataSender {
 
 		if (data != null) {
 			byte[] b = data.getBytes();
-			DatagramPacket packet = new DatagramPacket(b, b.length, sendAddress, sendPort);
+			DatagramPacket packet = new DatagramPacket(b, b.length, udh.socketAddress);
 			socket.send(packet);
 		} else {
 			Thread.yield();

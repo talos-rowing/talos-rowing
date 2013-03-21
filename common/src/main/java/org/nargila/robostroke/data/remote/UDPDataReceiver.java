@@ -20,19 +20,14 @@
 package org.nargila.robostroke.data.remote;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class UDPDataReceiver extends UDPData implements DataReceiver {
-
-	private static final Logger logger = LoggerFactory.getLogger(UDPDataReceiver.class);
 	
 	private Listener dataListener;
+	
+	private final UnicastDataHelper udh = new UnicastDataHelper();
 	
 	UDPDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
 		super(address, port);
@@ -55,39 +50,18 @@ public class UDPDataReceiver extends UDPData implements DataReceiver {
 	
 	@Override
 	protected DatagramSocket createSocket(String address, int port) throws IOException {
-		return new DatagramSocket();
+		return udh.createSocket(null, port);
 	}
 	
 	@Override
-	protected void initConnection(String address, int port, byte[] buf) throws IOException {
-		
-		InetAddress serverAddr = InetAddress.getByName(address);
-		
-        byte[] b = "Hello".getBytes();
-        
-        DatagramPacket packet = new DatagramPacket(b, b.length, serverAddr, port);
-        
-        logger.info("sending hello packet to server");
-        
-        socket.send(packet);
-   
-        // get response
-        packet = new DatagramPacket(buf, buf.length);
-        
-        socket.receive(packet);
- 
-        // display response
-        String received = getData(packet);
-        
-        logger.info("received from server: '{}'", received);
-        
+	protected void initConnection(String address, int port, byte[] buf) throws IOException {		
 	}
-	
+
 	@Override
 	protected void processNextItem(DatagramSocket socket, byte[] buf) throws IOException {
-		DatagramPacket packet = new DatagramPacket(buf, buf.length);
-		socket.receive(packet);
-		String received = getData(packet);
+
+		String received = getData(UnicastDataHelper.receivePacket(socket, buf));
+		
 		onItemReceived(received);
 	}
 }

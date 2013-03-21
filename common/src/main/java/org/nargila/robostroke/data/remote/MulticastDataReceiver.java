@@ -21,23 +21,11 @@ package org.nargila.robostroke.data.remote;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.SocketAddress;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class MulticastDataReceiver extends UDPDataReceiver {
-
-	private static final Logger logger = LoggerFactory.getLogger(MulticastDataReceiver.class);
 		
-	private InetAddress groupAddress;
-
-	private MulticastSocket socket;
-	
+	private final MulticastDataHelper mdh = new MulticastDataHelper();
+		
 	MulticastDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
 		super(address, port, dataListener);
 	}
@@ -46,26 +34,11 @@ public class MulticastDataReceiver extends UDPDataReceiver {
 	
 	@Override
 	protected DatagramSocket createSocket(String address, int port) throws IOException {
-		
-		groupAddress = InetAddress.getByName(address);
-		
-		socket = new MulticastSocket(port);
-		
-		return socket;
+		return mdh.createSocket(address, port);
 	}
 	
 	@Override
 	protected void initConnection(String address, int port, byte[] buf) throws IOException {
-		
-		logger.info("client join multicast address {}:{}", groupAddress, port);
-
-		SocketAddress sa = new InetSocketAddress(groupAddress, port) ;
-		
-		if (ifc != null) {
-			socket.joinGroup(sa, ifc);
-		} else {
-			socket.joinGroup(groupAddress);
-		}
-        
+		mdh.initConnection();
 	}
 }
