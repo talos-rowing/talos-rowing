@@ -13,9 +13,9 @@ import org.nargila.robostroke.data.SessionRecorderConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SocketDataTransport implements DataTransport {
+public class SocketDataSender implements DataSender {
 	
-	private static final Logger logger = LoggerFactory.getLogger(SocketDataTransport.class);
+	private static final Logger logger = LoggerFactory.getLogger(SocketDataSender.class);
 	
 	private ServerSocket socket;
 	
@@ -29,7 +29,7 @@ public class SocketDataTransport implements DataTransport {
 
 	private Thread listenThread;	
 
-	public SocketDataTransport(String name, int port) {
+	public SocketDataSender(String name, int port) {
 		this.port = port;
 		recordQueue  = new ThreadedQueue<String>("SocketDataTransport:" + name, 100) {
 
@@ -63,8 +63,12 @@ public class SocketDataTransport implements DataTransport {
 	}
 	
 	@Override
-	public synchronized void start() throws IOException {
-		socket = new ServerSocket(port);
+	public synchronized void start() throws DataRemoteError {
+		try {
+			socket = new ServerSocket(port);
+		} catch (IOException e) {
+			throw new DataRemoteError(e);
+		}
 		
 		listenThread = new Thread("SocketDataTransport listen") {
 			@Override
@@ -77,7 +81,7 @@ public class SocketDataTransport implements DataTransport {
 
 						Socket soc = socket.accept();
 						
-						synchronized (SocketDataTransport.this) {							
+						synchronized (SocketDataSender.this) {							
 							s = soc;
 						}
 						
@@ -137,5 +141,10 @@ public class SocketDataTransport implements DataTransport {
 	
 	public void write(String data) {
 		recordQueue.put(data);
+	}
+
+	@Override
+	public void setAddress(String address) {
+		/* not implemented for TCP socket */
 	}
 }

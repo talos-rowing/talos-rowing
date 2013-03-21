@@ -20,8 +20,9 @@
 package org.nargila.robostroke.android.remote;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
-import org.nargila.robostroke.data.remote.DataTransport;
-import org.nargila.robostroke.data.remote.SocketDataTransport;
+import org.nargila.robostroke.data.remote.DataRemote;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
+import org.nargila.robostroke.data.remote.DatagramData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,51 +30,47 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.IBinder;
 
-public class TalosTransmitterService extends Service {
+public abstract class TalosService extends Service {
  
-	private final static String BROADCAST_ID = TalosTransmitterService.class.getName();
-
-	private static final Logger logger = LoggerFactory.getLogger(TalosTransmitterService.class);
+	private static final Logger logger = LoggerFactory.getLogger(TalosService.class);
 	
 	private static int SERVICE_NOTIFICATION_ID = 1;
 	
 	private NotificationManager notificationManager;
 
-	private int port;
+	protected int port;
 
-	private DataTransport impl;
+	protected String host;
+	
+	private DataRemote impl;
 
 	private boolean started;
+
+	private MulticastLock multicastLock;
 	
-	private final BroadcastReceiver receiver;
 
-	public TalosTransmitterService() {
-		receiver = new BroadcastReceiver() {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				Bundle data = intent.getExtras();
-				String l = data.getString("data");
-				impl.write(l);
-			}
-		};
+	protected TalosService() {
 	}
 	
 	@Override
-	public void onStart(Intent intent, int startId) {
-		
+	public void onStart(Intent intent, int startId) {		
 	
 		super.onStart(intent, startId);
 		
 		port = intent.getIntExtra("port", SessionRecorderConstants.BROADCAST_PORT);
 		
+		host = intent.getStringExtra("host");
+		
+		if (host == null) {
+			host = SessionRecorderConstants.BROADCAST_HOST;
+		}
+
 		startService();
 
 	}
@@ -102,23 +99,50 @@ public class TalosTransmitterService extends Service {
 	}
 	
 	
-	private void startService() {
+	private synchronized void startService() {
 
 		if (!started) {
-			logger.info("starting RemoteTalosService data service");
-			impl = new SocketDataTransport("Talos transmitter service", port);
+			
+			logger.info("starting {} service", getClass().getSimpleName());
+			
 			try {
-
+				
+				impl = makeImpl(host, port);
+				
+				if (impl instanceof DatagramData) {
+					if (((DatagramData)impl).isMulticast()) {
+						
+						WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+						
+						multicastLock = wifi.createMulticastLock(getClass().getSimpleName());
+						multicastLock.setReferenceCounted(false);
+						multicastLock.acquire();
+					}
+				}
+				
 				impl.start();
-
-				registerReceiver(receiver, new IntentFilter(BROADCAST_ID));
-
-			} catch (Exception e) {
-				logger.error("failed to start Talos transmitter service", e);
+				
+			} catch (DataRemoteError e) {
+				String msg = "failed to start " + getClass().getSimpleName();
+				logger.error(msg, e);
+				statusNotify(msg, "error", "service start failed", true);
+				
+				return;
 			}
-		}
 
+			afterStart();
+			
+			started = true;
+
+		}
 	}
+	
+
+	protected abstract DataRemote makeImpl(String host, int port) throws DataRemoteError;
+	
+	protected abstract void afterStart() ;
+
+	protected abstract void beforeStop() ;
 
 	public void statusNotify(String msg, String contentTitle, String tickerText, boolean error) {
 		
@@ -137,14 +161,18 @@ public class TalosTransmitterService extends Service {
 		notificationManager.notify(SERVICE_NOTIFICATION_ID, notification);		
 	}
 	
-    private void stopService() {
+    private synchronized void stopService() {
     	if (started) {
     		try {
-				unregisterReceiver(receiver);
+				beforeStop();
 				impl.stop();
 			} catch (Exception e) {
-				logger.error("failed to stop Talos transmitter service", e);
+				logger.error("failed to stop " + getClass().getSimpleName(), e);
 			}
+
+    		if (multicastLock != null) {
+    			multicastLock.release();
+    		}
     		
     		started = false;
     	}			

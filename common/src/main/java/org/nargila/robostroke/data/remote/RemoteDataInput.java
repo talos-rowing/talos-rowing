@@ -19,45 +19,39 @@
 
 package org.nargila.robostroke.data.remote;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SessionRecorderConstants;
 
 public class RemoteDataInput extends RecordDataInput {
-
-	private Socket socket;
-	
-	private final String host;
-	private final int port;
 		
-	public RemoteDataInput(RoboStroke roboStroke, String host) throws IOException {
-		this(roboStroke, host, SessionRecorderConstants.BROADCAST_PORT);
+	private final DataReceiver receiver;
+
+	public RemoteDataInput(RoboStroke roboStroke) throws IOException {
+		this(roboStroke, new DatagramDataReceiver(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke), null));
 	}
 	
-	public RemoteDataInput(RoboStroke roboStroke, String host, int port) throws IOException {
+	public RemoteDataInput(RoboStroke roboStroke, DataReceiver receiver) throws IOException {
 		
 		super(roboStroke);
 		
-		this.host = host;
-		this.port = port;		
+		this.receiver = receiver;
+		
+		receiver.setListener(new DataReceiver.Listener() {
+			
+			@Override
+			public void onDataReceived(String s) {
+				playRecord(s, SessionRecorderConstants.END_OF_RECORD);
+			}
+		});
 	}
 
 	@Override
 	public void stop() {
-		if (socket != null) {
-			try {
-				socket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		
+		receiver.stop();
 		
 		super.stop();
 	}
@@ -67,29 +61,9 @@ public class RemoteDataInput extends RecordDataInput {
 		
 		super.start();
 		
-		socket = new Socket();		
-		
+				
 		try {
-			socket.connect(new InetSocketAddress(host, port), 1000);
-			new Thread("RemoteDataInput") {
-				public void run() {					
-					try {
-						BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-						String l;
-						
-						while ((l = reader.readLine()) != null) {
-							playRecord(l, SessionRecorderConstants.END_OF_RECORD);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					} finally {
-						try {
-							socket.close();
-						} catch (IOException e) {
-						}
-					}
-				}
-			}.start();
+			receiver.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

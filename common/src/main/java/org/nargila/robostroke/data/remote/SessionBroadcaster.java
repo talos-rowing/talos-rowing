@@ -22,24 +22,37 @@ package org.nargila.robostroke.data.remote;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.SensorBinder;
 import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 
 public class SessionBroadcaster extends SensorBinder {
 					
-	private final DataTransport dataTransport;
+	private final DataSender dataSender;
 	
 	private boolean broadcast;
 	
-	public SessionBroadcaster(RoboStroke roboStroke, DataTransport dataTransport) {
+	public SessionBroadcaster(RoboStroke roboStroke) throws DataRemoteError {
+		this(roboStroke, null);
+	}
+	
+	public SessionBroadcaster(RoboStroke roboStroke, DataSender dataTransport) throws DataRemoteError {
 		
 		super(roboStroke);
 		
-		this.dataTransport = dataTransport;
+		if (dataTransport == null) {
+			dataTransport = new DatagramDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+		}
+		
+		this.dataSender = dataTransport;
 	}
 	
 	public void setPort(int port) {
-		dataTransport.setPort(port);
+		dataSender.setPort(port);
 	}
 
+	public void setAddress(String address) {
+		dataSender.setAddress(address);
+	}
+	
 	public void enable(boolean broadcast) {
 				
 		if (this.broadcast != broadcast) {
@@ -52,13 +65,17 @@ public class SessionBroadcaster extends SensorBinder {
 		}
 	}
 	
+	public boolean isEnabled() {
+		return this.broadcast;
+	}
+	
 	@Override
 	protected synchronized void connect() {
 		
 		super.connect();					
 		
 		try {
-			dataTransport.start();
+			dataSender.start();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -70,7 +87,7 @@ public class SessionBroadcaster extends SensorBinder {
 		
 		super.disconnect();
 		
-		dataTransport.stop();
+		dataSender.stop();
 	}
 	
 	@Override
@@ -89,8 +106,8 @@ public class SessionBroadcaster extends SensorBinder {
 
 	public void write(DataRecord record) {
 				
-		if (dataTransport != null) {
-			dataTransport.write(record.toString());
+		if (dataSender != null) {
+			dataSender.write(record.toString());
 		}
 	}
 }

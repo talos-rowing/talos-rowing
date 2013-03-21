@@ -38,10 +38,9 @@ import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.data.SensorDataSource;
 import org.nargila.robostroke.data.SessionRecorder;
-import org.nargila.robostroke.data.SessionRecorderConstants;
-import org.nargila.robostroke.data.remote.DataTransport;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
+import org.nargila.robostroke.data.remote.DataSender;
 import org.nargila.robostroke.data.remote.SessionBroadcaster;
-import org.nargila.robostroke.data.remote.SocketDataTransport;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterBusEventData;
 import org.nargila.robostroke.param.ParameterChangeListener;
@@ -129,7 +128,7 @@ public class RoboStroke {
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
 
-	private final SessionBroadcaster sessionBroadcaster;
+	private SessionBroadcaster sessionBroadcaster;
 
 	private boolean broadcastOn;
 	
@@ -153,18 +152,22 @@ public class RoboStroke {
 	}
 	
 	public RoboStroke(DistanceResolver distanceResolver) {
-		this(distanceResolver, new SocketDataTransport("sessionBroadcaster", SessionRecorderConstants.BROADCAST_PORT));
+		this(distanceResolver, null);
 	}
 	
 	/**
 	 * constructor with the <code>DistanceResolver</code> implementation.
 	 * @param distanceResolver a client provided implementation that can extract distance from location events 
 	 */
-	public RoboStroke(DistanceResolver distanceResolver, DataTransport transportImpl) {
-		
-		sessionBroadcaster = new SessionBroadcaster(this, transportImpl);
-		
+	public RoboStroke(DistanceResolver distanceResolver, DataSender dataSenderImpl) {
+				
 		ParamRegistration.installParams(parameters);
+		
+		try {
+			sessionBroadcaster = new SessionBroadcaster(this, dataSenderImpl);
+		} catch (DataRemoteError e) {
+			logger.error("failed to create sessionBroadcaster", e);
+		}
 		
 		initPipeline(distanceResolver);
 		
@@ -177,7 +180,7 @@ public class RoboStroke {
 					broadcastOn = (Boolean) param.getValue();
 					
 					if (dataInput != null) {
-						sessionBroadcaster.enable(broadcastOn);
+						if (sessionBroadcaster != null) sessionBroadcaster.enable(broadcastOn);
 					}
 					
 				}				
@@ -188,11 +191,20 @@ public class RoboStroke {
 			
 			@Override
 			public void onParameterChanged(Parameter param) {
-				sessionBroadcaster.setPort((Integer)param.getValue());
+				if (sessionBroadcaster != null)  sessionBroadcaster.setPort((Integer)param.getValue());
 				
 			}
 		});
 		
+		parameters.addListener(ParamKeys.PARAM_SESSION_BROADCAST_HOST.getId(), new ParameterChangeListener() {
+			
+			@Override
+			public void onParameterChanged(Parameter param) {
+				if (sessionBroadcaster != null) sessionBroadcaster.setAddress((String)param.getValue());
+				
+			}
+		});
+
 		parameters.addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
 			
 			@Override

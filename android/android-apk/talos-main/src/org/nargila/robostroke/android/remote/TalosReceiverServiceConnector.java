@@ -32,9 +32,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 
-public class TalosReceiverServiceClient extends RecordDataInput {
+public class TalosReceiverServiceConnector extends RecordDataInput {
 
-	private static final Logger logger = LoggerFactory.getLogger(TalosReceiverServiceClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(TalosReceiverServiceConnector.class);
 	
 	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosReceiverService";
 		
@@ -48,11 +48,11 @@ public class TalosReceiverServiceClient extends RecordDataInput {
 
 	private boolean started;	
 		
-	public TalosReceiverServiceClient(Context owner, RoboStroke roboStroke, String host) throws ServiceNotExist {
+	public TalosReceiverServiceConnector(Context owner, RoboStroke roboStroke, String host) throws ServiceNotExist {
 		this(owner, roboStroke, host, SessionRecorderConstants.BROADCAST_PORT);
 	}
 	
-	public TalosReceiverServiceClient(Context owner, RoboStroke roboStroke, String host, int port) throws ServiceNotExist {
+	public TalosReceiverServiceConnector(Context owner, RoboStroke roboStroke, String host, int port) throws ServiceNotExist {
 		
 		super(roboStroke);
 		
