@@ -33,7 +33,7 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 	private Intent service;
 	private boolean started;
 	private int port = SessionRecorderConstants.BROADCAST_PORT; 
-	private String address = SessionRecorderConstants.BROADCAST_HOST; 
+	private String host = SessionRecorderConstants.BROADCAST_HOST; 
 			
 	public TalosBroadcastServiceConnector(Context owner) {
 		this.owner = owner;		
@@ -53,7 +53,7 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 		service = helper.service;
 
 		service.putExtra("port", port);
-		service.putExtra("address", address);
+		service.putExtra("host", host);
 		
 		owner.startService(service);
 		
@@ -83,7 +83,7 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 
 	@Override
 	public void setAddress(String address) {		
-		this.address = address;
+		this.host = address;
 		restart();
 	}
 	
