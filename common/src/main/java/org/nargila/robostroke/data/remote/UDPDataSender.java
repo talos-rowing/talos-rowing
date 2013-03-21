@@ -22,7 +22,7 @@ public class UDPDataSender extends UDPData implements DataSender {
 
 	private int sendPort; 
 	
-	public UDPDataSender(String address, int port) {
+	UDPDataSender(String address, int port) throws DataRemoteError {
 		super(address, port);
 	}
 	
@@ -61,7 +61,7 @@ public class UDPDataSender extends UDPData implements DataSender {
 	}
 	
 
-	private String getNextItem() {
+	protected String getNextItem() {
 		try {
 			return recordQueue.poll(10, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {

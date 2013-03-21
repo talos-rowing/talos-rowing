@@ -19,8 +19,9 @@
 
 package org.nargila.robostroke.android.remote;
 
+import org.nargila.robostroke.data.remote.AutoDataSender;
 import org.nargila.robostroke.data.remote.DataRemote;
-import org.nargila.robostroke.data.remote.UDPDataSender;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -34,7 +35,7 @@ public class TalosBroadcastService extends TalosService {
 		
 	private final BroadcastReceiver receiver;
 
-	private UDPDataSender impl;
+	private AutoDataSender impl;
 
 	public TalosBroadcastService() {
 		receiver = new BroadcastReceiver() {
@@ -49,8 +50,8 @@ public class TalosBroadcastService extends TalosService {
 	}
 	
 	@Override
-	protected DataRemote makeImpl(String host, int port) {
-		impl = new UDPDataSender(host, port);
+	protected DataRemote makeImpl(String host, int port) throws DataRemoteError {
+		impl = new AutoDataSender(host, port);
 		return impl;
 	}
 	

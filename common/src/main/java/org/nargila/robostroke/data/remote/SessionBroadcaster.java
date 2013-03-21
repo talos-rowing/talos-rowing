@@ -22,6 +22,7 @@ package org.nargila.robostroke.data.remote;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.SensorBinder;
 import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 
 public class SessionBroadcaster extends SensorBinder {
 					
@@ -29,16 +30,16 @@ public class SessionBroadcaster extends SensorBinder {
 	
 	private boolean broadcast;
 	
-	public SessionBroadcaster(RoboStroke roboStroke) {
+	public SessionBroadcaster(RoboStroke roboStroke) throws DataRemoteError {
 		this(roboStroke, null);
 	}
 	
-	public SessionBroadcaster(RoboStroke roboStroke, DataSender dataTransport) {
+	public SessionBroadcaster(RoboStroke roboStroke, DataSender dataTransport) throws DataRemoteError {
 		
 		super(roboStroke);
 		
 		if (dataTransport == null) {
-			dataTransport = new UDPDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+			dataTransport = new AutoDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
 		}
 		
 		this.dataSender = dataTransport;

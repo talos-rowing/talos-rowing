@@ -38,6 +38,7 @@ import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.SensorDataSink;
 import org.nargila.robostroke.data.SensorDataSource;
 import org.nargila.robostroke.data.SessionRecorder;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 import org.nargila.robostroke.data.remote.DataSender;
 import org.nargila.robostroke.data.remote.SessionBroadcaster;
 import org.nargila.robostroke.param.Parameter;
@@ -127,7 +128,7 @@ public class RoboStroke {
 	 */
 	private final SessionRecorder recorder = new SessionRecorder(this);
 
-	private final SessionBroadcaster sessionBroadcaster;
+	private SessionBroadcaster sessionBroadcaster;
 
 	private boolean broadcastOn;
 	
@@ -162,7 +163,11 @@ public class RoboStroke {
 				
 		ParamRegistration.installParams(parameters);
 		
-		sessionBroadcaster = new SessionBroadcaster(this, dataSenderImpl);
+		try {
+			sessionBroadcaster = new SessionBroadcaster(this, dataSenderImpl);
+		} catch (DataRemoteError e) {
+			logger.error("failed to create sessionBroadcaster", e);
+		}
 		
 		initPipeline(distanceResolver);
 		
@@ -175,7 +180,7 @@ public class RoboStroke {
 					broadcastOn = (Boolean) param.getValue();
 					
 					if (dataInput != null) {
-						sessionBroadcaster.enable(broadcastOn);
+						if (sessionBroadcaster != null) sessionBroadcaster.enable(broadcastOn);
 					}
 					
 				}				
@@ -186,7 +191,7 @@ public class RoboStroke {
 			
 			@Override
 			public void onParameterChanged(Parameter param) {
-				sessionBroadcaster.setPort((Integer)param.getValue());
+				if (sessionBroadcaster != null)  sessionBroadcaster.setPort((Integer)param.getValue());
 				
 			}
 		});
@@ -195,7 +200,7 @@ public class RoboStroke {
 			
 			@Override
 			public void onParameterChanged(Parameter param) {
-				sessionBroadcaster.setAddress((String)param.getValue());
+				if (sessionBroadcaster != null) sessionBroadcaster.setAddress((String)param.getValue());
 				
 			}
 		});

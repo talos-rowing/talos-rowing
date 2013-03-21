@@ -20,6 +20,7 @@
 package org.nargila.robostroke.android.remote;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.nargila.robostroke.data.remote.AutoData;
 import org.nargila.robostroke.data.remote.DataRemote;
 import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 import org.slf4j.Logger;
@@ -31,6 +32,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.IBinder;
 
 public abstract class TalosService extends Service {
@@ -48,6 +51,8 @@ public abstract class TalosService extends Service {
 	private DataRemote impl;
 
 	private boolean started;
+
+	private MulticastLock multicastLock;
 	
 
 	protected TalosService() {
@@ -102,10 +107,20 @@ public abstract class TalosService extends Service {
 			
 			logger.info("starting {} service", getClass().getSimpleName());
 			
-			impl = makeImpl(host, port);
-
-
 			try {
+				
+				impl = makeImpl(host, port);
+				
+				if (impl instanceof AutoData) {
+					if (((AutoData)impl).isMulticast()) {
+						
+						WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+						
+						multicastLock = wifi.createMulticastLock(getClass().getSimpleName());
+						multicastLock.setReferenceCounted(false);
+						multicastLock.acquire();
+					}
+				}
 				impl.start();
 			} catch (DataRemoteError e) {
 				String msg = "failed to start " + getClass().getSimpleName();
@@ -123,7 +138,7 @@ public abstract class TalosService extends Service {
 	}
 	
 
-	protected abstract DataRemote makeImpl(String host, int port);
+	protected abstract DataRemote makeImpl(String host, int port) throws DataRemoteError;
 	
 	protected abstract void afterStart() ;
 
@@ -146,7 +161,7 @@ public abstract class TalosService extends Service {
 		notificationManager.notify(SERVICE_NOTIFICATION_ID, notification);		
 	}
 	
-    private void stopService() {
+    private synchronized void stopService() {
     	if (started) {
     		try {
 				beforeStop();
@@ -154,6 +169,10 @@ public abstract class TalosService extends Service {
 			} catch (Exception e) {
 				logger.error("failed to stop " + getClass().getSimpleName(), e);
 			}
+
+    		if (multicastLock != null) {
+    			multicastLock.release();
+    		}
     		
     		started = false;
     	}			

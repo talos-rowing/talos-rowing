@@ -19,9 +19,10 @@
 
 package org.nargila.robostroke.android.remote;
 
+import org.nargila.robostroke.data.remote.AutoDataReceiver;
 import org.nargila.robostroke.data.remote.DataReceiver;
 import org.nargila.robostroke.data.remote.DataRemote;
-import org.nargila.robostroke.data.remote.UDPDataReceiver;
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 
 import android.content.Intent;
 
@@ -37,8 +38,8 @@ public class TalosReceiverService extends TalosService {
 	
 
 	@Override
-	protected DataRemote makeImpl(String host, int port) {
-		impl = new UDPDataReceiver(host, port, new DataReceiver.Listener() {
+	protected DataRemote makeImpl(String host, int port) throws DataRemoteError {
+		impl = new AutoDataReceiver(host, port, new DataReceiver.Listener() {
 			
 			@Override
 			public void onDataReceived(String s) {

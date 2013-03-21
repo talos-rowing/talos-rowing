@@ -23,7 +23,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +48,33 @@ public abstract class UDPData {
 	private boolean connected;
 	
 	private boolean stopRequested;
+
+	protected NetworkInterface ifc;
 		
-	protected UDPData( String address, int port) {		
+	protected UDPData( String address, int port) throws DataRemoteError {		
 		this.address = address;
 		this.port = port;
+		
+
+		try {
+			Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
+
+			NetworkInterface i = null;
+
+			while (enumeration.hasMoreElements()) {
+
+				i = enumeration.nextElement();
+
+				logger.info("interface {}:  lo={}, ppp={}, up={}, virt={}, multicast={} - {}", new Object[]{i.getDisplayName(), i.isLoopback(), i.isPointToPoint(), i.isUp(), i.isVirtual(), i.supportsMulticast(), i});
+
+				if (i.isUp() && !i.isLoopback() && !i.isPointToPoint() && i.supportsMulticast()) {
+					ifc = i;
+					break;
+				}
+			}
+		} catch (SocketException e) {
+			throw new DataRemoteError(e);
+		}
 	}
 
 	public synchronized void stop() {
@@ -121,7 +148,7 @@ public abstract class UDPData {
 						
 						processNextItem(socket, packetBuffer);
 						
-					} catch (IOException e) {
+					} catch (Exception e) {
 						if (!stopRequested) {
 							logger.warn("remote data reading error - receiver loop continues", e);
 							try {

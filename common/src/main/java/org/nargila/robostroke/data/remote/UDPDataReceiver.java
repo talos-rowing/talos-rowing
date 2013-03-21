@@ -34,7 +34,7 @@ public class UDPDataReceiver extends UDPData implements DataReceiver {
 	
 	private Listener dataListener;
 	
-	public UDPDataReceiver(String address, int port, Listener dataListener) {
+	UDPDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
 		super(address, port);
 		
 		this.dataListener = dataListener;
@@ -48,7 +48,7 @@ public class UDPDataReceiver extends UDPData implements DataReceiver {
 
 
 	private void onItemReceived(String received) {
-		if (dataListener != null) {
+		if (dataListener != null && received != null && !received.equals("")) {
 			dataListener.onDataReceived(received);
 		}
 	}
