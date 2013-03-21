@@ -20,21 +20,17 @@
 package org.nargila.robostroke.data.remote;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class UDPData {
+public abstract class DatagramData {
 	
-	private static final Logger logger = LoggerFactory.getLogger(UDPData.class);
-
-	private static final int MAX_PACKET_SIZE = 1400;
-
-	protected DatagramSocket socket;
+	private static final Logger logger = LoggerFactory.getLogger(DatagramData.class);
 	
 	private String address;
 	
@@ -42,19 +38,22 @@ public abstract class UDPData {
 		
 	private Thread connectionThread;
 	
-	private boolean connected;
-	
 	private boolean stopRequested;
 		
-	protected UDPData( String address, int port) throws DataRemoteError {		
+	final DatagramSocketHelper dsh = new DatagramSocketHelper();
+	
+	private DatagramSocket socket;
+	
+	private final DatagramSocketType type;
+	
+	protected DatagramData(DatagramSocketType type, String address, int port) throws DataRemoteError {
+		this.type = type;
 		this.address = address;
 		this.port = port;
 	}
 
 	public synchronized void stop() {
-		
-		connected = false;
-		
+				
 		stopRequested = true;
 		
 		if (socket != null) {
@@ -75,14 +74,11 @@ public abstract class UDPData {
 		stopRequested = false;
 	}
 
-	public boolean isRunning() {
-		return socket != null;
-	}
-	
 	public boolean isConnected() {
-		return connected;
+		return !stopRequested && socket != null;
 	}
 	
+
 	public synchronized void start() {
 		
 
@@ -91,9 +87,7 @@ public abstract class UDPData {
 		
 		connectionThread = new Thread(name) {
 			public void run() {					
-				
-				final byte[] packetBuffer = new byte[MAX_PACKET_SIZE];
-				
+								
 				while (!stopRequested) {
 					try {
 						
@@ -101,27 +95,16 @@ public abstract class UDPData {
 							synchronized (startSync) {
 								try {
 
-									socket = createSocket(address, port);
+									socket = dsh.createSocket(type, address, port);
 									
 								} finally {
 									startSync.notifyAll();
 								}
-							}
-							
-							
-							try {
-								initConnection(address, port, packetBuffer);
-								connected = true;
-							} finally {
-								if (!connected) {
-									socket.close();
-									socket = null;
-								}
-							}
+							}							
 						}
 						
 						
-						processNextItem(socket, packetBuffer);
+						processNextItem(dsh);
 						
 					} catch (Exception e) {
 						if (!stopRequested) {
@@ -147,13 +130,8 @@ public abstract class UDPData {
 			}
 		}
 	}
-
-	protected abstract DatagramSocket createSocket(String address, int port) throws IOException;
 	
-	protected abstract void initConnection(String address, int port, byte[] buf) throws IOException;
-
-	protected abstract void processNextItem(DatagramSocket socket, byte[] buf) throws IOException;	
-
+	protected abstract void processNextItem(DatagramSocketHelper dsh) throws IOException;	
 	
 	private synchronized void restart() {
 		
@@ -174,8 +152,12 @@ public abstract class UDPData {
 		this.address = address;
 		restart();
 	}
-
-	protected String getData(DatagramPacket packet) throws UnsupportedEncodingException {
-		return new String(packet.getData(), packet.getOffset(), packet.getLength(), "UTF-8");
+	
+	public boolean isMulticast() throws DataRemoteError {
+		try {
+			return InetAddress.getByName(address).isMulticastAddress();
+		} catch (UnknownHostException e) {
+			throw new DataRemoteError(e);
+		}
 	}
 }

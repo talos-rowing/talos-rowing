@@ -30,7 +30,7 @@ public class RemoteDataInput extends RecordDataInput {
 	private final DataReceiver receiver;
 
 	public RemoteDataInput(RoboStroke roboStroke) throws IOException {
-		this(roboStroke, new AutoDataReceiver(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke), null));
+		this(roboStroke, new DatagramDataReceiver(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke), null));
 	}
 	
 	public RemoteDataInput(RoboStroke roboStroke, DataReceiver receiver) throws IOException {

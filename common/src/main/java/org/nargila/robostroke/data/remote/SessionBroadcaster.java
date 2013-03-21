@@ -39,7 +39,7 @@ public class SessionBroadcaster extends SensorBinder {
 		super(roboStroke);
 		
 		if (dataTransport == null) {
-			dataTransport = new AutoDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+			dataTransport = new DatagramDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
 		}
 		
 		this.dataSender = dataTransport;

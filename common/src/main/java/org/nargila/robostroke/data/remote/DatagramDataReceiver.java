@@ -20,17 +20,13 @@
 package org.nargila.robostroke.data.remote;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 
-
-public class UDPDataReceiver extends UDPData implements DataReceiver {
+public class DatagramDataReceiver extends DatagramData implements DataReceiver {
 	
 	private Listener dataListener;
-	
-	private final UnicastDataHelper udh = new UnicastDataHelper();
-	
-	UDPDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
-		super(address, port);
+		
+	public DatagramDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
+		super(DatagramSocketType.RECEIVER, address, port);
 		
 		this.dataListener = dataListener;
 	}
@@ -41,27 +37,14 @@ public class UDPDataReceiver extends UDPData implements DataReceiver {
 		this.dataListener = dataListener;
 	}
 
-
-	private void onItemReceived(String received) {
+	
+	@Override
+	protected void processNextItem(DatagramSocketHelper dsh) throws IOException {
+		
+		String received = dsh.receiveData();
+		
 		if (dataListener != null && received != null && !received.equals("")) {
 			dataListener.onDataReceived(received);
 		}
-	}
-	
-	@Override
-	protected DatagramSocket createSocket(String address, int port) throws IOException {
-		return udh.createSocket(null, port);
-	}
-	
-	@Override
-	protected void initConnection(String address, int port, byte[] buf) throws IOException {		
-	}
-
-	@Override
-	protected void processNextItem(DatagramSocket socket, byte[] buf) throws IOException {
-
-		String received = getData(UnicastDataHelper.receivePacket(socket, buf));
-		
-		onItemReceived(received);
 	}
 }

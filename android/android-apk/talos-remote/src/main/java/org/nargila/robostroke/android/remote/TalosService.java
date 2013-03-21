@@ -20,9 +20,9 @@
 package org.nargila.robostroke.android.remote;
 
 import org.nargila.robostroke.data.SessionRecorderConstants;
-import org.nargila.robostroke.data.remote.AutoData;
 import org.nargila.robostroke.data.remote.DataRemote;
 import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
+import org.nargila.robostroke.data.remote.DatagramData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,8 +109,8 @@ public abstract class TalosService extends Service {
 				
 				impl = makeImpl(host, port);
 				
-				if (impl instanceof AutoData) {
-					if (((AutoData)impl).isMulticast()) {
+				if (impl instanceof DatagramData) {
+					if (((DatagramData)impl).isMulticast()) {
 						
 						WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 						
@@ -119,7 +119,9 @@ public abstract class TalosService extends Service {
 						multicastLock.acquire();
 					}
 				}
+				
 				impl.start();
+				
 			} catch (DataRemoteError e) {
 				String msg = "failed to start " + getClass().getSimpleName();
 				logger.error(msg, e);
