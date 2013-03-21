@@ -1111,11 +1111,12 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
 		boolean isBroadcasting = (Boolean)roboStroke.getParameters().getValue(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId());
+		boolean isRemote = dataInputInfo.inputType == DataInputInfo.InputType.REMOTE;
 		
 		menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_broadcast_stop).setVisible(isBroadcasting);
-		menu.findItem(R.id.menu_broadcast_start).setVisible(!isBroadcasting);
-		menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn);
+		menu.findItem(R.id.menu_broadcast_start).setVisible(!isBroadcasting && !isRemote);
+		menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn && !isBroadcasting);
 		menu.findItem(R.id.menu_record_start).setVisible(enableStart);
 		menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
 		
