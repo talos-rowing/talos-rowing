@@ -125,7 +125,7 @@ public enum ParamKeys implements ParameterInfo {
 			"Rowing lap display start mode - in AUTO mode application will automatically start and stop a split rowing session. In SEMI_AUTO mode the rower needs to press the device once to enable each auto-start. In MANUAL mode the rower must press to start and stop split rowing mode. In CONTINUOUS mode the application will immediately enter split mode like as if 'start' was pressed", 
 			"Autorow",
 			ParameterLevel.BASIC, 
-			"MANUAL"),			
+			"AUTO"),			
 
 	PARAM_ROWING_STRAIGHT_LINE_MODE("org.nargila.talos.rowing.stroke.detector.straightLineMode",
 			"Rowing Straight Line Mode", 

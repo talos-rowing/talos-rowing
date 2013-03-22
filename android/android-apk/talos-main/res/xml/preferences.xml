@@ -52,7 +52,7 @@
 		<ListPreference android:title="Activation Mode"
 			android:key="org.nargila.talos.rowing.stroke.detector.startMode"
 			android:persistent="true"
-			android:defaultValue="SEMI_AUTO"
+			android:defaultValue="AUTO"
 			android:summary="Split time activation mode"
 			android:entries="@array/split_mode_display"
 			android:entryValues="@array/split_mode_values"/>
