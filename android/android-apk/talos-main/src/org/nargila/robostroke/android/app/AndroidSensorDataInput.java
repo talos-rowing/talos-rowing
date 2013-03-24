@@ -19,6 +19,8 @@
 
 package org.nargila.robostroke.android.app;
 
+import java.util.concurrent.TimeUnit;
+
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataInputBase;
 import org.nargila.robostroke.data.SensorDataSource;
@@ -44,6 +46,9 @@ import android.os.SystemClock;
  *
  */
 public class AndroidSensorDataInput extends SensorDataInputBase {
+
+	private static final int SENSOR_DELAY_ORIENT = (int) TimeUnit.MILLISECONDS.toMicros(50); // SensorManager.SENSOR_DELAY_GAME;
+	private static final int SENSOR_DELAY_ACCEL = (int) TimeUnit.MILLISECONDS.toMicros(30); // SensorManager.SENSOR_DELAY_GAME;
 
 	private final SensorDataThread sensorThread;
 	private final GPSDataThread gpsThread;	
@@ -130,8 +135,8 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 			orientSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-			sensorManager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_FASTEST, handler);
-			sensorManager.registerListener(this, orientSensor, SensorManager.SENSOR_DELAY_FASTEST, handler);
+			sensorManager.registerListener(this, accelSensor, SENSOR_DELAY_ACCEL, handler);
+			sensorManager.registerListener(this, orientSensor, SENSOR_DELAY_ORIENT, handler);
 		}
 
 		@Override
