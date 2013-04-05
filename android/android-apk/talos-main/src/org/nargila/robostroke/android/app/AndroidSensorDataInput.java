@@ -25,6 +25,7 @@ import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataInputBase;
 import org.nargila.robostroke.data.SensorDataSource;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -47,15 +48,26 @@ import android.os.SystemClock;
  */
 public class AndroidSensorDataInput extends SensorDataInputBase {
 
-	private static final int SENSOR_DELAY_ORIENT = (int) TimeUnit.MILLISECONDS.toMicros(50); // SensorManager.SENSOR_DELAY_GAME;
-	private static final int SENSOR_DELAY_ACCEL = (int) TimeUnit.MILLISECONDS.toMicros(30); // SensorManager.SENSOR_DELAY_GAME;
+	private static final int SENSOR_DELAY = 50; // SensorManager.SENSOR_DELAY_GAME;
 
 	private final SensorDataThread sensorThread;
 	private final GPSDataThread gpsThread;	
 	
-	public AndroidSensorDataInput(Activity owner) {
+	private final int sensorDelay;
+	
+	public AndroidSensorDataInput(RoboStrokeActivity owner) {
+		
 		sensorThread = new SensorDataThread(owner);
 		gpsThread = new GPSDataThread(owner);		
+		
+		sensorDelay = getSensorDelay(owner);
+	}
+
+	private int getSensorDelay(RoboStrokeActivity owner) {
+		
+		int sensorDealyMillis = Integer.valueOf(owner.preferencesHelper.getPref("org.nargila.talos.rowing.android.sensor.sensorUpdateDelay", SENSOR_DELAY + ""));
+		
+		return (int) TimeUnit.MILLISECONDS.toMicros(sensorDealyMillis);
 	}
 	
 	@Override
@@ -72,6 +84,7 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		sensorThread.start();
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public synchronized void stop() {
 		sensorThread.quit();
@@ -135,8 +148,8 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 			orientSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-			sensorManager.registerListener(this, accelSensor, SENSOR_DELAY_ACCEL, handler);
-			sensorManager.registerListener(this, orientSensor, SENSOR_DELAY_ORIENT, handler);
+			sensorManager.registerListener(this, accelSensor, sensorDelay, handler);
+			sensorManager.registerListener(this, orientSensor, sensorDelay, handler);
 		}
 
 		@Override

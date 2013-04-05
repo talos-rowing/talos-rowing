@@ -153,6 +153,13 @@
 					nargila:maxValue="0.1"
 					android:defaultValue="0.01"
 					android:summary="Device orientation up/down stabalizing factor - the smaller, the more stable"/>
+				<ListPreference android:title="Sensor Delay"
+					android:key="org.nargila.talos.rowing.android.sensor.sensorUpdateDelay"
+					android:persistent="true"
+					android:defaultValue="50"
+					android:summary="Time in millis between each sensor update - 0 means as fast as possible (requires restart)"
+					android:entries="@array/sensor_update_delay_display"
+					android:entryValues="@array/sensor_update_delay"/>								
 			</PreferenceCategory>
 			<PreferenceCategory android:title="Stroke">
 				<org.nargila.robostroke.android.common.SeekBarPreference  
@@ -160,8 +167,8 @@
 					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeFilterFactor"
 					android:persistent="true"
 					nargila:minValue="0.001"
-					nargila:maxValue="0.05"
-					android:defaultValue="0.01"
+					nargila:maxValue="0.07"
+					android:defaultValue="0.035"
 					android:summary="Raw acceleration value lowpass filtering factor - removes 'noise' from rowing graph for ease of rate detection" />
 				<org.nargila.robostroke.android.common.SeekBarPreference
 					android:title="Min Amplitude"
