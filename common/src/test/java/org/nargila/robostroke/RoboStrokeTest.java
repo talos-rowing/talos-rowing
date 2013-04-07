@@ -76,8 +76,8 @@ public class RoboStrokeTest {
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		
+	public void setUp() throws Exception {				
+
 		roboStroke = new RoboStroke(new DistanceResolver() {
 			
 			@Override
@@ -89,7 +89,7 @@ public class RoboStrokeTest {
 		bus = roboStroke.getBus();
 
 		
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "false");
+		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
 
 	}
 	
@@ -117,8 +117,6 @@ public class RoboStrokeTest {
 	@Test
 	public void testSplitRowingContinuousMode() throws Exception {
 		
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
-
 		BusEventListener listener = new BusEventListener() {
 			
 			@Override
@@ -164,8 +162,6 @@ public class RoboStrokeTest {
 	@Test
 	public void testStrokeRate() throws Exception {
 		
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
-
 		final int[] strokeRate = {0, 0}; // count, accum 
 		
 		
@@ -205,8 +201,6 @@ public class RoboStrokeTest {
 	@Test
 	public void testSplitRowing() throws Exception {
 		
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
-
 		DataRecord event = splitRowing(RowingSplitMode.AUTO, false);
 		
 		/* ROWING_STOP 169103868297216 169098851909632 114.224663 36272340992 37000 12 */
@@ -226,10 +220,7 @@ public class RoboStrokeTest {
 	
 
 	@Test
-	public void testSplitRowingStraight() throws Exception {
-		
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
-
+	public void testSplitRowingStraight() throws Exception {		
 		
 		DataRecord event = splitRowing(RowingSplitMode.AUTO, true);
 		
@@ -338,9 +329,7 @@ public class RoboStrokeTest {
 	
 	@Test
 	public void testBroadcasting() throws Exception {
-				
-		System.setProperty("org.nargila.robostroke.data.FileDataInput.batchMode", "true");
-
+		
 		final RoboStroke rs = new RoboStroke();
 
 		rs.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_HOST.getId(), "localhost");

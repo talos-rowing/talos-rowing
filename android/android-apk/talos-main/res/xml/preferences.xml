@@ -167,8 +167,8 @@
 					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeFilterFactor"
 					android:persistent="true"
 					nargila:minValue="0.001"
-					nargila:maxValue="0.07"
-					android:defaultValue="0.035"
+					nargila:maxValue="0.1"
+					android:defaultValue="0.05"
 					android:summary="Raw acceleration value lowpass filtering factor - removes 'noise' from rowing graph for ease of rate detection" />
 				<org.nargila.robostroke.android.common.SeekBarPreference
 					android:title="Min Amplitude"
@@ -189,6 +189,16 @@
 					android:defaultValue="0.5"
 					nargila:seekRange="5"
 					android:summary="Amplitude change accept factor - current stroke amplitude must be above this much or previous values to be valid"/>
+				<org.nargila.robostroke.android.common.SeekBarPreference
+					android:key="org.nargila.talos.rowing.stroke.rate.rateChangeAcceptFactor"
+					android:title="Rate Change Accept"
+					android:persistent="true"
+					nargila:displayFormat="%.01f"
+					nargila:minValue="0.2"
+					nargila:maxValue="0.7"
+					android:defaultValue="0.5"
+					nargila:seekRange="5"
+					android:summary="Filters out rowing events apearing too close to a previous one - e.g. to prevent a rowing event detected during recovery"/>
 				<org.nargila.robostroke.android.common.SeekBarPreference
 					android:title="Amplitude Stabalizer"
 					android:key="org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor"

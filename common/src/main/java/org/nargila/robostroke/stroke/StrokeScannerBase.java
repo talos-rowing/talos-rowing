@@ -111,6 +111,7 @@ public abstract class StrokeScannerBase  extends SensorDataFilter {
 	}
 
 	public void setMinAmplitude(float minAmplitude) {
-		decelerationAmplitudeDetector.setMinAmplitude(minAmplitude);
+		decelerationAmplitudeDetector.setMinAmplitude(minAmplitude * 1.2f);
+		accelerationAmplitudeDetector.setMinAmplitude(minAmplitude);
 	}
 }

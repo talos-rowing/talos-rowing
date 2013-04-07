@@ -113,19 +113,26 @@ public class StrokeRateScanner extends StrokeScannerBase implements ParameterLis
 	 * @param timestamp stroke timestamp
 	 */
 	private void registerStroke(long timestamp) {
-		if (lastStrokeTimestamp != 0) {
-			long spm = 0;
-			
-			if (timestamp > lastStrokeTimestamp) { // prevent negative stroke rates due to session replay back-skip
-				long msDiff = (timestamp - lastStrokeTimestamp) / 1000000;
+		
+		if (lastStrokeTimestamp > timestamp || lastStrokeTimestamp == 0) {			
+			lastStrokeTimestamp = timestamp;
+		}
+		
 
-				spm = 60 * 1000 / msDiff;
-			}
+		long msDiff = (timestamp - lastStrokeTimestamp) / 1000000;
+
+		int spm = 0;
+				
+		if (msDiff > 0) { 
 			
-			bus.fireEvent(DataRecord.Type.STROKE_RATE, timestamp, (int)spm);
+			if (msDiff < 6000) { // low-cap at 10 spm 				
+				spm = (int)(60 * 1000 / msDiff);				
+			}
 			
 		}
 		
+		bus.fireEvent(DataRecord.Type.STROKE_RATE, timestamp, (int)spm);
+                
 		lastStrokeTimestamp = timestamp;
 
 	}
