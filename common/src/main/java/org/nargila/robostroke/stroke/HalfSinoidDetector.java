@@ -61,11 +61,19 @@ class HalfSinoidDetector {
 	private boolean wasInside;
 	
 	HalfSinoidDetector(Dir dir) {
+		this(dir, DEFAULT_MIN_AMPLITUDE, DEFAULT_AMPLITUDE_CHANGE_DAMP_FACTOR, DEFAULT_AMPLITUDE_CHANGE_ACCEPT_FACTOR);
+	}
+	
+	HalfSinoidDetector(Dir dir, float minAmplitude) {
+		this(dir, minAmplitude, DEFAULT_AMPLITUDE_CHANGE_DAMP_FACTOR, DEFAULT_AMPLITUDE_CHANGE_ACCEPT_FACTOR);
+	}
+	
+	HalfSinoidDetector(Dir dir, float minAmplitude, float changeDampFactor, float changeAcceptFactor) {
 		this.dir = dir;
 		
-		setMinAmplitude(DEFAULT_MIN_AMPLITUDE);
-		setAmplitudeChangeDamperFactor(DEFAULT_AMPLITUDE_CHANGE_DAMP_FACTOR);
-		setAmplitudeChangeAcceptFactor(DEFAULT_AMPLITUDE_CHANGE_ACCEPT_FACTOR);
+		setMinAmplitude(minAmplitude);
+		setAmplitudeChangeDamperFactor(changeDampFactor);
+		setAmplitudeChangeAcceptFactor(changeAcceptFactor);
 	}
 
 	public float getAmplitudeChangeAcceptFactor() {
