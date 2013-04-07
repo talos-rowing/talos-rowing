@@ -72,24 +72,31 @@ public enum ParamKeys implements ParameterInfo {
                                                       "Stroke", 
                                                       ParameterLevel.ADVANCED, .05f),
         
-            PARAM_STROKE_RATE_MIN_AMPLITUDE("org.nargila.talos.rowing.stroke.rate.minAmplitude",
-                                            "stroke min amplitude", 
-                                            "Minimum acceleration amplitude required during a rowing cycle in order for it to register", 
-                                            "Stroke", 
-                                            ParameterLevel.ADVANCED, .02f),
                         
             PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor",
                                                              "stroke amplitude change filter", 
                                                              "Lowpass filter to stabalize stroke rate and protect against displaying erratic changes",
                                                              "Stroke", 
-                                                             ParameterLevel.ADVANCED, .5f),          
+                                                             ParameterLevel.ADVANCED, .5f),
+                                                             
+            PARAM_STROKE_RATE_MIN_AMPLITUDE("org.nargila.talos.rowing.stroke.rate.minAmplitude",
+                                                       		 "stroke min amplitude", 
+                                                       		 "Minimum acceleration amplitude required during a rowing cycle in order for it to register", 
+                                                       		 "Stroke", 
+                                                       		 ParameterLevel.ADVANCED, .02f),
                         
             PARAM_STROKE_RATE_AMPLITUDE_CHANGE_ACCEPT_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeChangeAcceptFactor",
                                                              "stroke amplitude change accept filter", 
-                                                             "*FIXME*", // FIXME
+                                                             "Rowing events are accepted based on exit amplitude - as long as it is - e.g. half the current avg/smoothed value",
                                                              "Stroke", 
                                                              ParameterLevel.ADVANCED, .5f),                  
         
+           PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR("org.nargila.talos.rowing.stroke.rate.rateChangeAcceptFactor",
+                                                       		 "stroke rate change accept filter", 
+                                                       		 "Filters out rowing events apearing too close to a previous one - e.g. to prevent a rowing event detected during recovery",
+                                                       		 "Stroke", 
+                                                       		 ParameterLevel.ADVANCED, .5f),                  
+
             PARAM_STROKE_POWER_AMPLITUDE_FILTER_FACTOR("org.nargila.talos.rowing.stroke.power.amplitudeFilterFactor",
                                                        "power filter",
                                                        "*FIXME*", // FIXME

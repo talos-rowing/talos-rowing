@@ -33,6 +33,8 @@ import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterListenerOwner;
 import org.nargila.robostroke.param.ParameterListenerRegistration;
 import org.nargila.robostroke.param.ParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rowing detectror. Generates rowing activity start/stop events based on value of parameter PARAM_ROWING_MODE
@@ -41,6 +43,8 @@ import org.nargila.robostroke.param.ParameterService;
  */
 public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
+	private static final Logger logger = LoggerFactory.getLogger(RowingDetector.class);
+	
     private final ParameterListenerRegistration[] listenerRegistrations = {
 
         new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId(), new ParameterChangeListener() {
@@ -70,7 +74,14 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
                 public void onParameterChanged(Parameter param) {
                     paramStartMinAmplitude = (Float)param.getValue();                                       
                 }
-            })
+            }),
+			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId(), new ParameterChangeListener() {
+				
+				@Override
+				public void onParameterChanged(Parameter param) {
+					rateChangeAcceptFactor = (Float)param.getValue();					
+				}
+			})
     };
                 
     private RowingSplitMode rowingMode;
@@ -85,6 +96,10 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
         
     private boolean rowing;
 
+	private Float rateChangeAcceptFactor;
+	
+	private int spm;
+	
     private static class SplitData {
                                 
         private int strokeCount;
@@ -135,7 +150,9 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
         paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId()));
 
-        bus = roboStroke.getBus();
+		rateChangeAcceptFactor = (Float) params.getValue(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId());
+
+		bus = roboStroke.getBus();
                 
         bus.addBusListener(new BusEventListener() {
                         
@@ -152,10 +169,14 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
                                 long msDiff = (timestamp - splitData.lastStrokeEndTimestamp) / 1000000;                                                 
 
                                 if (msDiff > 0) { // was: msDiff > 1000 - disallow stroke rate above 60
-                                                                
-                                    splitData.strokeCount++;
-                                    bus.fireEvent(Type.ROWING_COUNT, timestamp, splitData.strokeCount);                                                     
-                                    splitData.lastStrokeEndTimestamp = timestamp;
+                                	
+                                	if (spm > 0 && msDiff < (rateChangeAcceptFactor * (60000 / spm))) {   // check for 'double' stroke
+                                		logger.warn("### ignoring drop-below-zero event because it happend {}ms after a previous one", msDiff);
+                                	} else {
+                                		splitData.strokeCount++;
+                                		bus.fireEvent(Type.ROWING_COUNT, timestamp, splitData.strokeCount);                                                     
+                                		splitData.lastStrokeEndTimestamp = timestamp;
+                                	}
                                 }
                             }                                                                                               
                         }
@@ -179,6 +200,9 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
                         }
 
                         break;
+                    case STROKE_RATE:
+                    	spm = (Integer) event.data;
+                    	break;
                     }
                 }
             });
