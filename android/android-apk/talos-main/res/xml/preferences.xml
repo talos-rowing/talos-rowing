@@ -147,7 +147,7 @@
 			<PreferenceCategory android:title="Sensors">
 				<org.nargila.robostroke.android.common.SeekBarPreference 
 					android:title="Orientation Filter"
-					android:key="org.nargila.talos.rowing.sensor.orientationDampFactor"
+					android:key="org.nargila.talos.rowing.sensor.orientationChangeDampFactor"
 					android:persistent="true"
 					nargila:minValue="0.001"
 					nargila:maxValue="0.1"
