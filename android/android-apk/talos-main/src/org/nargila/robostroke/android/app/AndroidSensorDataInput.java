@@ -25,7 +25,6 @@ import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataInputBase;
 import org.nargila.robostroke.data.SensorDataSource;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
@@ -84,7 +83,6 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		sensorThread.start();
 	}
 
-	@SuppressLint("NewApi")
 	@Override
 	public synchronized void stop() {
 		sensorThread.quit();
