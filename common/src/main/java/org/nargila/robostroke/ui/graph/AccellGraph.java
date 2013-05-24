@@ -23,6 +23,7 @@ import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataSink;
+import org.nargila.robostroke.data.SensorDataSource;
 import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSCanvas;
 import org.nargila.robostroke.ui.RSPaint;
@@ -203,13 +204,21 @@ public class AccellGraph extends SensorGraphBase  {
 
 	@Override
 	protected void detachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationSource().removeSensorDataSink(lineDataSink);
-		roboStroke.getOrientationSource().removeSensorDataSink(rollGraph);
+		getAccelerationSource().removeSensorDataSink(lineDataSink);
+		getOrientationSource().removeSensorDataSink(rollGraph);
 	}
 
 	@Override
 	protected void attachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationSource().addSensorDataSink(lineDataSink);
-		roboStroke.getOrientationSource().addSensorDataSink(rollGraph);
+		getAccelerationSource().addSensorDataSink(lineDataSink);
+		getOrientationSource().addSensorDataSink(rollGraph);
+	}
+
+	protected SensorDataSource getOrientationSource() {
+		return roboStroke.getOrientationSource();
+	}
+
+	protected SensorDataSource getAccelerationSource() {
+		return roboStroke.getAccelerationSource();
 	}
 }

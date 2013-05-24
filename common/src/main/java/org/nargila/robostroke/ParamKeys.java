@@ -51,7 +51,7 @@ public enum ParamKeys implements ParameterInfo {
                                         "GPS",
                                         ParameterLevel.ADVANCED, 6.5f),
                         
-            PARAM_SENSOR_ORIENTATION_CHANGE_DAMP_FACTOR("org.nargila.talos.rowing.sensor.orientationChangeDampFactor",
+            PARAM_SENSOR_ORIENTATION_CHANGE_DAMP_FACTOR("org.nargila.talos.rowing.sensor.orientationDampFactor",
                                                  "orientation damper", 
                                                  "Lowpass filter used as stabalizer for the 'down' notion of the application", 
                                                  "Sensors", 
