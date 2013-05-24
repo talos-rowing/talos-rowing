@@ -29,18 +29,26 @@ import org.slf4j.LoggerFactory;
 public abstract class RecordDataInput extends SensorDataInputBase {
 	
 	// TODO extend ThreadedQueue instead of Thread
-	private class OrientQueueProcessor extends Thread {
+	private static class SensorQueueProcessor extends Thread {
 		
-		private static final int ORIENT_QUEUE_SIZE = 20;
+		private final String name;
+		
+		private final SensorDataSource sensorDataSource;
+		
+		private final LinkedBlockingQueue<DataRecord> queue = new LinkedBlockingQueue<DataRecord>();
 
-		private LinkedBlockingQueue<DataRecord> orientQueue = new LinkedBlockingQueue<DataRecord>();
-
+		private final int queueSize;
+		
 		private boolean acceptData = true;
 		
 		private boolean stop;
 		
-		public OrientQueueProcessor() {
-			super("Orientation Queue Processor");
+		public SensorQueueProcessor(String name, SensorDataSource sensorDataSource, int queueSize) {
+			super(name + " Queue Processor");
+			
+			this.name = name;
+			this.sensorDataSource = sensorDataSource;
+			this.queueSize = queueSize;
 		}
 		
 		@Override
@@ -48,8 +56,8 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 			
 			while (!stop) {
 				try {
-					DataRecord record = orientQueue.take();
-					orientationDataSource.pushData(record.timestamp, record.data);
+					DataRecord record = queue.take();
+					sensorDataSource.pushData(record.timestamp, record.data);
 				} catch (InterruptedException e) {
 				}
 			}
@@ -57,25 +65,24 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 		
 		void setAcceptData(boolean acceptData) {
 			
-			synchronized (orientQueue) {
+			synchronized (queue) {
 				this.acceptData = acceptData;
 				if (!acceptData) {
-					orientQueue.clear();
+					queue.clear();
 				}
 			}
 		}
 		
 		void add(DataRecord rec) {
 			
-			synchronized (orientQueue) {
+			synchronized (queue) {
 				
 				if (acceptData) {
-					if (orientQueue.size() > ORIENT_QUEUE_SIZE) {
-						logger.warn("orientQueue size overflow: {}",
-								ORIENT_QUEUE_SIZE);
-						orientQueue.poll();
+					if (queue.size() > queueSize) {
+						logger.warn("{} size overflow: {}", name + " queue processor", queueSize);
+						queue.poll();
 					}
-					orientQueue.offer(rec);
+					queue.offer(rec);
 				}
 			}
 		}
@@ -97,7 +104,9 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 	protected final RoboStroke roboStroke;
 	protected final RoboStrokeEventBus bus;
 
-	private final OrientQueueProcessor orientQueueProcessor = new OrientQueueProcessor();
+	private final SensorQueueProcessor orientQueueProcessor = new SensorQueueProcessor("Orientation", orientationDataSource, 20);
+	
+	private final SensorQueueProcessor accelQueueProcessor = new SensorQueueProcessor("Accelleration", accelerometerDataSource, 20);
 	
 	public RecordDataInput(RoboStroke roboStroke) {
 		this.roboStroke = roboStroke;
@@ -125,6 +134,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 		if (seakable) {
 			
 			orientQueueProcessor.setAcceptData(false);
+			accelQueueProcessor.setAcceptData(false);
 			
 			onSetPosPending(pos);
 
@@ -142,6 +152,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 							bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 							onSetPosFinish(pos);
 							orientQueueProcessor.setAcceptData(true);
+							accelQueueProcessor.setAcceptData(true);
 						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -161,7 +172,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 				gpsDataSource.pushData(record.timestamp, record.data);		
 				break;
 			case ACCEL:
-				accelerometerDataSource.pushData(record.timestamp, record.data);
+				accelQueueProcessor.add(record);
 				break;
 			case ORIENT:
 				orientQueueProcessor.add(record);
@@ -180,11 +191,13 @@ public abstract class RecordDataInput extends SensorDataInputBase {
 	@Override
 	public void start() {
 		orientQueueProcessor.start();
+		accelQueueProcessor.start();
 	}
 	
 	@Override
 	public void stop() {
 		orientQueueProcessor.abort();
+		accelQueueProcessor.abort();
 	}
 	
 	public void playRecord(String line) {
