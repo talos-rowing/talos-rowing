@@ -15,7 +15,7 @@
   <name>android-parent</name>
 
   <properties>
-    <platform.version>2.3.3</platform.version>
+    <platform.version>1.6_r2</platform.version>
   </properties>
 
   <modules>
