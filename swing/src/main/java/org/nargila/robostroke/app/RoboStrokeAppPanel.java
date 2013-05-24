@@ -59,6 +59,7 @@ import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
+import org.nargila.robostroke.oggz.MergeTalosOggDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -151,6 +152,14 @@ public class RoboStrokeAppPanel extends JPanel {
 			}
 		});
 		mnFile.add(mntmOpenRemote);
+		
+		JMenuItem mntmMergeVideo = new JMenuItem("Merge Video");
+		mntmMergeVideo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchVideoMerger();
+			}
+		});
+		mnFile.add(mntmMergeVideo);
 		mntmExport.setEnabled(false);
 		mnFile.add(mntmExport);
 		
@@ -342,6 +351,17 @@ public class RoboStrokeAppPanel extends JPanel {
 		strokeGraphContainer.add(lblNewLabel_1, BorderLayout.CENTER);
 		
 	}
+	private void launchVideoMerger() {
+		
+		MergeTalosOggDialog dialog = new MergeTalosOggDialog();
+		
+		dialog.setSize(500, 350);
+		
+		dialog.setLocationRelativeTo(this);
+				
+		dialog.setVisible(true);
+		
+	}
 
 	private void launchExportWizard() {
 		
@@ -451,7 +471,8 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		if (ogg) {
 			
-			dataInput = new OggDataInput(f, rs, videoPanel);			
+			dataInput = new OggDataInput(f, rs, videoPanel);
+//			dataInput = new GstDataInput(f, rs, videoPanel);
 			
 		} else {
 			dataInput = new FileDataInput(rs, f);
