@@ -136,6 +136,12 @@
 			android:summary="If selected, you will be given the option to reset your settings next time you start the application" 
 			android:key="org.nargila.talos.rowing.android.preferences.reset"/>
 		<CheckBoxPreference
+			android:title="Create Log"
+			android:persistent="true" 
+			android:defaultValue="true"
+			android:summary="If selected, next time you start Talos Rowing, a log file 'talos-main.log' will be created at the root of your SD card which can be sent to the developer for debugging purposes" 
+			android:key="org.nargila.talos.rowing.android.preferences.log"/>
+		<CheckBoxPreference
 			android:title="Enable Zephyr HRM"
 			android:persistent="true" 
 			android:defaultValue="false"

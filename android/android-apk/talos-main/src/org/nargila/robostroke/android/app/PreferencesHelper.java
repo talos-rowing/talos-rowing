@@ -42,7 +42,9 @@ public class PreferencesHelper {
 	public static final String PREFERENCE_KEY_HRM_ENABLE = "org.nargila.talos.rowing.android.hrm.enable";
 
 	public static final String PREFERENCE_KEY_PREFERENCES_RESET = "org.nargila.talos.rowing.android.preferences.reset";
-
+	
+	public static final String PREFERENCE_KEY_PREFERENCES_LOG = "org.nargila.talos.rowing.android.preferences.log";
+	
 	public static final String METERS_RESET_ON_START_PREFERENCE_KEY = "org.nargila.talos.rowing.android.stroke.detector.resetOnStart";
 
 	public static final String GRAPHS_SHOW_PREFERENCE_KEY = "org.nargila.talos.rowing.android.layout.graphs.show";

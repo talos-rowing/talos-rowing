@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataInputBase;
 import org.nargila.robostroke.data.SensorDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
 import android.content.Context;
@@ -47,6 +49,8 @@ import android.os.SystemClock;
  */
 public class AndroidSensorDataInput extends SensorDataInputBase {
 
+	private static Logger logger = LoggerFactory.getLogger(AndroidSensorDataInput.class);
+	
 	private static final int SENSOR_DELAY = 50; // SensorManager.SENSOR_DELAY_GAME;
 
 	private final SensorDataThread sensorThread;
@@ -85,8 +89,8 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 
 	@Override
 	public synchronized void stop() {
-		sensorThread.quit();
-		gpsThread.quit();
+		sensorThread.onStop();
+		gpsThread.onStop();
 	}
 
 	@Override
@@ -99,7 +103,7 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			super(name);
 		}
 
-		public boolean quit() {
+		public boolean onStop() {
 			
 			Looper looper = getLooper(); 
 			
@@ -121,6 +125,8 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		private Sensor accelSensor;
 		private Sensor orientSensor;
 		private final Activity owner;
+		private boolean firstAccelEvent;
+		private boolean firstOrientEvent;
 
 		public SensorDataThread(Activity owner) {
 			super("SensorDataThread");
@@ -129,13 +135,13 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		}
 		
 		@Override
-		public boolean quit() {
+		public boolean onStop() {
 			if (sensorManager != null) {
 				sensorManager.unregisterListener(this, accelSensor);
 				sensorManager.unregisterListener(this, orientSensor);
 			}
 		
-			return super.quit();
+			return super.onStop();
 		}
 		
 		
@@ -146,7 +152,12 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 			orientSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
+			logger.debug("attaching accelSensor listener at notification delay of {}", sensorDelay);
+			
 			sensorManager.registerListener(this, accelSensor, sensorDelay, handler);
+			
+			logger.debug("attaching orientSensor listener at notification delay of {}", sensorDelay);
+			
 			sensorManager.registerListener(this, orientSensor, sensorDelay, handler);
 		}
 
@@ -156,15 +167,25 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 
 		@Override
 		public void onSensorChanged(SensorEvent event) {
+			
 			final long timestamp = SystemClock.uptimeMillis() * 1000000;
 			final float[] values = event.values;
 			SensorDataSource dataSource;
-			
+						
 			switch (event.sensor.getType()) {
 			case Sensor.TYPE_ACCELEROMETER:
+				
+				if (firstAccelEvent) {
+					logger.debug("received first TYPE_ACCELEROMETER data ({})", values);
+					firstAccelEvent = false;
+				}
 				dataSource = accelerometerDataSource;
 				break;
 			case Sensor.TYPE_ORIENTATION:
+				if (firstOrientEvent) {
+					logger.debug("received first TYPE_ORIENTATION data ({})", values);
+					firstOrientEvent = false;
+				}
 				dataSource = orientationDataSource;
 				break;
 				default:
@@ -205,12 +226,12 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		}
 
 		@Override
-		public boolean quit() {
+		public boolean onStop() {
 			if (locationManager != null) {
 				locationManager.removeUpdates(this);
 			}
 			
-			return super.quit();
+			return super.onStop();
 		}
 
 		@Override

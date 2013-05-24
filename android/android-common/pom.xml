@@ -20,5 +20,18 @@
       <artifactId>robostroke-common</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>de.mindpipe.android</groupId>
+      <artifactId>android-logging-log4j</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+
   </dependencies>
 </project>

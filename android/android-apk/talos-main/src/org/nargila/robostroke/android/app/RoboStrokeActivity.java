@@ -41,8 +41,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.acra.ACRA;
+import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.android.common.ConfigureLog4J;
 import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.android.common.NotificationHelper;
 import org.nargila.robostroke.android.common.ScreenStayupLock;
@@ -108,7 +110,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private static final int HIGHLIGHT_PADDING_SIZE = 5;
 	
-	private static final Logger logger = LoggerFactory.getLogger(TAG);
+	private static final Logger logger = LoggerFactory.getLogger(RoboStrokeActivity.class);
 	
 	private final ParameterListenerRegistration[] listenerRegistrations = {
 			new ParameterListenerRegistration(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), new ParameterChangeListener() {
@@ -180,12 +182,13 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							
 					roboStroke.setDataLogger(logFile);
 					
+					roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_START, sessionTag());
+					roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
+
 					Runnable runAfter = new Runnable() {
 						
 						@Override
 						public void run() {
-							roboStroke.getBus().fireEvent(DataRecord.Type.RECORDING_START, sessionTag());
-							roboStroke.getBus().fireEvent(DataRecord.Type.UUID, preferencesHelper.getUUID());
 						}
 					};
 
@@ -633,11 +636,18 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
+		
+		if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_PREFERENCES_LOG, false)) {
+			ConfigureLog4J.configure(Level.DEBUG, "talos-main");
+		} else {
+			ConfigureLog4J.configure(null);
+		}
+		
 		setContentView(R.layout.main);		
 		
 		notificationHelper = new NotificationHelper(this, R.drawable.icon_small322);
 
-		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 
 		ACRA.getErrorReporter().putCustomData("uuid", preferencesHelper.getUUID());
 		
@@ -1300,6 +1310,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 		notificationHelper.cancel(ROBOSTROKE_ERROR);
 		
+		sendLogFile();
+		
 		super.onDestroy();
 
 	}
@@ -1369,4 +1381,23 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	public void setLandscapeLayout(boolean landscape) {
 		setRequestedOrientation(landscape ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 	}
+	
+	private void sendLogFile() {
+
+		File log = ConfigureLog4J.getLogFilePath();
+
+		if (log != null) {
+
+			Intent intent = new Intent(Intent.ACTION_SEND);
+
+			intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(log));
+			intent.putExtra(Intent.EXTRA_EMAIL,new String[] { getString(R.string.default_session_record_dispatch_address) });
+			intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Talos Rowing Log: %s", preferencesHelper.getUUID()));
+			intent.putExtra(Intent.EXTRA_TEXT, "Description:\n");
+			intent.setType("text/plain");									
+
+			startActivityForResult(Intent.createChooser(intent, "Email:"), 43);
+		}
+	}
+	
 }
