@@ -15,15 +15,20 @@ class ExecHelper {
 	}
 
 	static void exec(String ... args) throws Exception {
-		exec(-1, args);
+		exec(true, args);
 	}
 		
-	static void exec(int timeout, String ... args) throws Exception {
+	static void exec(boolean waitFor, String ... args) throws Exception {
 		
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream(true);
 		
 		Process proc = pb.start();
+		
+		
+		if (!waitFor) {
+			return;
+		} 
 		
 		InputStream is = proc.getInputStream();
 		
@@ -33,27 +38,7 @@ class ExecHelper {
 			System.out.println(l);
 		}
 		
-		int status;
-		
-		if (timeout == -1) {
-			status = proc.waitFor();
-		} else {
-			
-			long abortTime = System.currentTimeMillis() + timeout;
-			
-			while (true) {
-				try {
-					status = proc.exitValue();
-					break;
-				} catch (IllegalThreadStateException e) {
-					if (System.currentTimeMillis() > abortTime) {
-						throw new TimeoutException("Timeout after " + timeout + "ms waiting for " + args[0] + " to finish");
-					}
-					
-					Thread.sleep(1000);
-				}
-			}
-		}
+		int status = proc.waitFor();
 		
 		if (status != 0) {
 			throw new IllegalStateException("command " + args[0] + " ended with exit code " + status);

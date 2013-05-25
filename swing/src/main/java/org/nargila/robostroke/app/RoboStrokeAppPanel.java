@@ -59,6 +59,7 @@ import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
+import org.nargila.robostroke.oggz.CovertVideoDialog;
 import org.nargila.robostroke.oggz.MergeTalosOggDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
@@ -152,14 +153,6 @@ public class RoboStrokeAppPanel extends JPanel {
 			}
 		});
 		mnFile.add(mntmOpenRemote);
-		
-		JMenuItem mntmMergeVideo = new JMenuItem("Merge Video");
-		mntmMergeVideo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				launchVideoMerger();
-			}
-		});
-		mnFile.add(mntmMergeVideo);
 		mntmExport.setEnabled(false);
 		mnFile.add(mntmExport);
 		
@@ -217,6 +210,25 @@ public class RoboStrokeAppPanel extends JPanel {
 		});
 		
 		mnView.add(chckbxmntmAnalysis);
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenuItem mntmOggConvert = new JMenuItem("OGG Convert");
+		mntmOggConvert.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchVideoConverter();
+			}
+		});
+		mnTools.add(mntmOggConvert);
+		
+		JMenuItem mntmMergeVideo = new JMenuItem("Merge Video");
+		mnTools.add(mntmMergeVideo);
+		mntmMergeVideo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				launchVideoMerger();
+			}
+		});
 		
 		videoPanel = new JPanel();
 		videoPanel.setBackground(Color.BLACK);
@@ -356,6 +368,18 @@ public class RoboStrokeAppPanel extends JPanel {
 		MergeTalosOggDialog dialog = new MergeTalosOggDialog();
 		
 		dialog.setSize(500, 350);
+		
+		dialog.setLocationRelativeTo(this);
+				
+		dialog.setVisible(true);
+		
+	}
+
+	private void launchVideoConverter() {
+		
+		CovertVideoDialog dialog = new CovertVideoDialog();
+		
+		dialog.setSize(500, 300);
 		
 		dialog.setLocationRelativeTo(this);
 				
