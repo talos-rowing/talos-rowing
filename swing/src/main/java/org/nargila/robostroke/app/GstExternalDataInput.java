@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Tal Shalif
+ * Copyright (c) 2013 Tal Shalif
  * 
  * This file is part of Talos-Rowing.
  * 
@@ -19,9 +19,15 @@
 
 package org.nargila.robostroke.app;
 
-import com.sun.jna.Platform;
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Container;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
-import org.gstreamer.Bin;
 import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
 import org.gstreamer.BusSyncReply;
@@ -37,7 +43,6 @@ import org.gstreamer.State;
 import org.gstreamer.Structure;
 import org.gstreamer.elements.BaseSink;
 import org.gstreamer.elements.FakeSink;
-import org.gstreamer.elements.FileSrc;
 import org.gstreamer.event.BusSyncHandler;
 import org.gstreamer.interfaces.XOverlay;
 import org.nargila.robostroke.RoboStroke;
@@ -48,17 +53,7 @@ import org.nargila.robostroke.data.RecordDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import com.sun.jna.Platform;
 
 class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
 
@@ -72,12 +67,9 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
     }
 
     private Pipeline pipe;
-    private FileSrc src;
     private Element dec;
 
     private long duration;
-    private boolean isBuffering;
-    private State pipeState = State.NULL;
     private final Container container;
 
 
@@ -114,8 +106,6 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
     final KateQueue kateQueue = new KateQueue();
 	
     private final BaseSink.HANDOFF kateHandsoff = new BaseSink.HANDOFF() {
-        long lastPos;
-
         @Override
         public void handoff(BaseSink sink, Buffer buffer, Pad pad) {
             ByteBuffer buff = buffer.getByteBuffer();
@@ -129,85 +119,80 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
         }
     };
 	private FakeSink kate;
+	
+	private XOverlay xoverlay;
+	private final File videoFile;
+	private final File srtFile;
     
-    GstExternalDataInput(File video, RoboStroke roboStroke, Container container) throws Exception {
+    GstExternalDataInput(File videoFile, RoboStroke roboStroke, Container container) throws Exception {
 
         super(roboStroke);
 
-        File srtf = new File(video.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"));
+        this.videoFile = videoFile;
+        
+        this.srtFile = new File(videoFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"));
 
-        if (!srtf.exists()) {
-            throw new IOException("file " + srtf + " does not exist");
+        if (!srtFile.exists()) {
+            throw new IOException("file " + srtFile + " does not exist");
         }
 
         this.container = container;
-
-        setupPipeline(video, srtf);
     }
 
 
     private void setupPipeline(final File video, final File srtf) throws Exception {
 
-    	final GstExternalDataInput self = this;
-    	
-    	Gst.getExecutorService().submit(new Runnable() {
-    		public void run() {
-    			String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
-    					"dec. ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true " +
-    					"dec. ! audioconvert ! autoaudiosink " +
-    					"filesrc name=katesrc location=%s ! subparse ! fakesink name=kate signal-handoffs=true  dump=false sync=true", video.getAbsolutePath().replace('\\', '/'), overlayFactory, srtf.getAbsolutePath().replace('\\', '/'));
+    	String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
+    			"dec. ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true " +
+    			"dec. ! audioconvert ! autoaudiosink " +
+    			"filesrc name=katesrc location=%s ! subparse ! fakesink name=kate signal-handoffs=true  dump=false sync=true", video.getAbsolutePath().replace('\\', '/'), overlayFactory, srtf.getAbsolutePath().replace('\\', '/'));
 
-    			pipe = Pipeline.launch(pipedesc);
+    	pipe = Pipeline.launch(pipedesc);
 
-    			videoSink = pipe.getElementByName("videoSink");
+    	videoSink = pipe.getElementByName("videoSink");
 
-    			canvas.setBackground(Color.BLACK);
+    	canvas.setBackground(Color.BLACK);
 
-    			container.add(canvas, BorderLayout.CENTER);
+    	container.add(canvas, BorderLayout.CENTER);
 
-    			logger.info("gst-launch {}", pipedesc);
+    	logger.info("gst-launch {}", pipedesc);
 
-    			pipe.getBus().connect((Bus.DURATION) self);
-    			pipe.getBus().connect((Bus.INFO) self);
-    			pipe.getBus().connect((Bus.WARNING) self);
-    			pipe.getBus().connect((Bus.ERROR) self);
-    			pipe.getBus().connect((Bus.STATE_CHANGED) self);
+    	pipe.getBus().connect((Bus.DURATION) this);
+    	pipe.getBus().connect((Bus.INFO) this);
+    	pipe.getBus().connect((Bus.WARNING) this);
+    	pipe.getBus().connect((Bus.ERROR) this);
+    	pipe.getBus().connect((Bus.STATE_CHANGED) this);
 
-    			if (!Platform.isWindows()) {
-    				pipe.getBus().setSyncHandler(new BusSyncHandler() {
+    	if (!Platform.isWindows()) {
+    		pipe.getBus().setSyncHandler(new BusSyncHandler() {
 
-    					public BusSyncReply syncMessage(Message msg) {
-    						Structure s = msg.getStructure();
-    						if (s == null || !s.hasName("prepare-xwindow-id")) {
-    							return BusSyncReply.PASS;
-    						}
-    						XOverlay.wrap(videoSink).setWindowHandle(canvas);
-    						return BusSyncReply.DROP;
-    					}
-    				});
-    			} else {
-    				XOverlay.wrap(videoSink).setWindowHandle(canvas);
+    			public BusSyncReply syncMessage(Message msg) {
+    				Structure s = msg.getStructure();
+    				if (s == null || !s.hasName("prepare-xwindow-id")) {
+    					return BusSyncReply.PASS;
+    				}
+    				xoverlay = XOverlay.wrap(videoSink);
+    				xoverlay.setWindowHandle(canvas);
+    				return BusSyncReply.DROP;
     			}
+    		});
+    	} else {
 
-    			kate = (FakeSink) pipe.getElementByName("kate");
+    		xoverlay = XOverlay.wrap(videoSink);
 
-    			src = (FileSrc) pipe.getElementByName("src");
-    			dec = pipe.getElementByName("dec");
+    		xoverlay.setWindowHandle(canvas);
+    	}
 
-    			dec.connect((Element.PAD_ADDED) self);
-    			dec.connect((Element.NO_MORE_PADS) self);
+    	kate = (FakeSink) pipe.getElementByName("kate");
 
-    			kate.connect(kateHandsoff);
-    		}
-    	}).get();
+    	dec = pipe.getElementByName("dec");
+
+    	dec.connect((Element.PAD_ADDED) this);
+    	dec.connect((Element.NO_MORE_PADS) this);
+
+    	kate.connect(kateHandsoff);
     }
 
-
-    private static Bin createBin(String spec, String name) {
-        Bin bin = Bin.launch(spec, true);
-        bin.setName(name);
-        return bin;
-    }
 
     public void durationChanged(GstObject source, Format format, long duration) {
         logger.info("duration: {}", duration);
@@ -237,58 +222,27 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
 
     @Override
     public void stop() {
-    	
-    	container.removeAll();
-    	container.setVisible(false);
-    	
-    	try {
-			Gst.getExecutorService().submit(new Runnable() {
-				public void run() {
-				   	logger.info("pausing pipeline");
-			    	
-			        pipe.pause();
-			                
-			        sleep(1000);
-			        
-			    	logger.info("stopping pipeline..");
-			       
-			        sleep(1000);
-			        
-			        pipe.stop();
-
-			        sleep(1000);
-			        
-			       	logger.info("pipeline stopped.");
-
-			        sleep(1000);
-				}
-			}).get();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	logger.info("stopping pipeline..");
+    	pipe.stop();
         
+    	container.remove(canvas);
+    	
        	super.stop();
     }
 
-
-	private void sleep(long sleepTime) {
-		try {
-			Thread.sleep(sleepTime);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
     @Override
     public void start() {
 
         super.start();
 
+
+        try {
+			setupPipeline(videoFile, srtFile);
+		} catch (Exception e) {
+			logger.error("failed to setup pipeline", e);
+			return;
+		}
 
         pipe.play();
     }
@@ -364,6 +318,8 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
                         setSeakable(duration > 0);
                     }
                     break;
+                    default:
+                    	break;
             }
         }
     }
