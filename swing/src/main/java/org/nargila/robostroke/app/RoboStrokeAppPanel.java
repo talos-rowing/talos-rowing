@@ -103,7 +103,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JCheckBoxMenuItem chckbxmntmAccel;
 
 	private JSplitPane splitPane;
-
+	
 	/**
 	 * Create the panel.
 	 */
@@ -397,7 +397,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	private void openFileAction(final boolean ogg) {
-		JFileChooser fc = new JFileChooser();
+		JFileChooser fc = new JFileChooser(Settings.getInstance().getLastDir());
 		fc.setFileFilter(new FileFilter() {
 			
 			@Override
@@ -411,8 +411,9 @@ public class RoboStrokeAppPanel extends JPanel {
 				if (f.isDirectory()) {
 					return true;
 				} else {
-					String name = f.getName();
-					return ogg ? name.endsWith(".ogg") : (name.endsWith(".trsd") || name.endsWith(".txt"));
+//					String name = f.getName();
+//					return ogg ? name.endsWith(".ogg") : (name.endsWith(".trsd") || name.endsWith(".txt"));
+					return true;
 				}
 			}
 		});
@@ -420,7 +421,9 @@ public class RoboStrokeAppPanel extends JPanel {
 		if (JFileChooser.APPROVE_OPTION == fc.showOpenDialog(this)) {
 
 			File f = fc.getSelectedFile();
-
+			
+			Settings.getInstance().setLastDir(f.getParentFile());
+			
 			if (ogg) {
 				start(f);
 			} else {
@@ -472,7 +475,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		try {						
 			Pair<SensorDataInput, Boolean> input = setInput(f);
 			start(input.first, input.second);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error("error opening file " + f, e);
 		}
 	}
@@ -488,22 +491,25 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	
-	private Pair<SensorDataInput,Boolean> setInput(File f) throws IOException {	
+	private Pair<SensorDataInput,Boolean> setInput(File f) throws Exception {
 		
-		boolean ogg = f.getName().toLowerCase().endsWith(".ogg");
+		boolean isVideo = !f.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
+		
 		SensorDataInput dataInput;
 		
-		if (ogg) {
+		if (isVideo) {
 			
-			dataInput = new OggDataInput(f, rs, videoPanel);
+//			dataInput = new OggDataInput(f, rs, videoPanel);
 //			dataInput = new GstDataInput(f, rs, videoPanel);
-			
+			dataInput = new GstExternalDataInput(f, rs, videoPanel);
+
+
 		} else {
 			dataInput = new FileDataInput(rs, f);
 		}
 		
 		
-		return Pair.create(dataInput, !ogg);
+		return Pair.create(dataInput, !isVideo);
 	}
 	
 	void reset() {
