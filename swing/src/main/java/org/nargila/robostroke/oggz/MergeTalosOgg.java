@@ -80,7 +80,7 @@ public class MergeTalosOgg {
 		
 		File exe = ExecHelper.getExecutable("kateenc");
 		
-		ExecHelper.exec(exe.getAbsolutePath(), "-c", "robostroke", "-l", "ja", "-t", "kate", "-o", ExecHelper.fixPath(kateOgg), ExecHelper.fixPath(kate));
+		ExecHelper.exec(exe.getAbsolutePath(), "-c", "robostroke", "-l", "ja", "-t", "kate", "-o", kateOgg.getAbsolutePath(), kate.getAbsolutePath());
 		
 		return kateOgg;
 	}

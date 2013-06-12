@@ -41,7 +41,11 @@
       <artifactId>slf4j-jdk14</artifactId>
       <version>1.6.4</version>
     </dependency>
-
+    <dependency>
+        <groupId>com.googlecode.gstreamer-java</groupId>
+        <artifactId>gstreamer-java</artifactId>
+        <version>1.6-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.nargila.robostroke.cortado</groupId>
       <artifactId>cortado-codecs</artifactId>

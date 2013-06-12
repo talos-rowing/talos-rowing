@@ -5,10 +5,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ExecHelper {
 	
+	private static final Logger logger = LoggerFactory.getLogger(ExecHelper.class);
 	
 	static String fixPath(File f) {
 		return f.getAbsolutePath().replace('\\', '/');
@@ -19,6 +22,8 @@ class ExecHelper {
 	}
 		
 	static void exec(boolean waitFor, String ... args) throws Exception {
+		
+		logger.info("executing {}", (Object)args);
 		
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream(true);
@@ -41,7 +46,9 @@ class ExecHelper {
 		int status = proc.waitFor();
 		
 		if (status != 0) {
-			throw new IllegalStateException("command " + args[0] + " ended with exit code " + status);
+			String msg = "command " + args[0] + " ended with exit code " + status;
+			logger.error("error executing {}: {}", (Object)args, msg);
+			throw new IllegalStateException(msg);
 		}
 		
 	}
@@ -50,23 +57,29 @@ class ExecHelper {
 		
 		InputStream ins = ExecHelper.class.getResourceAsStream(name + ".exe");
 		
-		File exe = File.createTempFile(name, ".exe");
+		File exe;
 		
-		exe.deleteOnExit();
-		
-		FileOutputStream fout = new FileOutputStream(exe);
-		
-		
-		byte[] buff = new byte[4096];
-		
-		for (int len = ins.read(buff); len != -1; len = ins.read(buff)) {
-			fout.write(buff, 0, len);
+		if (CheckOS.isWindows()) { 
+			exe = File.createTempFile(name, ".exe");
+
+			exe.deleteOnExit();
+
+			FileOutputStream fout = new FileOutputStream(exe);
+
+
+			byte[] buff = new byte[4096];
+
+			for (int len = ins.read(buff); len != -1; len = ins.read(buff)) {
+				fout.write(buff, 0, len);
+			}
+
+			fout.close();
+			ins.close();
+
+			exe.setExecutable(true);
+		} else {
+			exe = new File("/usr/bin/" + name);
 		}
-		
-		fout.close();
-		ins.close();
-		
-		exe.setExecutable(true);
 		
 		return exe;
 	}

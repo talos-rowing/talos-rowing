@@ -21,14 +21,6 @@ package org.nargila.robostroke.app;
 
 import com.sun.jna.Platform;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Container;
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.concurrent.TimeUnit;
-
 import org.gstreamer.Bin;
 import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
@@ -56,45 +48,55 @@ import org.nargila.robostroke.data.RecordDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.EventQueue;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
 
-	private static final Logger logger = LoggerFactory.getLogger(GstExternalDataInput.class);
+    private static final Logger logger = LoggerFactory.getLogger(GstExternalDataInput.class);
     private final Canvas canvas = new Canvas();
     private static final String overlayFactory = Platform.isWindows() ? "directdrawsink" : "xvimagesink";
-    private final Element videoSink;
+    private Element videoSink;
 
-    private static abstract class KateQueue extends ThreadedQueue<Buffer> {
+    static {
+        Gst.init();
+    }
+
+    private Pipeline pipe;
+    private FileSrc src;
+    private Element dec;
+
+    private long duration;
+    private boolean isBuffering;
+    private State pipeState = State.NULL;
+    private final Container container;
+
+
+    boolean paused;
+
+    private class KateQueue extends ThreadedQueue<Pair<Long,String>> {
+
+    	long lastPos;
 
 		KateQueue() {
 			super("KateQueue", 100);
 			setEnabled(true);
 		}
-	}
-
-
-	static {
-		Gst.init();
-	}
-
-	private Pipeline pipe;
-	private FileSrc src;
-    private Element dec;
-
-    private final Caps CAPS_KATE1, CAPS_KATE2, CAPS_THEORA, CAPS_VORBIS;
-
-	private long duration;
-	private boolean isBuffering;
-	private State pipeState = State.NULL;
-	private final Container container;
-	private final Bin videoBin, audioBin, kateBin;
-
-	private final KateQueue kateQueue = new KateQueue() {
-		long lastPos;
-
-		private void handle(Pair<Long, String> o) {
-
+		
+		@Override
+        final protected void handleItem(Pair<Long,String> o) {
+			
 		    playRecord(o.second);
-
+			
 		    if (duration > 0) {
 		    	long ms = o.first;
 
@@ -107,103 +109,97 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
 		    	}
 		    }
 		}
+	}
+	
+    final KateQueue kateQueue = new KateQueue();
+	
+    private final BaseSink.HANDOFF kateHandsoff = new BaseSink.HANDOFF() {
+        long lastPos;
 
         @Override
-        protected void handleItem(Buffer buffer) {
+        public void handoff(BaseSink sink, Buffer buffer, Pad pad) {
             ByteBuffer buff = buffer.getByteBuffer();
+            int len = buffer.getSize();
+            byte[] data = new byte[len];
+            buff.get(data);
+            String text = new String(data);
 
-            if (!paused && buff.get() == 0) {
-                long start = buff.getLong();
-                long _duration = buff.getLong();
-                long backlink = buff.getLong();
-                int len = buff.getInt();
+            kateQueue.put(Pair.create(buffer.getTimestamp().toMillis(), text));
 
-                byte[] data = new byte[len];
-
-                buff.get(data);
-
-                String text = new String(data);
-
-                handle(Pair.create(start, text));
-
-            }
         }
-	};
+    };
+	private FakeSink kate;
+    
+    GstExternalDataInput(File video, RoboStroke roboStroke, Container container) throws Exception {
 
-	boolean paused;
+        super(roboStroke);
 
-	GstExternalDataInput(File f, RoboStroke roboStroke, Container container) {
+        File srtf = new File(video.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"));
 
-		super(roboStroke);
-
-        CAPS_KATE1 = new Caps("application/x-kate");
-        CAPS_KATE2 = new Caps("subtitle/x-kate");
-        CAPS_THEORA = new Caps("video/x-theora");
-        CAPS_VORBIS = new Caps("audio/x-vorbis");
-
-		this.container = container;
-
-//		String pipedesc = String.format("filesrc location=%s ! decodebin name=dec ! queue ! audioconvert ! autoaudiosink  " +
-//				"dec. ! queue ! ffmpegcolorspace ! autovideosink " +
-//				"dec. ! queue  ! kateparse ! fakesink name=kate signal-handoffs=true dump=falsek", f.getAbsolutePath().replace('\\', '/'));
-//		String pipedesc = String.format("filesrc location=/home/tshalif/tmp/rowing/rowing-gst.mkv ! matroskademux name=dec ! queue ! vorbisdec ! audioconvert ! autoaudiosink  dec. ! queue ! theoradec ! ffmpegcolorspace ! autovideosink dec. ! queue ! kateparse ! fakesink name=kate signal-handoffs=true dump=true", f.getAbsolutePath().replace('\\', '/'));
-//		String pipedesc = String.format("filesrc name=src location=%s ! queue ! oggdemux name=dec ! queue ! theoradec ! ffmpegcolorspace ! autovideosink  dec. ! queue ! vorbisdec ! audioconvert ! autoaudiosink dec. ! queue ! kateparse ! fakesink name=kate signal-handoffs=true  dump=false", f.getAbsolutePath().replace('\\', '/'));
-//        String pipedesc = String.format("filesrc location=%s ! queue ! oggdemux name=dec ! queue ! theoradec ! ffmpegcolorspace ! autovideosink  dec. ! queue ! vorbisdec ! audioconvert ! autoaudiosink fakesink sync=false async=true dump=true", f.getAbsolutePath().replace('\\', '/'));
-
-		pipe = Pipeline.launch(String.format("filesrc name=src location=%s ! oggdemux name=dec", f.getAbsolutePath().replace('\\', '/')));
-
-        videoBin = createBin(String.format("queue2 ! theoradec name=src ! ffmpegcolorspace ! %s name=videoSink", overlayFactory), "videoBin");
-
-        videoSink = videoBin.getElementByName("videoSink");
-
-        canvas.setBackground(Color.RED);
-
-        container.add(canvas, BorderLayout.CENTER);
-
-        audioBin = createBin("queue2 ! vorbisdec ! audioconvert ! autoaudiosink", "audioBin");
-        kateBin = createBin("queue2 max-size-buffers=0 ! kateparse ! fakesink name=kate signal-handoffs=true  dump=false", "kateBin");
-
-//        logger.info("gst-launch {}", pipedesc);
-
-        if (true) {
-            pipe.getBus().connect((Bus.DURATION)this);
-            pipe.getBus().connect((Bus.INFO)this);
-            pipe.getBus().connect((Bus.WARNING)this);
-            pipe.getBus().connect((Bus.ERROR)this);
-            pipe.getBus().connect((Bus.STATE_CHANGED)this);
-
-                if (!Platform.isWindows()) {
-                    pipe.getBus().setSyncHandler(new BusSyncHandler() {
-
-                        public BusSyncReply syncMessage(Message msg) {
-                            Structure s = msg.getStructure();
-                            if (s == null || !s.hasName("prepare-xwindow-id")) {
-                                return BusSyncReply.PASS;
-                            }
-                            XOverlay.wrap(videoSink).setWindowHandle(canvas);
-                            return BusSyncReply.DROP;
-                        }
-                    });
-                } else {
-                    XOverlay.wrap(videoSink).setWindowHandle(canvas);
-                }
-        FakeSink kate = (FakeSink) kateBin.getElementByName("kate");
-
-            src = (FileSrc) pipe.getElementByName("src");
-            dec = pipe.getElementByName("dec");
-
-            dec.connect((Element.PAD_ADDED)this);
-            dec.connect((Element.NO_MORE_PADS)this);
-
-		kate.connect(new BaseSink.HANDOFF() {
-			
-			
-			@Override
-			public void handoff(BaseSink sink, Buffer buffer, Pad pad) {
-                kateQueue.put(buffer);
-            }
-		});
+        if (!srtf.exists()) {
+            throw new IOException("file " + srtf + " does not exist");
         }
+
+        this.container = container;
+
+        setupPipeline(video, srtf);
+    }
+
+
+    private void setupPipeline(final File video, final File srtf) throws Exception {
+
+    	final GstExternalDataInput self = this;
+    	
+    	Gst.getExecutorService().submit(new Runnable() {
+    		public void run() {
+    			String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
+    					"dec. ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true " +
+    					"dec. ! audioconvert ! autoaudiosink " +
+    					"filesrc name=katesrc location=%s ! subparse ! fakesink name=kate signal-handoffs=true  dump=false sync=true", video.getAbsolutePath().replace('\\', '/'), overlayFactory, srtf.getAbsolutePath().replace('\\', '/'));
+
+    			pipe = Pipeline.launch(pipedesc);
+
+    			videoSink = pipe.getElementByName("videoSink");
+
+    			canvas.setBackground(Color.BLACK);
+
+    			container.add(canvas, BorderLayout.CENTER);
+
+    			logger.info("gst-launch {}", pipedesc);
+
+    			pipe.getBus().connect((Bus.DURATION) self);
+    			pipe.getBus().connect((Bus.INFO) self);
+    			pipe.getBus().connect((Bus.WARNING) self);
+    			pipe.getBus().connect((Bus.ERROR) self);
+    			pipe.getBus().connect((Bus.STATE_CHANGED) self);
+
+    			if (!Platform.isWindows()) {
+    				pipe.getBus().setSyncHandler(new BusSyncHandler() {
+
+    					public BusSyncReply syncMessage(Message msg) {
+    						Structure s = msg.getStructure();
+    						if (s == null || !s.hasName("prepare-xwindow-id")) {
+    							return BusSyncReply.PASS;
+    						}
+    						XOverlay.wrap(videoSink).setWindowHandle(canvas);
+    						return BusSyncReply.DROP;
+    					}
+    				});
+    			} else {
+    				XOverlay.wrap(videoSink).setWindowHandle(canvas);
+    			}
+
+    			kate = (FakeSink) pipe.getElementByName("kate");
+
+    			src = (FileSrc) pipe.getElementByName("src");
+    			dec = pipe.getElementByName("dec");
+
+    			dec.connect((Element.PAD_ADDED) self);
+    			dec.connect((Element.NO_MORE_PADS) self);
+
+    			kate.connect(kateHandsoff);
+    		}
+    	}).get();
     }
 
 
@@ -213,147 +209,162 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
         return bin;
     }
 
-	public void durationChanged(GstObject source, Format format, long duration) {
-		logger.info("duration: {}", duration);
-		if (source == pipe) {
-			this.duration = duration;
-		}		
-	}
+    public void durationChanged(GstObject source, Format format, long duration) {
+        logger.info("duration: {}", duration);
+        if (source == pipe) {
+            this.duration = duration;
+        }
+    }
 
     public void noMorePads(Element element) {
         if (duration == 0) {
             duration = pipe.queryDuration(TimeUnit.MILLISECONDS);
             logger.info("duration: {}", duration);
         }
-        pipe.play();
+
+        setSeakable(duration > 0);
     }
 
     public void padAdded(Element element, Pad pad) {
 
         Caps caps = pad.getCaps();
 
-            logger.info("new pad with caps {}", caps);
+        logger.info("new pad with caps {}", caps);
 
-        if (caps.isSubset(CAPS_THEORA)) {
-            addVideo(pad);
-        } else if (caps.isSubset(CAPS_VORBIS)) {
-            addAudio(pad);
-        } else if (caps.isSubset(CAPS_KATE1)) {
-            addKate(pad);
-        } else if (caps.isSubset(CAPS_KATE2)) {
-            addKate(pad);
+
+    }
+
+
+    @Override
+    public void stop() {
+    	
+    	container.removeAll();
+    	container.setVisible(false);
+    	
+    	try {
+			Gst.getExecutorService().submit(new Runnable() {
+				public void run() {
+				   	logger.info("pausing pipeline");
+			    	
+			        pipe.pause();
+			                
+			        sleep(1000);
+			        
+			    	logger.info("stopping pipeline..");
+			       
+			        sleep(1000);
+			        
+			        pipe.stop();
+
+			        sleep(1000);
+			        
+			       	logger.info("pipeline stopped.");
+
+			        sleep(1000);
+				}
+			}).get();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+       	super.stop();
+    }
+
+
+	private void sleep(long sleepTime) {
+		try {
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+    @Override
+    public void start() {
+
+        super.start();
+
+
+        pipe.play();
+    }
+
+    @Override
+    public void skipReplayTime(float velocityX) {
+    }
+
+    @Override
+    public void setPaused(boolean pause) {
+
+        this.paused = pause;
+
+        if (pause) {
+            pipe.pause();
         } else {
-            logger.warn("ignoring pad with unknown caps {}", caps);
+            pipe.play();
+        }
+
+    }
+
+    @Override
+    protected void onSetPosPending(double pos) {
+        setPaused(true);
+    }
+
+    @Override
+    protected void onSetPosFinish(double pos) {
+        if (duration > 0) {
+            setPaused(false);
+
+            long time = (long) (pos * duration);
+
+            logger.info("seeking to timestamp {}ms", time);
+
+            if (!pipe.seek(time, TimeUnit.MILLISECONDS)) {
+                logger.error("failed to seek to timestamp {}ms", time);
+            }
         }
     }
 
-    private void addVideo(Pad pad) {
-        linkBin(pad, videoBin);
-    }
-    private void addAudio(Pad pad) {
-        linkBin(pad, audioBin);
-    }
-    private void addKate(Pad pad) {
-        linkBin(pad, kateBin);
-    }
-
-    private void linkBin(Pad pad, Bin bin) {
-
-        logger.info("linking {} to {}", pad.getCaps(), bin.getName());
-        pipe.add(bin);
-        pad.link(bin.getSinkPads().iterator().next());
-        bin.play();
-    }
     @Override
-	public void stop() {
-		container.removeAll();
-		container.setVisible(false);
-		pipe.stop();
-		
-		super.stop();
-	}
+    public boolean isSeekable() {
+        return true;
+    }
 
-	@Override
-	public void start() {
-		
-		super.start();
-		
-		
-		pipe.play();
-	}
+    @Override
+    public void infoMessage(GstObject source, int code, String message) {
+        logger.info("{}: {}", source.getName(), message);
 
-	@Override
-	public void skipReplayTime(float velocityX) {
-	}
+    }
 
-	@Override
-	public void setPaused(boolean pause) {
-		
-		this.paused = pause;
+    @Override
+    public void warningMessage(GstObject source, int code, String message) {
+        logger.warn("{}: {}", source.getName(), message);
+    }
 
-		if (pause) {
-			pipe.pause();
-		} else {
-			pipe.play();
-		}
-		
-	}
+    @Override
+    public void errorMessage(GstObject source, int code, String message) {
+        logger.error("{}: {}", source.getName(), message);
+    }
 
-	@Override
-	protected void onSetPosPending(double pos) {
-		setPaused(true);
-	}
+    @Override
+    public void stateChanged(GstObject source, State old, State current, State pending) {
 
-	@Override
-	protected void onSetPosFinish(double pos) {
-		if (duration > 0) {
-			setPaused(false);
+        if (source == pipe) {
+            switch (current) {
+                case PAUSED:
+                    if (duration == 0) {
+                        duration = pipe.queryDuration(TimeUnit.MILLISECONDS);
+                        logger.info("duration: {}", duration);
 
-			long time = (long)(pos * duration);
-			
-			logger.info("seeking to timestamp {}ms", time);
-
-			if (!pipe.seek(time, TimeUnit.MILLISECONDS)) {
-				logger.error("failed to seek to timestamp {}ms", time);
-			}
-		}
-	}
-	
-	@Override
-	public boolean isSeekable() {
-		return true;
-	}
-
-	@Override
-	public void infoMessage(GstObject source, int code, String message) {
-		logger.info("{}: {}", source.getName(), message);
-		
-	}
-
-	@Override
-	public void warningMessage(GstObject source, int code, String message) {
-		logger.warn("{}: {}", source.getName(), message);
-	}
-
-	@Override
-	public void errorMessage(GstObject source, int code, String message) {
-		logger.error("{}: {}", source.getName(), message);
-	}
-
-	@Override
-	public void stateChanged(GstObject source, State old, State current, State pending) {
-		
-		if (source == pipe) {
-			switch (current) {
-			case PAUSED:
-				if (duration == 0) {
-					duration = pipe.queryDuration(TimeUnit.MILLISECONDS);
-					logger.info("duration: {}", duration);
-
-					setSeakable(duration > 0);
-				}
-				break;
-			}
-		}
-	}
+                        setSeakable(duration > 0);
+                    }
+                    break;
+            }
+        }
+    }
 }

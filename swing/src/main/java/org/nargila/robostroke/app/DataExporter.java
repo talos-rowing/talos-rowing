@@ -118,7 +118,7 @@ class DataExporter {
 			
 			if (!cancelled) {
 				
-				JFileChooser chooser = new JFileChooser();
+				JFileChooser chooser = new JFileChooser(Settings.getInstance().getLastDir());
 				
 				chooser.setFileFilter(new FileFilter() {
 					
@@ -138,6 +138,8 @@ class DataExporter {
 				if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(null)) {
 
 					File f = chooser.getSelectedFile();
+
+					Settings.getInstance().setLastDir(f.getParentFile());
 					
 					onCreatezip();
 
