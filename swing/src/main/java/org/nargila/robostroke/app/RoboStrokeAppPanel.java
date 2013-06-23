@@ -491,21 +491,40 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	
-	private Pair<SensorDataInput,Boolean> setInput(File f) throws Exception {
+	private Pair<SensorDataInput,Boolean> setInput(File videoFile) throws Exception {
 		
-		boolean isVideo = !f.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
+		boolean isVideo = !videoFile.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
 		
 		SensorDataInput dataInput;
 		
 		if (isVideo) {
-			
-//			dataInput = new OggDataInput(f, rs, videoPanel);
-//			dataInput = new GstDataInput(f, rs, videoPanel);
-			dataInput = new GstExternalDataInput(f, rs, videoPanel);
-
-
+	        File[] srtFiles = new File[] {
+	        		new File(String.format("%s.srt", videoFile.getAbsolutePath())),
+	        		new File(videoFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"))
+	        };
+	        
+	        File srtFile = null;
+			for (File f: srtFiles) {
+	        	        	
+	        	if (f.exists()) {
+	        		srtFile = f;
+	        		break;
+	        	}
+	        }
+	                
+	        if (srtFile != null) {
+	        	dataInput = new GstExternalDataInput(videoFile, srtFile, rs, videoPanel);
+	        } else if (videoFile.getName().toLowerCase().matches(".*\\.(ogg|mkv)$")) {
+	        	if (false && videoFile.getName().toLowerCase().endsWith(".ogg")) {
+	        		dataInput = new OggDataInput(videoFile, rs, videoPanel);	        		
+	        	} else {
+	        		dataInput = new GstDataInput(videoFile, rs, videoPanel);
+	        	}
+	        } else {
+	        	throw new IllegalArgumentException(String.format("can't find Talos Data file (either %s or %s)", srtFiles[0], srtFiles[1]));
+	        }
 		} else {
-			dataInput = new FileDataInput(rs, f);
+			dataInput = new FileDataInput(rs, videoFile);
 		}
 		
 		

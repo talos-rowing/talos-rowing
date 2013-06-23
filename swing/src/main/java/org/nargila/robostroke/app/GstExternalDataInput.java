@@ -24,7 +24,6 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Container;
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
@@ -53,6 +52,7 @@ import org.nargila.robostroke.data.RecordDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jna.Native;
 import com.sun.jna.Platform;
 
 class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
@@ -124,18 +124,12 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
 	private final File videoFile;
 	private final File srtFile;
     
-    GstExternalDataInput(File videoFile, RoboStroke roboStroke, Container container) throws Exception {
+    GstExternalDataInput(File videoFile, File srtFile, RoboStroke roboStroke, Container container) throws Exception {
 
         super(roboStroke);
 
         this.videoFile = videoFile;
-        
-        this.srtFile = new File(videoFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"));
-
-        if (!srtFile.exists()) {
-            throw new IOException("file " + srtFile + " does not exist");
-        }
-
+        this.srtFile = srtFile;
         this.container = container;
     }
 
@@ -145,7 +139,7 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
     	String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
     			"dec. ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true " +
     			"dec. ! audioconvert ! autoaudiosink " +
-    			"filesrc name=katesrc location=%s ! subparse ! fakesink name=kate signal-handoffs=true  dump=false sync=true", video.getAbsolutePath().replace('\\', '/'), overlayFactory, srtf.getAbsolutePath().replace('\\', '/'));
+    			"filesrc name=katesrc location=%s ! subparse ! fakesink ts-offset=0 name=kate signal-handoffs=true  dump=false sync=true", video.getAbsolutePath().replace('\\', '/'), overlayFactory, srtf.getAbsolutePath().replace('\\', '/'));
 
     	pipe = Pipeline.launch(pipedesc);
 
@@ -172,7 +166,7 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
     					return BusSyncReply.PASS;
     				}
     				xoverlay = XOverlay.wrap(videoSink);
-    				xoverlay.setWindowHandle(canvas);
+    				xoverlay.setWindowHandle(Native.getComponentID(canvas));
     				return BusSyncReply.DROP;
     			}
     		});
@@ -180,7 +174,7 @@ class GstExternalDataInput extends RecordDataInput implements Bus.DURATION, Bus.
 
     		xoverlay = XOverlay.wrap(videoSink);
 
-    		xoverlay.setWindowHandle(canvas);
+    		xoverlay.setWindowHandle(Native.getComponentID(canvas));
     	}
 
     	kate = (FakeSink) pipe.getElementByName("kate");
