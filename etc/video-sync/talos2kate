@@ -11,6 +11,9 @@ def genTime(dur):
 
 def getStart(lines, mark_id):
     for ts, event, dummy, data in lines:
+        if mark_id == -1:
+            return int(ts)
+
         if event == "RECORDING_COUNTDOWN":
             recording_id, countdown = data.split(",")
             if int(countdown) == mark_id:
