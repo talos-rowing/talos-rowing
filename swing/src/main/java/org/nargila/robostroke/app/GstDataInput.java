@@ -19,15 +19,12 @@
 
 package org.nargila.robostroke.app;
 
-import com.sun.jna.Platform;
-
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Container;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.gstreamer.Bin;
@@ -35,7 +32,6 @@ import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
 import org.gstreamer.BusSyncReply;
 import org.gstreamer.Caps;
-import org.gstreamer.ClockTime;
 import org.gstreamer.Element;
 import org.gstreamer.Format;
 import org.gstreamer.Gst;
@@ -43,15 +39,12 @@ import org.gstreamer.GstObject;
 import org.gstreamer.Message;
 import org.gstreamer.Pad;
 import org.gstreamer.Pipeline;
-import org.gstreamer.SeekType;
 import org.gstreamer.State;
 import org.gstreamer.Structure;
 import org.gstreamer.elements.BaseSink;
 import org.gstreamer.elements.FakeSink;
-import org.gstreamer.elements.FileSrc;
 import org.gstreamer.event.BusSyncHandler;
 import org.gstreamer.interfaces.XOverlay;
-import org.gstreamer.swing.VideoComponent;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.common.ThreadedQueue;
@@ -59,6 +52,9 @@ import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
 
 class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
 	
@@ -82,8 +78,10 @@ class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, B
 
             if (!paused && buff.get() == 0) {
                 long start = buff.getLong();
-                long _duration = buff.getLong();
-                long backlink = buff.getLong();
+                @SuppressWarnings("unused")
+				long _duration = buff.getLong();
+                @SuppressWarnings("unused")
+				long backlink = buff.getLong();
                 int len = buff.getInt();
 
                 byte[] data = new byte[len];
@@ -121,14 +119,11 @@ class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, B
 	}
 	
 	private Pipeline pipe;
-	private FileSrc src;
     private Element dec;
 
     private final Caps CAPS_KATE1, CAPS_KATE2, CAPS_THEORA, CAPS_VORBIS;
 
 	private long duration;
-	private boolean isBuffering;
-	private State pipeState = State.NULL;
 	private final Container container;
 	private final Bin videoBin, audioBin, kateBin;
 
@@ -147,16 +142,19 @@ class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, B
 
 		this.container = container;
 
-//		String pipedesc = String.format("filesrc location=%s ! decodebin name=dec ! queue ! audioconvert ! autoaudiosink  " +
-//				"dec. ! queue ! ffmpegcolorspace ! autovideosink " +
-//				"dec. ! queue  ! kateparse ! fakesink name=kate signal-handoffs=true dump=falsek", f.getAbsolutePath().replace('\\', '/'));
-//		String pipedesc = String.format("filesrc location=/home/tshalif/tmp/rowing/rowing-gst.mkv ! matroskademux name=dec ! queue ! vorbisdec ! audioconvert ! autoaudiosink  dec. ! queue ! theoradec ! ffmpegcolorspace ! autovideosink dec. ! queue ! kateparse ! fakesink name=kate signal-handoffs=true dump=true", f.getAbsolutePath().replace('\\', '/'));
-//		String pipedesc = String.format("filesrc name=src location=%s ! queue ! oggdemux name=dec ! queue ! theoradec ! ffmpegcolorspace ! autovideosink  dec. ! queue ! vorbisdec ! audioconvert ! autoaudiosink dec. ! queue ! kateparse ! fakesink name=kate signal-handoffs=true  dump=false", f.getAbsolutePath().replace('\\', '/'));
-//        String pipedesc = String.format("filesrc location=%s ! queue ! oggdemux name=dec ! queue ! theoradec ! ffmpegcolorspace ! autovideosink  dec. ! queue ! vorbisdec ! audioconvert ! autoaudiosink fakesink sync=false async=true dump=true", f.getAbsolutePath().replace('\\', '/'));
+		String demuxName;
+		
+		if (f.getName().toLowerCase().endsWith(".ogg")) {
+			demuxName = "oggdemux";
+		} else if (f.getName().toLowerCase().endsWith(".mkv")) {
+			demuxName = "matroskademux";
+		} else {
+			throw new IllegalArgumentException("can't figure out demuxer to use for input file " + f);
+		}
+		
+		pipe = Pipeline.launch(String.format("filesrc name=src location=%s ! %s name=dec", f.getAbsolutePath().replace('\\', '/'), demuxName));
 
-		pipe = Pipeline.launch(String.format("filesrc name=src location=%s ! oggdemux name=dec", f.getAbsolutePath().replace('\\', '/')));
-
-        videoBin = createBin(String.format("queue2 ! theoradec name=src ! ffmpegcolorspace ! %s name=videoSink", overlayFactory), "videoBin");
+        videoBin = createBin(String.format("queue ! theoradec name=src ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true", overlayFactory), "videoBin");
 
         videoSink = videoBin.getElementByName("videoSink");
 
@@ -164,10 +162,9 @@ class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, B
 
         container.add(canvas, BorderLayout.CENTER);
 
-        audioBin = createBin("queue2 ! vorbisdec ! audioconvert ! autoaudiosink", "audioBin");
-        kateBin = createBin("queue2 max-size-buffers=0 ! kateparse ! fakesink name=kate signal-handoffs=true  dump=false", "kateBin");
+        audioBin = createBin("queue ! vorbisdec ! audioconvert ! autoaudiosink", "audioBin");
+        kateBin = createBin("queue ! kateparse ! fakesink name=kate signal-handoffs=true  dump=false", "kateBin");
 
-//        logger.info("gst-launch {}", pipedesc);
 
         if (true) {
             pipe.getBus().connect((Bus.DURATION)this);
@@ -176,24 +173,24 @@ class GstDataInput extends RecordDataInput implements Bus.DURATION, Bus.ERROR, B
             pipe.getBus().connect((Bus.ERROR)this);
             pipe.getBus().connect((Bus.STATE_CHANGED)this);
 
-                if (!Platform.isWindows()) {
-                    pipe.getBus().setSyncHandler(new BusSyncHandler() {
+            if (!Platform.isWindows()) {
+            	pipe.getBus().setSyncHandler(new BusSyncHandler() {
 
-                        public BusSyncReply syncMessage(Message msg) {
-                            Structure s = msg.getStructure();
-                            if (s == null || !s.hasName("prepare-xwindow-id")) {
-                                return BusSyncReply.PASS;
-                            }
-                            XOverlay.wrap(videoSink).setWindowHandle(canvas);
-                            return BusSyncReply.DROP;
-                        }
-                    });
-                } else {
-                    XOverlay.wrap(videoSink).setWindowHandle(canvas);
-                }
-        FakeSink kate = (FakeSink) kateBin.getElementByName("kate");
+            		public BusSyncReply syncMessage(Message msg) {
+            			Structure s = msg.getStructure();
+            			if (s == null || !s.hasName("prepare-xwindow-id")) {
+            				return BusSyncReply.PASS;
+            			}
+            			XOverlay.wrap(videoSink).setWindowHandle(Native.getComponentID(canvas));
+            			return BusSyncReply.DROP;
+            		}
+            	});
+            } else {
+            	XOverlay.wrap(videoSink).setWindowHandle(Native.getComponentID(canvas));
+            }
 
-            src = (FileSrc) pipe.getElementByName("src");
+            FakeSink kate = (FakeSink) kateBin.getElementByName("kate");
+
             dec = pipe.getElementByName("dec");
 
             dec.connect((Element.PAD_ADDED)this);
