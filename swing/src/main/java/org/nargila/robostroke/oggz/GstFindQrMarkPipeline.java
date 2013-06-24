@@ -43,6 +43,10 @@ public class GstFindQrMarkPipeline {
 
 	private ClockTime timestamp;
 
+	static {
+		Gst.init();
+	}
+	
 	public GstFindQrMarkPipeline(File video) {
 		
 		pipe = Pipeline.launch("filesrc name=src ! decodebin2 name=dec ! ffmpegcolorspace ! pngenc snapshot=false ! fakesink name=sink signal-handoffs=true");
@@ -112,12 +116,16 @@ public class GstFindQrMarkPipeline {
         });
 	}
 	
-	private void start() {
+	void start() {
 		pipe.play();
 	}
 	
-	private void stop() {
+	void stop() {
 		pipe.stop();
+		
+		synchronized (finishSync) {
+			finishSync.notifyAll();
+		}
 	}
 	
 
