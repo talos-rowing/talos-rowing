@@ -42,9 +42,11 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 	
 	private static final int SKIP_BYTES = 300;
 	
-	private final RandomAccessFile reader;
+	protected final RandomAccessFile reader;
+	
 	private long startTimeDiff;
-	long logTimestamp;
+
+	private boolean fixedTimeDiff;
 	
 	private float skipRequested = 0;
 	
@@ -58,7 +60,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
 	private boolean requestStop;
 	
-	private final long fileLength;
+	protected final long fileLength;
 
 	private long lastProgressNotifyTime;
 
@@ -78,6 +80,11 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
 	public File getDataFile() {
 		return dataFile;
+	}
+	
+	protected void setStartTimeDiff(long startTimeDiff) {
+		this.fixedTimeDiff = true;
+		this.startTimeDiff = startTimeDiff;
 	}
 	
 	private void checkVersion() throws IOException, SessionFileVersionError {
@@ -104,6 +111,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 						}
 
 						break;
+						default:
+							break;
 					}
 				} catch (IllegalArgumentException e) {
 					// SessionFileVersionError() is thrown later
@@ -142,7 +151,10 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 					reader.readLine();
 					skipRequested = 0;
 					setPosRequested = -1;
-					startTimeDiff = 0; // force re-adjust below
+					
+					if (!fixedTimeDiff) {
+						startTimeDiff = 0; // force re-adjust below
+					}
 					
 					if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 
@@ -155,18 +167,21 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 					
 					lastProgressNotifyTime = currentTimeMillis;
 					
-					double progress = pos / (double)fileLength;
+					double progress = calcProgress();
 					
 					if (!paused && bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
 
 				}
 				
-				if (paused || 
-						(l = reader.readLine()) == null) { 
+				if (paused) continue;
+				
+				long lastFilePos = reader.getFilePointer();
+				
+				if ((l = reader.readLine()) == null) { 
 					continue;
 				}
 				
-				handleRecord(l);
+				handleRecord(l, lastFilePos);
 				
 			} catch (IOException e) {
 				errorListener.onError(new Exception("can not read data", e));
@@ -186,7 +201,15 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		}
 	}
 
+	protected double calcProgress() throws IOException {
+		return reader.getFilePointer() / (double)fileLength;
+	}
+
 	public static Pair<Long /* record timestamp */, DataRecord> parseRecord(String line) {
+		return parseRecord(line, false);
+	}
+	
+	public static Pair<Long /* record timestamp */, DataRecord> parseRecord(String line, boolean force) {
 		
 		String[] vals = readRecordLine(line);
 		
@@ -196,7 +219,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 			
 			DataRecord.Type type = DataRecord.Type.valueOf(vals[1]);
 
-			if (type.isReplayableEvent && type.isParsableEvent) {
+			if ((type.isReplayableEvent || force) && type.isParsableEvent) {
 				return Pair.create(logTimestamp, DataRecord.create(type, Long.parseLong(vals[2]), vals[3]));
 			}			
 		}
@@ -204,36 +227,44 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		return null;
 	}
 	
-	private void handleRecord(String line) throws InterruptedException {
+	private void handleRecord(String line, long lastReaderPos) throws Exception {
 		
 		Pair<Long /* record timestamp */, DataRecord> p = parseRecord(line);
 		
 		if (p != null) {
-			handleRecord(p.first, p.second);
+			
+			handleRecord(p.first, p.second, lastReaderPos);
 		}
 	}
 
-	private void handleRecord(long timestamp, DataRecord record)
-			throws InterruptedException {
+	private void handleRecord(long logTimestamp, DataRecord record, long lastReaderPos) throws Exception {
 
-		logTimestamp = timestamp;
-
-		final long currentTime = System.currentTimeMillis();
+		final long currentTime = getCurrentTime();
 
 		if (startTimeDiff == 0) {
+			if (fixedTimeDiff) {
+				throw new AssertionError("startTimeDiff should not be 0 in fixedTimeDiff mode");
+			}
+			
 			startTimeDiff = logTimestamp - currentTime;
 		}
 
 		long normalizedTime = logTimestamp - startTimeDiff;
 
-
 		if (!batchMode && normalizedTime > currentTime + 20) {					
-			Thread.sleep(normalizedTime - currentTime);
+				logger.info("data time {} later than current time {} - too soon to play, putting data back in reader", normalizedTime, currentTime);				
+				reader.seek(lastReaderPos);
+				Thread.sleep(20);
+				return;
 		} else {
 			Thread.yield();
 		}
 
 		playRecord(record);
+	}
+
+	protected long getCurrentTime() {
+		return System.currentTimeMillis();
 	}
 
 	private static String[] readRecordLine(String line) {
@@ -269,10 +300,15 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 	
 	@Override
 	public void setPaused(boolean paused) {
-		if (paused) {
-			pauseStart = System.currentTimeMillis();
-		} else {
-			startTimeDiff -= System.currentTimeMillis() - pauseStart;
+		
+		logger.info("setting paused = {}", paused);
+		
+		if (!fixedTimeDiff) {
+			if (paused) {
+				pauseStart = getCurrentTime();
+			} else {
+				startTimeDiff -= getCurrentTime() - pauseStart;
+			}
 		}
 		
 		this.paused = paused;		
@@ -306,10 +342,5 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		}
 		
 		super.stop();
-	}
-	
-	@Override
-	public boolean isSeekable() {
-		return true;
 	}
 }

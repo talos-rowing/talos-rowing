@@ -30,7 +30,10 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -58,6 +61,7 @@ import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
 import org.nargila.robostroke.oggz.CovertVideoDialog;
 import org.nargila.robostroke.oggz.MergeTalosOggDialog;
@@ -491,44 +495,69 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	
-	private Pair<SensorDataInput,Boolean> setInput(File videoFile) throws Exception {
+	private Pair<SensorDataInput,Boolean> setInput(File inputFile) throws Exception {
 		
-		boolean isVideo = !videoFile.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
+		boolean isVideo = !inputFile.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
 		
 		SensorDataInput dataInput;
 		
-		if (isVideo) {
-	        File[] srtFiles = new File[] {
-	        		new File(String.format("%s.srt", videoFile.getAbsolutePath())),
-	        		new File(videoFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".srt"))
-	        };
-	        
-	        File srtFile = null;
-			for (File f: srtFiles) {
-	        	        	
-	        	if (f.exists()) {
-	        		srtFile = f;
-	        		break;
-	        	}
-	        }
-	                
-	        if (srtFile != null) {
-	        	dataInput = new GstExternalDataInput(videoFile, srtFile, rs, videoPanel);
-	        } else if (videoFile.getName().toLowerCase().matches(".*\\.(ogg|mkv)$")) {
-	        	if (false && videoFile.getName().toLowerCase().endsWith(".ogg")) {
-	        		dataInput = new OggDataInput(videoFile, rs, videoPanel);	        		
-	        	} else {
-	        		dataInput = new GstDataInput(videoFile, rs, videoPanel);
-	        	}
-	        } else {
-	        	throw new IllegalArgumentException(String.format("can't find Talos Data file (either %s or %s)", srtFiles[0], srtFiles[1]));
-	        }
+		if (isVideo) {						
+			dataInput = setupSynchedMediaDataInput(inputFile);
 		} else {
-			dataInput = new FileDataInput(rs, videoFile);
+			dataInput = new FileDataInput(rs, inputFile);
 		}
 		
 		
 		return Pair.create(dataInput, !isVideo);
+	}
+	private SensorDataInput setupSynchedMediaDataInput(File inputFile)
+			throws IOException, FileNotFoundException, Exception {
+		SensorDataInput dataInput;
+		File mediaPropertyFile = new File(String.format("%s.talos.properties",  inputFile.getAbsolutePath()));
+
+		
+		if (!mediaPropertyFile.canRead()) {
+			throw new IllegalArgumentException("can not read mediaPropertyFile file '" + mediaPropertyFile + "' - read manual for instructions on how to create such file");
+		}
+		
+		Properties props = new Properties();
+		
+		props.load(new FileReader(mediaPropertyFile));
+		
+		for (String key: new String[]{"timeOffset", "synchMarkId"}) {
+			if (!props.containsKey(key)) {
+				throw new IllegalArgumentException("property " + key + " must be defined in property file " + mediaPropertyFile + " - read manual for instructions on how to create such file");
+			}				
+		}
+		
+		long synchTimeOffset = Long.parseLong(props.getProperty("timeOffset"));
+		int synchMarkId = Integer.parseInt(props.getProperty("synchMarkId"));					
+		
+		String talosDataPath = props.getProperty("talosDataPath");					
+		
+		if (talosDataPath == null) {
+			
+			talosDataPath = inputFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt");
+			
+			logger.warn("talosDataPath was not defined, will try to use " + talosDataPath);
+		}
+		
+		File talosData = null;
+
+		for (File f: new File[] {new File(talosDataPath), new File(mediaPropertyFile.getParentFile(), talosDataPath)}) {
+			if (f.exists()) {
+				talosData = f;
+				break;
+			}
+		}
+		
+		if (talosData == null) {
+			throw new IllegalArgumentException("can not read talosData file " + talosDataPath);
+		}
+		
+		dataInput = new MediaSynchedFileDataInput(rs, talosData, new GstExternalMedia(inputFile, videoPanel), synchTimeOffset, synchMarkId);
+		
+		return dataInput;
 	}
 	
 	void reset() {
