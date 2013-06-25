@@ -49,7 +49,7 @@ public class GstFindQrMarkPipeline {
 	
 	public GstFindQrMarkPipeline(File video) {
 		
-		pipe = Pipeline.launch("filesrc name=src ! decodebin2 name=dec ! ffmpegcolorspace ! pngenc snapshot=false ! fakesink name=sink signal-handoffs=true");
+		pipe = Pipeline.launch("filesrc name=src ! decodebin2 name=dec ! ffmpegcolorspace ! jpegenc quality=100 ! fakesink name=sink signal-handoffs=true");
 		
 		FileSrc src = (FileSrc) pipe.getElementByName("src");
 		

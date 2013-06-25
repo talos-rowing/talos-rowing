@@ -64,7 +64,7 @@ import org.nargila.robostroke.data.SensorDataInput;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
 import org.nargila.robostroke.oggz.CovertVideoDialog;
-import org.nargila.robostroke.oggz.MergeTalosOggDialog;
+import org.nargila.robostroke.oggz.SetupExternalMeidaInfoDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -224,13 +224,14 @@ public class RoboStrokeAppPanel extends JPanel {
 				launchVideoConverter();
 			}
 		});
+		
 		mnTools.add(mntmOggConvert);
 		
-		JMenuItem mntmMergeVideo = new JMenuItem("Merge Video");
-		mnTools.add(mntmMergeVideo);
-		mntmMergeVideo.addActionListener(new ActionListener() {
+		JMenuItem mntmMediaSetup = new JMenuItem("Synched Media Setup");
+		mnTools.add(mntmMediaSetup);
+		mntmMediaSetup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				launchVideoMerger();
+				launchMediaSetup();
 			}
 		});
 		
@@ -367,11 +368,11 @@ public class RoboStrokeAppPanel extends JPanel {
 		strokeGraphContainer.add(lblNewLabel_1, BorderLayout.CENTER);
 		
 	}
-	private void launchVideoMerger() {
+	private void launchMediaSetup() {
 		
-		MergeTalosOggDialog dialog = new MergeTalosOggDialog();
+		SetupExternalMeidaInfoDialog dialog = new SetupExternalMeidaInfoDialog();
 		
-		dialog.setSize(500, 350);
+		dialog.setSize(500, 450);
 		
 		dialog.setLocationRelativeTo(this);
 				
@@ -524,16 +525,16 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		props.load(new FileReader(mediaPropertyFile));
 		
-		for (String key: new String[]{"timeOffset", "synchMarkId"}) {
+		for (String key: new String[]{MediaSynchedFileDataInput.PROP_TIME_OFFSET, MediaSynchedFileDataInput.PROP_SYCH_MARK_ID}) {
 			if (!props.containsKey(key)) {
 				throw new IllegalArgumentException("property " + key + " must be defined in property file " + mediaPropertyFile + " - read manual for instructions on how to create such file");
 			}				
 		}
 		
-		long synchTimeOffset = Long.parseLong(props.getProperty("timeOffset"));
-		int synchMarkId = Integer.parseInt(props.getProperty("synchMarkId"));					
+		long synchTimeOffset = Long.parseLong(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET));
+		int synchMarkId = Integer.parseInt(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID));					
 		
-		String talosDataPath = props.getProperty("talosDataPath");					
+		String talosDataPath = props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA);					
 		
 		if (talosDataPath == null) {
 			

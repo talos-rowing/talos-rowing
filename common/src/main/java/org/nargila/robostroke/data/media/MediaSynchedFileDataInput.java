@@ -13,7 +13,13 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaSynchedFileDataInput.class);
 
-	private final ExternalMedia media;
+    public static final String PROP_TIME_OFFSET = "timeOffset";
+
+	public static final String PROP_TALOS_DATA = "talosData";
+
+	public static final String PROP_SYCH_MARK_ID = "synchMarkId";
+
+    private final ExternalMedia media;
 
 	public MediaSynchedFileDataInput(RoboStroke roboStroke, File dataFile, ExternalMedia _media, long synchTimeOffset, int synchMarkId) throws IOException {
 		super(roboStroke, dataFile, synchTimeOffset, synchMarkId);
