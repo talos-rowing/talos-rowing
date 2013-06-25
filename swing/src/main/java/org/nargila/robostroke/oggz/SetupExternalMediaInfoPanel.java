@@ -3,13 +3,15 @@ package org.nargila.robostroke.oggz;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -24,16 +26,18 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
+import org.nargila.robostroke.app.Settings;
 import org.nargila.robostroke.common.Pair;
-import org.nargila.robostroke.data.SynchedFileDataInput;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
-
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.beans.PropertyChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
+	private static final Logger logger = LoggerFactory.getLogger(SetupExternalMediaInfoPanel.class);
+
 	private JTextField inputOgg;
 	private JTextField inputTalos;
 	private JButton cancelBtn;
@@ -61,6 +65,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public SetupExternalMediaInfoPanel() {
+		
 		SpringLayout springLayout = new SpringLayout();
 		setLayout(springLayout);
 		
@@ -174,6 +179,16 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		add(lblDataStartSynch);
 		
 		textTimeOffset = new JFormattedTextField();
+		textTimeOffset.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						textTimeOffset.selectAll();					
+					}
+				});
+			}
+		});
 		textTimeOffset.setValue(-1L);
 		springLayout.putConstraint(SpringLayout.NORTH, lblDataStartSynch, 6, SpringLayout.SOUTH, textTimeOffset);
 		springLayout.putConstraint(SpringLayout.NORTH, textTimeOffset, 6, SpringLayout.SOUTH, lblDataStartTime);
@@ -182,6 +197,16 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		textTimeOffset.setColumns(10);
 		
 		textMarkId = new JFormattedTextField();
+		textMarkId.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						textMarkId.selectAll();					
+					}
+				});			
+			}
+		});
 		textMarkId.setValue(-1);
 		springLayout.putConstraint(SpringLayout.EAST, textTimeOffset, 0, SpringLayout.EAST, textMarkId);
 		springLayout.putConstraint(SpringLayout.NORTH, textMarkId, 6, SpringLayout.SOUTH, lblDataStartSynch);
@@ -239,10 +264,10 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		new Thread("DetectQrMark") {
 			public void run() {
 				
-				Pair<Integer, Long> res = null;
+				final AtomicReference<Pair<Integer, Long>> res = new AtomicReference<Pair<Integer,Long>>();
 				
 				try {					
-					res = findQr.findMark(60);
+					res.set(findQr.findMark(60));
 				} catch (Exception e) {
 					error.set(e);
 				} finally {
@@ -250,9 +275,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 					if (!canceled && error.get() != null) {
 						JOptionPane.showMessageDialog(self, error.get().getMessage(), error.get().getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 					}
-					
-					final Pair<Integer, Long> resFinal = res;
-					
+															
 					EventQueue.invokeLater(new Runnable() {
 
 						@Override
@@ -265,9 +288,10 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 							btnSelectOutput.setEnabled(true);
 							cancelBtn.setSelected(true);
 							
-							if (resFinal != null) {
-								textTimeOffset.setText(resFinal.second + "");
-								textMarkId.setText(resFinal.first + "");
+							if (res.get() != null) {
+								textTimeOffset.setText(res.get().second + "");
+								textMarkId.setText(res.get().first + "");
+								setSynchData(res.get());
 							}
 						}
 					});
@@ -278,9 +302,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	}
 
 	protected void setSynchData(final Pair<Integer, Long> res) {
-		if (res != null) {
-			this.syncData = res;
-		}
+		this.syncData = res;
 		
 		updateState();
 	}
@@ -308,7 +330,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	private String chooseFile(FileFilter fileFilter, boolean saveFile, File suggestFile) {
 		
 		if (fc == null) {
-			fc = new JFileChooser();
+			fc = new JFileChooser(Settings.getInstance().getLastDir());
 		}
 		
 		fc.setFileFilter(fileFilter);
@@ -317,7 +339,13 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 		int status = saveFile ? fc.showSaveDialog(this) : fc.showOpenDialog(this);
 						
-		return JFileChooser.APPROVE_OPTION == status ? fc.getSelectedFile().getAbsolutePath() : null;
+		if (JFileChooser.APPROVE_OPTION == status) {
+			File f = fc.getSelectedFile();
+			Settings.getInstance().setLastDir(f.getParentFile());
+			return f.getAbsolutePath();
+		}
+		
+		return null;
 	}
 
 
@@ -475,9 +503,8 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 					
 					int markId = (Integer)textMarkId.getValue();
 					
-					if (time > 0 && markId > 0) {
-						setSynchData(Pair.create(markId, time));
-					}
+					setSynchData(time > 0 && markId > 0 ? Pair.create(markId, time) : null);
+
 				} catch (NumberFormatException e) {
 				}
 			} catch (NumberFormatException e) {				
