@@ -17,6 +17,8 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
 	public static final String PROP_TALOS_DATA = "talosData";
 
+	public static final String PROP_VIDEO_EFFECT = "videoEffect";
+
 	public static final String PROP_SYCH_MARK_ID = "synchMarkId";
 
     private final ExternalMedia media;

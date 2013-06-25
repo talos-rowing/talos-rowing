@@ -5,13 +5,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -21,18 +25,15 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
+import org.nargila.robostroke.app.GstExternalMedia.VideoEffect;
 import org.nargila.robostroke.app.Settings;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
@@ -45,21 +46,25 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	private JButton btnSelectMedia;
 	private JButton btnSelectTalos;
 	private JButton btnSelectOutput;
-	private JTextField outputOgg;
+	private JTextField resultTalos;
 	private JLabel statusLine;
 	private JProgressBar progressBar;
 	private JFileChooser fc;
-	private File outfile;
-	private File talosFile;
-	private File mediaFile;
+	private final AtomicReference<File> resultTalosConfFile = new AtomicReference<File>();
+	private final AtomicReference<File> talosFile = new AtomicReference<File>();
+	private final AtomicReference<File> mediaFile = new AtomicReference<File>();
+	
 	private final AtomicReference<Exception> error = new AtomicReference<Exception>();
 
 	private JFormattedTextField textTimeOffset;
 	private JFormattedTextField textMarkId;
+	private VideoEffect videoEffect = VideoEffect.NONE;
 	private JButton btnDetect;
 	private GstFindQrMarkPipeline findQr;
 	private boolean canceled;
-	private Pair<Integer, Long> syncData;
+	private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer,Long>>();
+
+	private JComboBox cbxVideoEfects;
 	
 	/**
 	 * Create the panel.
@@ -70,46 +75,45 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		setLayout(springLayout);
 		
 		btnSelectMedia = new JButton("Select Media");
+		springLayout.putConstraint(SpringLayout.NORTH, btnSelectMedia, 22, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.WEST, btnSelectMedia, 21, SpringLayout.WEST, this);
 		btnSelectMedia.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				chooseMediaFile();
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnSelectMedia, 38, SpringLayout.NORTH, this);
-		springLayout.putConstraint(SpringLayout.WEST, btnSelectMedia, 21, SpringLayout.WEST, this);
 		add(btnSelectMedia);
 		
 		inputOgg = new JTextField();
-		inputOgg.setEditable(false);
-		springLayout.putConstraint(SpringLayout.NORTH, inputOgg, 0, SpringLayout.NORTH, btnSelectMedia);
-		springLayout.putConstraint(SpringLayout.WEST, inputOgg, 18, SpringLayout.EAST, btnSelectMedia);
-		springLayout.putConstraint(SpringLayout.SOUTH, inputOgg, 0, SpringLayout.SOUTH, btnSelectMedia);
+		springLayout.putConstraint(SpringLayout.WEST, inputOgg, 171, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, btnSelectMedia, -18, SpringLayout.WEST, inputOgg);
+		springLayout.putConstraint(SpringLayout.NORTH, inputOgg, 22, SpringLayout.NORTH, this);
 		springLayout.putConstraint(SpringLayout.EAST, inputOgg, -25, SpringLayout.EAST, this);
+		inputOgg.setEditable(false);
 		add(inputOgg);
 		inputOgg.setColumns(10);
 		
 		btnSelectTalos = new JButton("Select Talos");
-		springLayout.putConstraint(SpringLayout.WEST, btnSelectTalos, 21, SpringLayout.WEST, this);
-		springLayout.putConstraint(SpringLayout.EAST, btnSelectTalos, -297, SpringLayout.EAST, this);
+		springLayout.putConstraint(SpringLayout.WEST, btnSelectTalos, 0, SpringLayout.WEST, btnSelectMedia);
+		springLayout.putConstraint(SpringLayout.EAST, btnSelectTalos, 0, SpringLayout.EAST, btnSelectMedia);
 		btnSelectTalos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				chooseTalosFile();
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnSelectTalos, 21, SpringLayout.SOUTH, btnSelectMedia);
-		springLayout.putConstraint(SpringLayout.EAST, btnSelectMedia, 0, SpringLayout.EAST, btnSelectTalos);
 		add(btnSelectTalos);
 		
 		inputTalos = new JTextField();
-		inputTalos.setEditable(false);
-		springLayout.putConstraint(SpringLayout.NORTH, inputTalos, 0, SpringLayout.NORTH, btnSelectTalos);
-		springLayout.putConstraint(SpringLayout.WEST, inputTalos, 18, SpringLayout.EAST, btnSelectTalos);
-		springLayout.putConstraint(SpringLayout.SOUTH, inputTalos, 0, SpringLayout.SOUTH, btnSelectTalos);
+		springLayout.putConstraint(SpringLayout.NORTH, inputTalos, 100, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.WEST, inputTalos, 150, SpringLayout.WEST, btnSelectMedia);
 		springLayout.putConstraint(SpringLayout.EAST, inputTalos, -25, SpringLayout.EAST, this);
+		inputTalos.setEditable(false);
 		add(inputTalos);
 		inputTalos.setColumns(10);
 		
 		cancelBtn = new JButton("Cancel");
+		springLayout.putConstraint(SpringLayout.WEST, cancelBtn, 100, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, cancelBtn, 181, SpringLayout.WEST, this);
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				cancel();
@@ -117,68 +121,70 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, cancelBtn, -64, SpringLayout.SOUTH, this);
 		springLayout.putConstraint(SpringLayout.SOUTH, cancelBtn, -31, SpringLayout.SOUTH, this);
-		springLayout.putConstraint(SpringLayout.EAST, cancelBtn, -269, SpringLayout.EAST, this);
 		add(cancelBtn);
 		
 		saveBtn = new JButton("Save");
+		springLayout.putConstraint(SpringLayout.SOUTH, saveBtn, -31, SpringLayout.SOUTH, this);
 		saveBtn.setEnabled(false);
 		saveBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onSave();
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, saveBtn, 0, SpringLayout.NORTH, cancelBtn);
 		springLayout.putConstraint(SpringLayout.WEST, saveBtn, -148, SpringLayout.EAST, this);
-		springLayout.putConstraint(SpringLayout.SOUTH, saveBtn, 0, SpringLayout.SOUTH, cancelBtn);
 		springLayout.putConstraint(SpringLayout.EAST, saveBtn, -67, SpringLayout.EAST, this);
 		add(saveBtn);
 		
 		btnSelectOutput = new JButton("Output");
+		springLayout.putConstraint(SpringLayout.NORTH, btnSelectOutput, 132, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.SOUTH, btnSelectTalos, -6, SpringLayout.NORTH, btnSelectOutput);
+		springLayout.putConstraint(SpringLayout.SOUTH, inputTalos, -6, SpringLayout.NORTH, btnSelectOutput);
+		springLayout.putConstraint(SpringLayout.WEST, btnSelectOutput, 21, SpringLayout.WEST, this);
 		btnSelectOutput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				chooseOutputFile();
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnSelectOutput, 21, SpringLayout.SOUTH, btnSelectTalos);
-		springLayout.putConstraint(SpringLayout.WEST, btnSelectOutput, 21, SpringLayout.WEST, this);
-		springLayout.putConstraint(SpringLayout.EAST, btnSelectOutput, 0, SpringLayout.EAST, btnSelectMedia);
 		add(btnSelectOutput);
 		
-		outputOgg = new JTextField();
-		outputOgg.setEditable(false);
-		springLayout.putConstraint(SpringLayout.NORTH, outputOgg, 0, SpringLayout.NORTH, btnSelectOutput);
-		springLayout.putConstraint(SpringLayout.WEST, outputOgg, 18, SpringLayout.EAST, btnSelectOutput);
-		springLayout.putConstraint(SpringLayout.SOUTH, outputOgg, 0, SpringLayout.SOUTH, btnSelectOutput);
-		springLayout.putConstraint(SpringLayout.EAST, outputOgg, -25, SpringLayout.EAST, this);
-		add(outputOgg);
-		outputOgg.setColumns(10);
+		resultTalos = new JTextField();
+		springLayout.putConstraint(SpringLayout.EAST, btnSelectOutput, -18, SpringLayout.WEST, resultTalos);
+		springLayout.putConstraint(SpringLayout.WEST, resultTalos, 171, SpringLayout.WEST, this);
+		resultTalos.setEditable(false);
+		springLayout.putConstraint(SpringLayout.NORTH, resultTalos, 0, SpringLayout.NORTH, btnSelectOutput);
+		springLayout.putConstraint(SpringLayout.SOUTH, resultTalos, 0, SpringLayout.SOUTH, btnSelectOutput);
+		springLayout.putConstraint(SpringLayout.EAST, resultTalos, -25, SpringLayout.EAST, this);
+		add(resultTalos);
+		resultTalos.setColumns(10);
 		
 		progressBar = new JProgressBar();
+		springLayout.putConstraint(SpringLayout.SOUTH, progressBar, -22, SpringLayout.NORTH, cancelBtn);
+		springLayout.putConstraint(SpringLayout.NORTH, saveBtn, 22, SpringLayout.SOUTH, progressBar);
 		progressBar.setIndeterminate(true);
 		progressBar.setVisible(false);
-		springLayout.putConstraint(SpringLayout.NORTH, progressBar, -47, SpringLayout.NORTH, cancelBtn);
 		springLayout.putConstraint(SpringLayout.WEST, progressBar, 21, SpringLayout.WEST, this);
-		springLayout.putConstraint(SpringLayout.SOUTH, progressBar, -22, SpringLayout.NORTH, cancelBtn);
 		springLayout.putConstraint(SpringLayout.EAST, progressBar, -25, SpringLayout.EAST, this);
 		add(progressBar);
 		
 		statusLine = new JLabel("");
+		springLayout.putConstraint(SpringLayout.SOUTH, statusLine, -117, SpringLayout.SOUTH, this);
+		springLayout.putConstraint(SpringLayout.NORTH, progressBar, 6, SpringLayout.SOUTH, statusLine);
+		springLayout.putConstraint(SpringLayout.WEST, statusLine, 21, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, statusLine, -25, SpringLayout.EAST, this);
 		statusLine.setHorizontalAlignment(SwingConstants.CENTER);
-		springLayout.putConstraint(SpringLayout.WEST, statusLine, 0, SpringLayout.WEST, btnSelectMedia);
-		springLayout.putConstraint(SpringLayout.SOUTH, statusLine, -6, SpringLayout.NORTH, progressBar);
-		springLayout.putConstraint(SpringLayout.EAST, statusLine, 0, SpringLayout.EAST, inputOgg);
 		add(statusLine);
 		
 		JLabel lblDataStartTime = new JLabel("Data Start Time Offset");
 		springLayout.putConstraint(SpringLayout.NORTH, lblDataStartTime, 35, SpringLayout.SOUTH, btnSelectOutput);
-		springLayout.putConstraint(SpringLayout.WEST, lblDataStartTime, 0, SpringLayout.WEST, btnSelectMedia);
+		springLayout.putConstraint(SpringLayout.WEST, lblDataStartTime, 21, SpringLayout.WEST, this);
 		add(lblDataStartTime);
 		
 		JLabel lblDataStartSynch = new JLabel("Data Start Synch Mark ID");
-		springLayout.putConstraint(SpringLayout.WEST, lblDataStartSynch, 0, SpringLayout.WEST, btnSelectMedia);
+		springLayout.putConstraint(SpringLayout.WEST, lblDataStartSynch, 21, SpringLayout.WEST, this);
 		add(lblDataStartSynch);
 		
 		textTimeOffset = new JFormattedTextField();
+		springLayout.putConstraint(SpringLayout.EAST, textTimeOffset, -246, SpringLayout.EAST, this);
 		textTimeOffset.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -187,6 +193,10 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 						textTimeOffset.selectAll();					
 					}
 				});
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				setSynchData(Pair.create((Integer)textMarkId.getValue(), (Long)textTimeOffset.getValue()));
 			}
 		});
 		textTimeOffset.setValue(-1L);
@@ -197,6 +207,8 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		textTimeOffset.setColumns(10);
 		
 		textMarkId = new JFormattedTextField();
+		springLayout.putConstraint(SpringLayout.WEST, textMarkId, 21, SpringLayout.WEST, this);
+		springLayout.putConstraint(SpringLayout.EAST, textMarkId, -246, SpringLayout.EAST, this);
 		textMarkId.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -206,19 +218,18 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 					}
 				});			
 			}
+			@Override
+			public void focusLost(FocusEvent e) {
+				setSynchData(Pair.create((Integer)textMarkId.getValue(), (Long)textTimeOffset.getValue()));
+			}
 		});
 		textMarkId.setValue(-1);
-		springLayout.putConstraint(SpringLayout.EAST, textTimeOffset, 0, SpringLayout.EAST, textMarkId);
 		springLayout.putConstraint(SpringLayout.NORTH, textMarkId, 6, SpringLayout.SOUTH, lblDataStartSynch);
-		springLayout.putConstraint(SpringLayout.WEST, textMarkId, 0, SpringLayout.WEST, btnSelectMedia);
-		springLayout.putConstraint(SpringLayout.EAST, textMarkId, -246, SpringLayout.EAST, this);
 		add(textMarkId);
 		textMarkId.setColumns(10);
 		
-		textTimeOffset.getDocument().addDocumentListener(new DigitDocumentListener(textTimeOffset));
-		textMarkId.getDocument().addDocumentListener(new DigitDocumentListener(textMarkId));
-
 		btnDetect = new JButton("Detect");
+		springLayout.putConstraint(SpringLayout.WEST, btnDetect, 24, SpringLayout.EAST, textTimeOffset);
 		btnDetect.setEnabled(false);
 		btnDetect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -226,13 +237,38 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			}
 		});
 		springLayout.putConstraint(SpringLayout.NORTH, btnDetect, 0, SpringLayout.NORTH, textTimeOffset);
-		springLayout.putConstraint(SpringLayout.WEST, btnDetect, 24, SpringLayout.EAST, textTimeOffset);
 		springLayout.putConstraint(SpringLayout.SOUTH, btnDetect, 0, SpringLayout.SOUTH, textMarkId);
 		springLayout.putConstraint(SpringLayout.EAST, btnDetect, 136, SpringLayout.EAST, textTimeOffset);
 		add(btnDetect);
-
+		
+		lblVideoEvects = new JLabel("Video Evects");
+		lblVideoEvects.setEnabled(false);
+		lblVideoEvects.setHorizontalAlignment(SwingConstants.RIGHT);
+		springLayout.putConstraint(SpringLayout.SOUTH, btnSelectMedia, -10, SpringLayout.NORTH, lblVideoEvects);
+		springLayout.putConstraint(SpringLayout.WEST, lblVideoEvects, 0, SpringLayout.WEST, btnSelectMedia);
+		springLayout.putConstraint(SpringLayout.EAST, lblVideoEvects, 0, SpringLayout.EAST, btnSelectMedia);
+		add(lblVideoEvects);
+		
+		cbxVideoEfects = new JComboBox();
+		cbxVideoEfects.setEnabled(false);
+		cbxVideoEfects.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				videoEffect = (VideoEffect) e.getItem();
+			}
+		});
+		springLayout.putConstraint(SpringLayout.WEST, cbxVideoEfects, 18, SpringLayout.EAST, lblVideoEvects);
+		springLayout.putConstraint(SpringLayout.EAST, cbxVideoEfects, -25, SpringLayout.EAST, this);
+		springLayout.putConstraint(SpringLayout.NORTH, lblVideoEvects, 4, SpringLayout.NORTH, cbxVideoEfects);
+		springLayout.putConstraint(SpringLayout.NORTH, cbxVideoEfects, 54, SpringLayout.NORTH, this);
+		springLayout.putConstraint(SpringLayout.SOUTH, inputOgg, -6, SpringLayout.NORTH, cbxVideoEfects);
+		add(cbxVideoEfects);
+		
+		for (VideoEffect e: VideoEffect.values()) {
+			cbxVideoEfects.addItem(e);
+		}
 	}
 
+	
 	private void cancel() {
 		
 		canceled = true;
@@ -259,7 +295,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		
 		final SetupExternalMediaInfoPanel self = this;
 
-		findQr = new GstFindQrMarkPipeline(mediaFile);
+		findQr = new GstFindQrMarkPipeline(mediaFile.get());
 		
 		new Thread("DetectQrMark") {
 			public void run() {
@@ -301,8 +337,16 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		
 	}
 
-	protected void setSynchData(final Pair<Integer, Long> res) {
-		this.syncData = res;
+	private void setSynchData(final Pair<Integer, Long> res) {
+		
+		if (res != null && res.first >= -1 && res.second > -1) {
+			syncData.set(res);
+		} else {
+			syncData.set(null);
+		}
+		
+		textMarkId.setValue(syncData.get() == null ? -1 : syncData.get().first);
+		textTimeOffset.setValue(syncData.get() == null ? -1L : syncData.get().second);
 		
 		updateState();
 	}
@@ -311,12 +355,13 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 		Properties props = new Properties();
 
-		props.setProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, syncData.first.toString());
-		props.setProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, syncData.second.toString());
-		props.setProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, talosFile.getAbsolutePath());		
+		props.setProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, syncData.get().first.toString());
+		props.setProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, syncData.get().second.toString());
+		props.setProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, talosFile.get().getAbsolutePath());		
+		props.setProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, videoEffect.name());		
 
 		try {
-			props.store(new FileWriter(outfile), "");
+			props.store(new FileWriter(resultTalosConfFile.get()), null);
 		} catch (Exception e) {					
 			JOptionPane.showMessageDialog(this, error.get().getMessage(), error.get().getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
 		}
@@ -351,12 +396,11 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 	protected void chooseOutputFile() {
 		
-		File suggestedFile = mediaFile == null ? null : new File(mediaFile.getAbsolutePath() + ".talos.properties");
+		File suggestedFile = mediaFile.get() == null ? null : new File(mediaFile.get().getAbsolutePath() + ".talos.properties");
 		
 		String path = chooseFile(TALOS_MEDIA_INFO_FILES_FILTER, true, suggestedFile);		
 				
-		outfile = setupFilePath(path, outputOgg, false);
-		updateState();
+		setOutfile(path);
 	}
 
 	private void chooseTalosFile() {
@@ -380,30 +424,39 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			}
 		}, false, null);
 		
-		talosFile = setupFilePath(path, inputTalos, true);
+		setPathItem(path, talosFile, inputTalos, true);
 		
-		updateState();
 	}
 
-	private File setupFilePath(String path, JTextComponent text, boolean checkExists) {
+	private void setPathItem(String path, AtomicReference<File> value, JTextComponent text, boolean checkExists) {
 		
 		if (path != null) {
 			File res = new File(path);
 			if (!checkExists || res.exists()) {
 				text.setText(res.getAbsolutePath());
-				return res;
+				value.set(res);
 			}
 		}
 		
-		return null;		
+		updateState();
 	}
+	
 	
 	private void updateState() {
 		
-		boolean enable = mediaFile != null && talosFile != null && outfile != null && syncData != null;
+		boolean haveMedia = mediaFile.get() != null;
+		boolean haveTalosFile = talosFile.get() != null;
+		boolean haveConfFile = resultTalosConfFile.get() != null;
+		boolean haveSyncData = syncData.get() != null;
+		boolean enable = haveMedia && haveTalosFile && haveConfFile && haveSyncData;
 
-		btnDetect.setEnabled(mediaFile != null);
-		
+		logger.info("can save: {} (mediaFile: {}, talosFile: {}, resultTalosConfFile:{}, syncData: {})", 
+				new Object[]{enable, haveMedia,haveTalosFile,haveConfFile,haveSyncData});
+
+		btnDetect.setEnabled(haveMedia);
+		lblVideoEvects.setEnabled(haveMedia);
+		cbxVideoEfects.setEnabled(haveMedia);
+
 		saveBtn.setEnabled(enable);
 
 		if (enable) {
@@ -415,17 +468,45 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 		String path = chooseFile(ALL_FILES_FILTER, false, null);	
 
-		mediaFile = setupFilePath(path, inputOgg, true);
+		File media = mediaFile.get();
 		
-		if (talosFile == null) {
-			talosFile = setupFilePath(mediaFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt"), inputTalos, true);
+		setPathItem(path, mediaFile, inputOgg, true);
+		
+		if (mediaFile.get() != null && !mediaFile.get().equals(media)) {
+			
+			setOutfile(mediaFile.get().getAbsolutePath() + ".talos.properties");
+
+			if (talosFile.get() == null) {
+				setPathItem(mediaFile.get().getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt"), talosFile, inputTalos, true);
+			}
 		}
+	}
+	
+	private void setOutfile(String path) {
 		
-		if (outfile == null) {
-			outfile = setupFilePath(mediaFile.getAbsolutePath() + ".talos.properties", outputOgg, false);
+		File confFile = resultTalosConfFile.get();
+		setPathItem(path, resultTalosConfFile, resultTalos, false);
+		
+		if (resultTalosConfFile.get().exists() && !resultTalosConfFile.get().equals(confFile)) {
+
+			Properties props = new Properties();
+
+			try {
+
+				props.load(new FileReader(resultTalosConfFile.get()));
+
+				cbxVideoEfects.setSelectedItem(VideoEffect.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, VideoEffect.NONE.name())));
+
+				setSynchData(Pair.create(
+						new Integer(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "-1")), 
+						new Long(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "-1"))));
+				
+
+				setPathItem(props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, null), talosFile, inputTalos, true);
+			} catch (IOException e) {
+				logger.error("failed to load config file " + path, e);
+			}
 		}
-		
-		updateState();
 	}
 	
 	private static final FileFilter ALL_FILES_FILTER = new FileFilter() {
@@ -463,53 +544,6 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			}
 		}
 	};
-	
-	
-	private class DigitDocumentListener implements DocumentListener {
-		
-		final JTextComponent text;
-		String lastValue;
-		
-		DigitDocumentListener(JTextComponent text) {
-			this.text = text;
-		}
-		
-		public void changedUpdate(DocumentEvent e) {
-			check();				
-		}
-		public void removeUpdate(DocumentEvent e) {
-			check();				
-		}
-		public void insertUpdate(DocumentEvent e) {
-			check();				
-		}
 
-		public void check() {	
-			
-			String value = text.getText();
-			if (value.equals(lastValue)) {
-				return;				
-			}
-
-			lastValue = value;
-			
-			try {
-				
-				new Long(value);
-				
-				try {
-					
-					long time = (Long) textTimeOffset.getValue();
-					
-					int markId = (Integer)textMarkId.getValue();
-					
-					setSynchData(time > 0 && markId > 0 ? Pair.create(markId, time) : null);
-
-				} catch (NumberFormatException e) {
-				}
-			} catch (NumberFormatException e) {				
-			}
-		}
-	}
-	
+	private JLabel lblVideoEvects;	
 }

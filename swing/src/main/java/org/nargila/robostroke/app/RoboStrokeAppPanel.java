@@ -56,6 +56,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.app.GstExternalMedia.VideoEffect;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
@@ -120,7 +121,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 		
-		JMenuItem mntmOpen = new JMenuItem("Open");
+		JMenuItem mntmOpen = new JMenuItem("Open (Talos)");
 		mntmOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				openFileAction(false);
@@ -128,13 +129,13 @@ public class RoboStrokeAppPanel extends JPanel {
 		});
 		mnFile.add(mntmOpen);
 		
-		JMenuItem mntmOpenOgg = new JMenuItem("Open (OGG)");
-		mntmOpenOgg.addActionListener(new ActionListener() {
+		JMenuItem mntmOpenMedia = new JMenuItem("Open (Media)");
+		mntmOpenMedia.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				openFileAction(true);
 			}
 		});
-		mnFile.add(mntmOpenOgg);
+		mnFile.add(mntmOpenMedia);
 		
 		JMenuItem mntmExit = new JMenuItem("Exit");
 		mntmExit.addActionListener(new ActionListener() {
@@ -227,7 +228,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		mnTools.add(mntmOggConvert);
 		
-		JMenuItem mntmMediaSetup = new JMenuItem("Synched Media Setup");
+		JMenuItem mntmMediaSetup = new JMenuItem("Media Setup");
 		mnTools.add(mntmMediaSetup);
 		mntmMediaSetup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -536,6 +537,8 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		String talosDataPath = props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA);					
 		
+		VideoEffect videoEffect = VideoEffect.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
+		
 		if (talosDataPath == null) {
 			
 			talosDataPath = inputFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt");
@@ -556,7 +559,7 @@ public class RoboStrokeAppPanel extends JPanel {
 			throw new IllegalArgumentException("can not read talosData file " + talosDataPath);
 		}
 		
-		dataInput = new MediaSynchedFileDataInput(rs, talosData, new GstExternalMedia(inputFile, videoPanel), synchTimeOffset, synchMarkId);
+		dataInput = new MediaSynchedFileDataInput(rs, talosData, new GstExternalMedia(inputFile, videoPanel, videoEffect), synchTimeOffset, synchMarkId);
 		
 		return dataInput;
 	}

@@ -29,6 +29,25 @@ import com.sun.jna.Platform;
 
 public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
 
+	public enum VideoEffect {
+		NONE("none"),
+		ROTATE90("clockwise"),
+		ROTATE180("rotate-180"),
+		ROTATE270("counterclockwise");
+		
+		
+		public final String method;
+
+		VideoEffect(String method) {
+			this.method = method;
+		}
+		
+		@Override
+		public String toString() {
+			return method;
+		}
+	}
+	
     private static final Logger logger = LoggerFactory.getLogger(GstExternalMedia.class);
     
     private final Canvas canvas = new Canvas();
@@ -51,21 +70,27 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
 	private XOverlay xoverlay;
 
 	private final File videoFile;
+	private final VideoEffect videoEffect;
 
 	private EventListener listener;
 	
 	GstExternalMedia(File videoFile, Container container) throws Exception {
+		this(videoFile, container, VideoEffect.NONE);
+	}
+	
+	GstExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 
         this.videoFile = videoFile;
-        this.container = container;
+        this.container = container;        
+        this.videoEffect = videoEffect;
     }
 
 
     private void setupPipeline(final File video) throws Exception {
 
     	String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
-    			"dec. ! ffmpegcolorspace ! %s name=videoSink force-aspect-ratio=true " +
-    			"dec. ! audioconvert ! autoaudiosink ", video.getAbsolutePath().replace('\\', '/'), overlayFactory);
+    			"dec. ! ffmpegcolorspace ! videoflip method=%s ! %s name=videoSink force-aspect-ratio=true " +
+    			"dec. ! audioconvert ! autoaudiosink ", video.getAbsolutePath().replace('\\', '/'), videoEffect.method, overlayFactory);
 
     	pipe = Pipeline.launch(pipedesc);
 
