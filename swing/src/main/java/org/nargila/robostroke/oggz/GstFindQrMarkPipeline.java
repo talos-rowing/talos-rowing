@@ -1,24 +1,30 @@
 package org.nargila.robostroke.oggz;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.imageio.ImageIO;
 
 import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
+import org.gstreamer.Caps;
 import org.gstreamer.ClockTime;
+import org.gstreamer.Fraction;
 import org.gstreamer.Gst;
 import org.gstreamer.GstObject;
 import org.gstreamer.Pad;
 import org.gstreamer.Pipeline;
+import org.gstreamer.Structure;
 import org.gstreamer.elements.BaseSink;
 import org.gstreamer.elements.FakeSink;
 import org.gstreamer.elements.FileSrc;
+import org.gstreamer.elements.RGBDataSink;
 import org.nargila.robostroke.common.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +49,15 @@ public class GstFindQrMarkPipeline {
 
 	private ClockTime timestamp;
 
+	private BufferedImage currentImage;
+
 	static {
 		Gst.init();
 	}
 	
 	public GstFindQrMarkPipeline(File video) {
 		
-		pipe = Pipeline.launch("filesrc name=src ! decodebin2 name=dec ! ffmpegcolorspace ! jpegenc quality=100 ! fakesink name=sink signal-handoffs=true");
+		pipe = Pipeline.launch("filesrc name=src ! decodebin2 name=dec ! ffmpegcolorspace name=end");
 		
 		FileSrc src = (FileSrc) pipe.getElementByName("src");
 		
@@ -84,36 +92,12 @@ public class GstFindQrMarkPipeline {
 			}    		
     	});
     	
-    	FakeSink sink = (FakeSink) pipe.getElementByName("sink");
+    	RGBSink sink = new RGBSink();
     	
-    	sink.connect(new BaseSink.HANDOFF() {
-            @Override
-            public void handoff(BaseSink sink, Buffer buffer, Pad pad) {
-                
-            	ByteBuffer buff = buffer.getByteBuffer();
-                int len = buffer.getSize();
-                byte[] data = new byte[len];
-                buff.get(data);
-                
-                try {
-					
-                	BufferedImage img = ImageIO.read(new ByteArrayInputStream(data));
-					
-					if (findQrCode(img, buffer)) {
-						synchronized (finishSync) {
-							finishSync.notifyAll();
-						}
-					}
-				} catch (IOException e) {
-					logger.error("failed to convert buffer to BufferedImage", e);
-					synchronized (finishSync) {
-						finishSync.set(e);
-						finishSync.notifyAll();
-					}
-				}                
-
-            }
-        });
+    	pipe.add(sink);
+    	
+    	pipe.getElementByName("end").link(sink);
+    	
 	}
 	
 	void start() {
@@ -155,6 +139,7 @@ public class GstFindQrMarkPipeline {
         return true;
 	}
 	
+	
 	public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
 				
 		synchronized (finishSync) {
@@ -184,4 +169,56 @@ public class GstFindQrMarkPipeline {
 		
 		qrFind.findMark(160);
 	}
+	
+    private BufferedImage getBufferedImage(int width, int height) {
+    	
+        if (currentImage != null && currentImage.getWidth() == width
+                && currentImage.getHeight() == height) {
+            return currentImage;
+        }
+        if (currentImage != null) {
+            currentImage.flush();
+        }
+        
+        currentImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        currentImage.setAccelerationPriority(0.0f);
+        return currentImage;
+    }
+    
+    private BaseSink sinkElement;
+    
+    private class RGBSink extends RGBDataSink {
+
+
+		public RGBSink() {
+			super("rgb", new RGBDataSink.Listener() {
+				public synchronized void rgbFrame(boolean isPrerollFrame, int width, int height, IntBuffer rgb) {
+
+					if (mark == null) {
+						try {
+							final BufferedImage renderImage = getBufferedImage(width, height);
+							int[] pixels = ((DataBufferInt) renderImage.getRaster().getDataBuffer()).getData();
+							rgb.get(pixels, 0, width * height);  
+
+							if (findQrCode(renderImage, sinkElement.getLastBuffer())) {
+								synchronized (finishSync) {
+									finishSync.notifyAll();
+								}
+							}
+						} catch (Exception e) {
+							logger.error("image conversion or QR code detection error", e);
+							synchronized (finishSync) {
+								finishSync.set(e);
+								finishSync.notifyAll();
+							}
+						}                
+					} 
+				}
+			});
+			
+			sinkElement = getSinkElement();
+			sinkElement.enableLastBuffer(true);
+			sinkElement.setSync(false);
+		}
+    }
 }
