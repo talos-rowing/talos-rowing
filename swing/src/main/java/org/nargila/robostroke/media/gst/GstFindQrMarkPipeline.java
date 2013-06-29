@@ -1,4 +1,4 @@
-package org.nargila.robostroke.oggz;
+package org.nargila.robostroke.media.gst;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -104,7 +104,7 @@ public class GstFindQrMarkPipeline {
 		pipe.play();
 	}
 	
-	void stop() {
+	public void stop() {
 		pipe.stop();
 		
 		synchronized (finishSync) {

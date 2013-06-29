@@ -1,4 +1,4 @@
-package org.nargila.robostroke.app;
+package org.nargila.robostroke.media.gst;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -11,7 +11,6 @@ import org.gstreamer.Bus;
 import org.gstreamer.BusSyncReply;
 import org.gstreamer.Caps;
 import org.gstreamer.Element;
-import org.gstreamer.Gst;
 import org.gstreamer.GstObject;
 import org.gstreamer.Message;
 import org.gstreamer.Pad;
@@ -29,26 +28,7 @@ import com.sun.jna.Platform;
 
 public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, Bus.INFO, Bus.STATE_CHANGED, Element.PAD_ADDED, Element.NO_MORE_PADS {
 
-	public enum VideoEffect {
-		NONE("none"),
-		ROTATE90("clockwise"),
-		ROTATE180("rotate-180"),
-		ROTATE270("counterclockwise");
-		
-		
-		public final String method;
-
-		VideoEffect(String method) {
-			this.method = method;
-		}
-		
-		@Override
-		public String toString() {
-			return method;
-		}
-	}
-	
-    private static final Logger logger = LoggerFactory.getLogger(GstExternalMedia.class);
+	private static final Logger logger = LoggerFactory.getLogger(GstExternalMedia.class);
     
     private final Canvas canvas = new Canvas();
     
@@ -56,9 +36,8 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
     
     private Element videoSink;
 
-    static {
-        Gst.init();
-    }
+    @SuppressWarnings("unused")
+	private final GstInitializer gstInitializer = GstInitializer.getInstance();
 
     private Pipeline pipe;
     private Element dec;

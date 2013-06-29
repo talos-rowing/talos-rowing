@@ -252,7 +252,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 		long normalizedTime = logTimestamp - startTimeDiff;
 
 		if (!batchMode && normalizedTime > currentTime + 20) {					
-				logger.debug("data time {} later than current time {} - too soon to play, putting data back in reader", normalizedTime, currentTime);				
+				logger.info("data time {} later than current time {} - too soon to play, putting data back in reader", normalizedTime, currentTime);				
 				reader.seek(lastReaderPos);
 				Thread.sleep(50);
 				return;

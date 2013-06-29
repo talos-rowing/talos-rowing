@@ -28,10 +28,12 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
-import org.nargila.robostroke.app.GstExternalMedia.VideoEffect;
 import org.nargila.robostroke.app.Settings;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
+import org.nargila.robostroke.media.gst.GstFindQrMarkPipeline;
+import org.nargila.robostroke.media.vlc.SteppingPlayerDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +67,8 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer,Long>>();
 
 	private JComboBox cbxVideoEfects;
+
+	private JButton btnManual;
 	
 	/**
 	 * Create the panel.
@@ -223,22 +227,22 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 				setSynchData(Pair.create((Integer)textMarkId.getValue(), (Long)textTimeOffset.getValue()));
 			}
 		});
-		textMarkId.setValue(-1);
+		textMarkId.setValue(1);
 		springLayout.putConstraint(SpringLayout.NORTH, textMarkId, 6, SpringLayout.SOUTH, lblDataStartSynch);
 		add(textMarkId);
 		textMarkId.setColumns(10);
 		
 		btnDetect = new JButton("Detect");
-		springLayout.putConstraint(SpringLayout.WEST, btnDetect, 24, SpringLayout.EAST, textTimeOffset);
+		springLayout.putConstraint(SpringLayout.NORTH, btnDetect, 0, SpringLayout.NORTH, lblDataStartSynch);
+		springLayout.putConstraint(SpringLayout.WEST, btnDetect, 24, SpringLayout.EAST, textMarkId);
+		springLayout.putConstraint(SpringLayout.SOUTH, btnDetect, 0, SpringLayout.SOUTH, textMarkId);
+		springLayout.putConstraint(SpringLayout.EAST, btnDetect, -110, SpringLayout.EAST, this);
 		btnDetect.setEnabled(false);
 		btnDetect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onDetect();
 			}
 		});
-		springLayout.putConstraint(SpringLayout.NORTH, btnDetect, 0, SpringLayout.NORTH, textTimeOffset);
-		springLayout.putConstraint(SpringLayout.SOUTH, btnDetect, 0, SpringLayout.SOUTH, textMarkId);
-		springLayout.putConstraint(SpringLayout.EAST, btnDetect, 136, SpringLayout.EAST, textTimeOffset);
 		add(btnDetect);
 		
 		lblVideoEvects = new JLabel("Video Evects");
@@ -263,12 +267,36 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.SOUTH, inputOgg, -6, SpringLayout.NORTH, cbxVideoEfects);
 		add(cbxVideoEfects);
 		
+		btnManual = new JButton("Manual");
+		btnManual.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onManualMarkTime();
+			}
+		});
+		btnManual.setEnabled(false);
+		springLayout.putConstraint(SpringLayout.NORTH, btnManual, 0, SpringLayout.NORTH, lblDataStartTime);
+		springLayout.putConstraint(SpringLayout.WEST, btnManual, 24, SpringLayout.EAST, textTimeOffset);
+		springLayout.putConstraint(SpringLayout.SOUTH, btnManual, 0, SpringLayout.SOUTH, textTimeOffset);
+		springLayout.putConstraint(SpringLayout.EAST, btnManual, -110, SpringLayout.EAST, this);
+		add(btnManual);
+		
 		for (VideoEffect e: VideoEffect.values()) {
 			cbxVideoEfects.addItem(e);
 		}
 	}
 
 	
+	private void onManualMarkTime() {
+		
+		SteppingPlayerDialog steppingPlayer = new SteppingPlayerDialog();
+		steppingPlayer.launch(mediaFile.get().getAbsolutePath());
+		
+		if (steppingPlayer.getTime() != null) {
+			setSynchData(Pair.create(1, steppingPlayer.getTime().toMillis()));
+		}
+	}
+
+
 	private void cancel() {
 		
 		canceled = true;
@@ -454,6 +482,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 				new Object[]{enable, haveMedia,haveTalosFile,haveConfFile,haveSyncData});
 
 		btnDetect.setEnabled(haveMedia);
+		btnManual.setEnabled(haveMedia);
 		lblVideoEvects.setEnabled(haveMedia);
 		cbxVideoEfects.setEnabled(haveMedia);
 

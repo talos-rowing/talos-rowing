@@ -56,14 +56,15 @@ import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.app.GstExternalMedia.VideoEffect;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
+import org.nargila.robostroke.media.vlc.VlcExternalMedia;
 import org.nargila.robostroke.oggz.CovertVideoDialog;
 import org.nargila.robostroke.oggz.SetupExternalMeidaInfoDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
@@ -321,7 +322,7 @@ public class RoboStrokeAppPanel extends JPanel {
 				}
 			}
 		});
-		label.setFont(new Font("Dialog", Font.BOLD, 18));
+		label.setFont(new Font("Dialog", Font.BOLD, 32));
 		label.setForeground(Color.WHITE);
 		panel_2.add(label, BorderLayout.WEST);
 		
@@ -559,7 +560,7 @@ public class RoboStrokeAppPanel extends JPanel {
 			throw new IllegalArgumentException("can not read talosData file " + talosDataPath);
 		}
 		
-		dataInput = new MediaSynchedFileDataInput(rs, talosData, new GstExternalMedia(inputFile, videoPanel, videoEffect), synchTimeOffset, synchMarkId);
+		dataInput = new MediaSynchedFileDataInput(rs, talosData, new VlcExternalMedia(inputFile, videoPanel, videoEffect), synchTimeOffset, synchMarkId);
 		
 		return dataInput;
 	}
