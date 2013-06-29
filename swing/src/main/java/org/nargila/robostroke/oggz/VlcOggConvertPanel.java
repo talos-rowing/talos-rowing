@@ -12,8 +12,21 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.filechooser.FileFilter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class VlcOggConvertPanel extends JPanel {
 	
+	private static final String[] VLC_EXE_PATH_LINUX = {
+		"/usr/bin/vlc"
+	};
+	
+	private static final String[] VLC_EXE_PATH_WIN32 = {
+		"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe",
+		"C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe"
+	};
+	
+	private static final Logger logger = LoggerFactory.getLogger(VlcOggConvertPanel.class);
 	private JTextField inputVideo;
 	private JTextField inputVlcExecutable;
 	private JButton cancelBtn;
@@ -122,17 +135,17 @@ public abstract class VlcOggConvertPanel extends JPanel {
 	}
 
 	private void resolveVlcExecutable() {
-		File vlc;
+	
+		String[] execPaths = CheckOS.isWindows() ? VLC_EXE_PATH_WIN32 : VLC_EXE_PATH_LINUX;
 		
-		if (CheckOS.isWindows()) {
-			vlc = new File("C:/Program Files/VideoLAN/vlc.exe");
-		} else {
-			vlc = new File("/usr/bin/vlc");
-		}
 		
-		if (vlc.canExecute()) {
-			vlcExecutable = vlc;
-			inputVlcExecutable.setText(vlcExecutable.getAbsolutePath());
+		for (String path: execPaths) {			
+			
+			File vlc = new File(path);
+			
+			if (validateVlcExecutable(vlc)) {
+				break;
+			}
 		}
 	}
 
@@ -144,7 +157,7 @@ public abstract class VlcOggConvertPanel extends JPanel {
 	private void onStart() {
 				
 		try {
-			ExecHelper.exec(false, inputVlcExecutable.getText(), ExecHelper.fixPath(video), "--sout", 
+                    ExecHelper.exec(false, inputVlcExecutable.getText(), video.getAbsolutePath(), "--sout", 
 					String.format("#transcode{vcodec=theo,vb=800,scale=1,acodec=vorb,ab=128,channels=2,samplerate=44100}:file{dst=%s}", ExecHelper.fixPath(outfile)));
 
 		} catch (Exception e) {
@@ -223,12 +236,23 @@ public abstract class VlcOggConvertPanel extends JPanel {
 			}
 		}, false);
 		
-		if (vlc != null && vlc.canExecute()) {
+		validateVlcExecutable(vlc);
+		
+		updateState();
+	}
+
+	protected boolean validateVlcExecutable(File vlc) {
+		
+		boolean canExecute = vlc == null ? false : vlc.canExecute();
+
+		logger.info("checking for vlc executable in {}: canExecute: {}", vlc, canExecute);		
+
+		if (canExecute) {
 			vlcExecutable = vlc;
 			inputVlcExecutable.setText(vlcExecutable.getAbsolutePath());
 		}
 		
-		updateState();
+		return canExecute;
 	}
 
 	private void updateState() {
@@ -263,6 +287,11 @@ public abstract class VlcOggConvertPanel extends JPanel {
 
 		if (video != null) {
 			inputVideo.setText(video.getAbsolutePath());
+			
+			if (outfile == null) {
+				outfile = new File(video.getAbsolutePath().replaceFirst("(\\.[\\.]+)?$", ".ogg"));
+				outputOgg.setText(outfile.getAbsolutePath());
+			}
 		}	
 		updateState();
 	}

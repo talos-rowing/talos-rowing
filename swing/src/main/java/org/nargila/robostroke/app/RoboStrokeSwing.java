@@ -25,6 +25,7 @@ import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.io.File;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -34,8 +35,12 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 
+import com.sun.jna.Platform;
+
 public class RoboStrokeSwing {
 
+	private static Logger logger = Logger.getLogger(RoboStrokeSwing.class.getName());
+	
 	private JFrame frmTalosRowing;
 
 	private RoboStroke rs = new RoboStroke();
@@ -46,6 +51,38 @@ public class RoboStrokeSwing {
 	 * Launch the application.
 	 */
 	public static void main(final String[] args) {
+		
+		logger.info("launching Talos Rowing");
+		
+		if (Platform.isWindows()) {
+			
+			logger.info("windows OS detected");
+			
+			String gstreamer_sdk_root = System.getenv().get("GSTREAMER_SDK_ROOT_X86");
+			
+			if (gstreamer_sdk_root == null) {
+				gstreamer_sdk_root = "C:/gstreamer-sdk/0.10/x86";
+			} else {
+				logger.info(String.format("gstreamer sdk root env variable points to %s", gstreamer_sdk_root));
+			}
+			
+			File f = new File(gstreamer_sdk_root);
+			
+			if (f.exists()) {
+				logger.info(String.format("found gstreamer sdk root under %s", gstreamer_sdk_root));				
+				gstreamer_sdk_root = f.getAbsolutePath();
+			} else {
+				logger.info(String.format("gstreamer sdk root %s is invalid", gstreamer_sdk_root));
+				gstreamer_sdk_root = null;
+			}
+			
+			if (gstreamer_sdk_root != null) {
+//				System.setProperty("java.library.path", new File(gstreamer_sdk_root, "bin").getAbsolutePath());
+//				setProperty("jna.library.path", new File(gstreamer_sdk_root, "bin").getAbsolutePath());
+//				setProperty("gst.plugin.path", new File(gstreamer_sdk_root, "lib" + File.separatorChar + "gstreamer-0.10").getAbsolutePath());
+			}
+		}
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -66,6 +103,16 @@ public class RoboStrokeSwing {
 		});
 	}
 
+	private static void setProperty(String name, String value) {
+		
+		String prop = System.getProperty(name);
+		
+		if (prop == null) {					
+			logger.info(String.format("%s is not set - setting to %s", name, value));
+			System.setProperty(name, value);
+		}		
+	}
+	
 	private static void centerOnScreen(JFrame window) {
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		 

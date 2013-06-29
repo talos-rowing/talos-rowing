@@ -18,7 +18,6 @@
     <jnlp.codebase>http://nargila.org/trac/robostroke/raw-attachment/wiki/WikiStart/</jnlp.codebase>
     <jnlp.main.class>org.nargila.robostroke.app.RoboStrokeSwing</jnlp.main.class>
     <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
-    <jnlp.template>src/main/jnlp/template.vm</jnlp.template>
     <cortado.version>0.6.0-18-g68fbc7c</cortado.version>
   </properties>
 
@@ -41,7 +40,25 @@
       <artifactId>slf4j-jdk14</artifactId>
       <version>1.6.4</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.googlecode.gstreamer-java</groupId>
+      <artifactId>gstreamer-java</artifactId>
+      <version>1.6-SNAPSHOT</version>
+     <exclusions>
+       <exclusion>
+         <groupId>com.apple</groupId>
+         <artifactId>AppleJavaExtensions</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>org.eclipse.swt.gtk.linux</groupId>
+         <artifactId>x86_64</artifactId>
+       </exclusion>
+       <exclusion>
+         <groupId>org.eclipse.swt.gtk.linux</groupId>
+          <artifactId>x86</artifactId>
+       </exclusion>
+     </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.nargila.robostroke.cortado</groupId>
       <artifactId>cortado-codecs</artifactId>
@@ -94,7 +111,13 @@
       <groupId>com.google.zxing</groupId>
       <artifactId>javase</artifactId>
       <version>2.2</version>
-    </dependency>    
+    </dependency>   
+
+    <dependency>
+      <groupId>uk.co.caprica</groupId>
+      <artifactId>vlcj</artifactId>
+      <version>2.3.1</version>
+    </dependency> 
   </dependencies>
   <build>    
     <plugins>

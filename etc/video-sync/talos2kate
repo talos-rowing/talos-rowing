@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import sys, time
-
-lines = map(lambda x: x[:-3].split(), sys.stdin.readlines())
+import sys, time, os
 
 def genTime(dur):
     sec = dur / 1000
@@ -11,36 +9,80 @@ def genTime(dur):
 
     return "%s.%03d" % (time.strftime("%H:%M:%S", t), millis)
 
-def getStart(lines):
+def getStart(lines, mark_id):
     for ts, event, dummy, data in lines:
+        if mark_id == -1:
+            return int(ts)
+
         if event == "RECORDING_COUNTDOWN":
             recording_id, countdown = data.split(",")
-            if int(countdown) == 0:
+            if int(countdown) == mark_id:
                 return int(ts)
             pass
         pass
-    raise "failed to find RECORDING_COUNTDOWN 0"
+    raise Exception("failed to find RECORDING_COUNTDOWN %d" % mark_id)
 
-start = getStart(lines)
-    
-print "kate {\n"
+def gen_event(timestamp, event, dummy, data):
 
-for ts, event, dummy, data in lines:
-
-    timestamp = int(ts)
-
-    if timestamp < start:
-        if event in ['LOGFILE_VERSION', 'SESSION_PARAMETER']: 
-            timestamp = start
-        else:
-            continue
-        pass
-    
-    start_time = genTime(timestamp - start)
+    start_time = genTime(timestamp)
     
     print """\tevent {\n\t\t%s --> %s\n\t\t"%s %s %s"\n\t}\n\n""" % (start_time, start_time, event, dummy, data)
+    
+    pass
+    
+def gen_event_srt(count, timestamp, event, dummy, data):
+
+    start_time = genTime(timestamp)
+    
+    print """%d\n%s --> %s\n%s %s %s\n""" % (count, start_time, start_time, event, dummy, data)
+    
+    pass
+    
+def main():
+    if not len(sys.argv) == 3:
+        raise Exception("Usage: %s <countdown_mark_id> <timepos (ms)> (stdin)" % sys.argv[0])
+    
+    lines = map(lambda x: x[:-3].split(), sys.stdin.readlines())
+
+    mark_id = int(sys.argv[1])
+
+    video_offset = int(sys.argv[2])
+
+    start = getStart(lines, mark_id)
+    
+#    print "kate {\n"
+
+    count = 1
+    for ts, event, dummy, data in lines:
+
+        timestamp = int(ts)
+
+        if timestamp < start:
+            if event == 'LOGFILE_VERSION':
+                pos = 0
+
+                while pos <= video_offset:
+                    gen_event_srt(count, pos, event, dummy, data)
+                    count += 1
+                    pos += 50
+                    pass
+
+                continue
+            elif event == 'SESSION_PARAMETER': 
+                timestamp = start
+            else:
+                continue
+            pass
+    
+        gen_event_srt(count, timestamp - start + video_offset, event, dummy, data)
+
+        count += 1
+
+        pass
+    
+#    print "}\n"
 
     pass
 
-print "}\n"
-
+if __name__ == '__main__':
+  main()

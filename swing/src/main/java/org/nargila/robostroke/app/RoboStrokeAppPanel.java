@@ -30,7 +30,10 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -58,9 +61,12 @@ import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
+import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
+import org.nargila.robostroke.media.vlc.VlcExternalMedia;
 import org.nargila.robostroke.oggz.CovertVideoDialog;
-import org.nargila.robostroke.oggz.MergeTalosOggDialog;
+import org.nargila.robostroke.oggz.SetupExternalMeidaInfoDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -103,7 +109,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JCheckBoxMenuItem chckbxmntmAccel;
 
 	private JSplitPane splitPane;
-
+	
 	/**
 	 * Create the panel.
 	 */
@@ -116,7 +122,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
 		
-		JMenuItem mntmOpen = new JMenuItem("Open");
+		JMenuItem mntmOpen = new JMenuItem("Open (Talos)");
 		mntmOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				openFileAction(false);
@@ -124,13 +130,13 @@ public class RoboStrokeAppPanel extends JPanel {
 		});
 		mnFile.add(mntmOpen);
 		
-		JMenuItem mntmOpenOgg = new JMenuItem("Open (OGG)");
-		mntmOpenOgg.addActionListener(new ActionListener() {
+		JMenuItem mntmOpenMedia = new JMenuItem("Open (Media)");
+		mntmOpenMedia.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				openFileAction(true);
 			}
 		});
-		mnFile.add(mntmOpenOgg);
+		mnFile.add(mntmOpenMedia);
 		
 		JMenuItem mntmExit = new JMenuItem("Exit");
 		mntmExit.addActionListener(new ActionListener() {
@@ -220,13 +226,14 @@ public class RoboStrokeAppPanel extends JPanel {
 				launchVideoConverter();
 			}
 		});
+		
 		mnTools.add(mntmOggConvert);
 		
-		JMenuItem mntmMergeVideo = new JMenuItem("Merge Video");
-		mnTools.add(mntmMergeVideo);
-		mntmMergeVideo.addActionListener(new ActionListener() {
+		JMenuItem mntmMediaSetup = new JMenuItem("Media Setup");
+		mnTools.add(mntmMediaSetup);
+		mntmMediaSetup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				launchVideoMerger();
+				launchMediaSetup();
 			}
 		});
 		
@@ -315,7 +322,7 @@ public class RoboStrokeAppPanel extends JPanel {
 				}
 			}
 		});
-		label.setFont(new Font("Dialog", Font.BOLD, 18));
+		label.setFont(new Font("Dialog", Font.BOLD, 32));
 		label.setForeground(Color.WHITE);
 		panel_2.add(label, BorderLayout.WEST);
 		
@@ -363,11 +370,11 @@ public class RoboStrokeAppPanel extends JPanel {
 		strokeGraphContainer.add(lblNewLabel_1, BorderLayout.CENTER);
 		
 	}
-	private void launchVideoMerger() {
+	private void launchMediaSetup() {
 		
-		MergeTalosOggDialog dialog = new MergeTalosOggDialog();
+		SetupExternalMeidaInfoDialog dialog = new SetupExternalMeidaInfoDialog();
 		
-		dialog.setSize(500, 350);
+		dialog.setSize(500, 450);
 		
 		dialog.setLocationRelativeTo(this);
 				
@@ -397,7 +404,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	private void openFileAction(final boolean ogg) {
-		JFileChooser fc = new JFileChooser();
+		JFileChooser fc = new JFileChooser(Settings.getInstance().getLastDir());
 		fc.setFileFilter(new FileFilter() {
 			
 			@Override
@@ -411,8 +418,9 @@ public class RoboStrokeAppPanel extends JPanel {
 				if (f.isDirectory()) {
 					return true;
 				} else {
-					String name = f.getName();
-					return ogg ? name.endsWith(".ogg") : (name.endsWith(".trsd") || name.endsWith(".txt"));
+//					String name = f.getName();
+//					return ogg ? name.endsWith(".ogg") : (name.endsWith(".trsd") || name.endsWith(".txt"));
+					return true;
 				}
 			}
 		});
@@ -420,7 +428,9 @@ public class RoboStrokeAppPanel extends JPanel {
 		if (JFileChooser.APPROVE_OPTION == fc.showOpenDialog(this)) {
 
 			File f = fc.getSelectedFile();
-
+			
+			Settings.getInstance().setLastDir(f.getParentFile());
+			
 			if (ogg) {
 				start(f);
 			} else {
@@ -472,7 +482,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		try {						
 			Pair<SensorDataInput, Boolean> input = setInput(f);
 			start(input.first, input.second);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error("error opening file " + f, e);
 		}
 	}
@@ -488,22 +498,71 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 
 	
-	private Pair<SensorDataInput,Boolean> setInput(File f) throws IOException {	
+	private Pair<SensorDataInput,Boolean> setInput(File inputFile) throws Exception {
 		
-		boolean ogg = f.getName().toLowerCase().endsWith(".ogg");
+		boolean isVideo = !inputFile.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
+		
 		SensorDataInput dataInput;
 		
-		if (ogg) {
-			
-			dataInput = new OggDataInput(f, rs, videoPanel);
-//			dataInput = new GstDataInput(f, rs, videoPanel);
-			
+		if (isVideo) {						
+			dataInput = setupSynchedMediaDataInput(inputFile);
 		} else {
-			dataInput = new FileDataInput(rs, f);
+			dataInput = new FileDataInput(rs, inputFile);
 		}
 		
 		
-		return Pair.create(dataInput, !ogg);
+		return Pair.create(dataInput, !isVideo);
+	}
+	private SensorDataInput setupSynchedMediaDataInput(File inputFile)
+			throws IOException, FileNotFoundException, Exception {
+		SensorDataInput dataInput;
+		File mediaPropertyFile = new File(String.format("%s.talos.properties",  inputFile.getAbsolutePath()));
+
+		
+		if (!mediaPropertyFile.canRead()) {
+			throw new IllegalArgumentException("can not read mediaPropertyFile file '" + mediaPropertyFile + "' - read manual for instructions on how to create such file");
+		}
+		
+		Properties props = new Properties();
+		
+		props.load(new FileReader(mediaPropertyFile));
+		
+		for (String key: new String[]{MediaSynchedFileDataInput.PROP_TIME_OFFSET, MediaSynchedFileDataInput.PROP_SYCH_MARK_ID}) {
+			if (!props.containsKey(key)) {
+				throw new IllegalArgumentException("property " + key + " must be defined in property file " + mediaPropertyFile + " - read manual for instructions on how to create such file");
+			}				
+		}
+		
+		long synchTimeOffset = Long.parseLong(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET));
+		int synchMarkId = Integer.parseInt(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID));					
+		
+		String talosDataPath = props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA);					
+		
+		VideoEffect videoEffect = VideoEffect.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
+		
+		if (talosDataPath == null) {
+			
+			talosDataPath = inputFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt");
+			
+			logger.warn("talosDataPath was not defined, will try to use " + talosDataPath);
+		}
+		
+		File talosData = null;
+
+		for (File f: new File[] {new File(talosDataPath), new File(mediaPropertyFile.getParentFile(), talosDataPath)}) {
+			if (f.exists()) {
+				talosData = f;
+				break;
+			}
+		}
+		
+		if (talosData == null) {
+			throw new IllegalArgumentException("can not read talosData file " + talosDataPath);
+		}
+		
+		dataInput = new MediaSynchedFileDataInput(rs, talosData, new VlcExternalMedia(inputFile, videoPanel, videoEffect), synchTimeOffset, synchMarkId);
+		
+		return dataInput;
 	}
 	
 	void reset() {
