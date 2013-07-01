@@ -504,7 +504,7 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		SensorDataInput dataInput;
 		
-		if (isVideo) {						
+		if (isVideo) {			
 			dataInput = setupSynchedMediaDataInput(inputFile);
 		} else {
 			dataInput = new FileDataInput(rs, inputFile);
@@ -515,6 +515,7 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 	private SensorDataInput setupSynchedMediaDataInput(File inputFile)
 			throws IOException, FileNotFoundException, Exception {
+		
 		SensorDataInput dataInput;
 		File mediaPropertyFile = new File(String.format("%s.talos.properties",  inputFile.getAbsolutePath()));
 

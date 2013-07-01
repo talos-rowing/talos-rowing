@@ -11,10 +11,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import org.gstreamer.ClockTime;
+import org.nargila.robostroke.app.Settings;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 
+@SuppressWarnings("serial")
 public class SteppingPlayerDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -43,6 +46,10 @@ public class SteppingPlayerDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public SteppingPlayerDialog() {
+		
+			VlcSetup.setupCheckVlc(Settings.getInstance().getVlcLibDir(), this);
+		
+
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setModal(true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

@@ -33,6 +33,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -42,25 +43,29 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 
+import uk.co.caprica.vlcj.runtime.RuntimeUtil;
+
 public class ParamEditDialog extends JDialog {
 
 	private static final long serialVersionUID = 1L;
-	private final JPanel contentPanel = new JPanel();
 	private ParameterService ps;
 
 	private final HashMap<String, JTextField> paramEditorsMap = new HashMap<String, JTextField>();
 	private JPanel gridPanel;
+	private JTextField txtVlcPath;
 	
 	/**
 	 * Launch the application.
@@ -83,16 +88,52 @@ public class ParamEditDialog extends JDialog {
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
-			JScrollPane scrollPane = new JScrollPane();
-			contentPanel.add(scrollPane, BorderLayout.CENTER);
+			JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			getContentPane().add(tabbedPane, BorderLayout.CENTER);
 			{
-				gridPanel = new JPanel();
-				scrollPane.setViewportView(gridPanel);
-				gridPanel.setLayout(new GridBagLayout());
+				JPanel panel = new JPanel();
+				tabbedPane.addTab("Settings", null, panel, null);
+				GridBagLayout gbl_panel = new GridBagLayout();
+				gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0};
+				gbl_panel.rowHeights = new int[]{0, 0, 0};
+				gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
+				gbl_panel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+				panel.setLayout(gbl_panel);
+				{
+					JButton btnVlcPath = new JButton("VLC Path");
+					btnVlcPath.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							onVlcPath();
+						}
+					});
+					GridBagConstraints gbc_btnVlcPath = new GridBagConstraints();
+					gbc_btnVlcPath.insets = new Insets(0, 0, 0, 5);
+					gbc_btnVlcPath.gridx = 1;
+					gbc_btnVlcPath.gridy = 1;
+					panel.add(btnVlcPath, gbc_btnVlcPath);
+				}
+				{
+					txtVlcPath = new JTextField(Settings.getInstance().getVlcLibDir() == null ? "" : Settings.getInstance().getVlcLibDir().getAbsolutePath());
+					txtVlcPath.setEditable(false);
+					GridBagConstraints gbc_txtVlcPath = new GridBagConstraints();
+					gbc_txtVlcPath.gridwidth = 2;
+					gbc_txtVlcPath.insets = new Insets(0, 0, 0, 5);
+					gbc_txtVlcPath.fill = GridBagConstraints.HORIZONTAL;
+					gbc_txtVlcPath.gridx = 2;
+					gbc_txtVlcPath.gridy = 1;
+					panel.add(txtVlcPath, gbc_txtVlcPath);
+					txtVlcPath.setColumns(10);
+				}
+			}
+			{
+				JScrollPane scrollPane = new JScrollPane();
+				tabbedPane.addTab("Parameters", null, scrollPane, null);
+				{
+					gridPanel = new JPanel();
+					scrollPane.setViewportView(gridPanel);
+					gridPanel.setLayout(new GridBagLayout());
+				}
 			}
 		}
 		{
@@ -132,6 +173,42 @@ public class ParamEditDialog extends JDialog {
 				Component horizontalGlue = Box.createHorizontalGlue();
 				buttonPane.add(horizontalGlue);
 			}
+		}
+	}
+
+	
+	@SuppressWarnings("serial")
+	protected void onVlcPath() {
+		JFileChooser fc = new JFileChooser(Settings.getInstance().getVlcLibDir()) {    
+			public void approveSelection() {
+				if (getSelectedFile().isDirectory()) {
+					super.approveSelection();
+				}
+			}
+		};
+		
+		fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		
+		fc.setFileFilter(new FileFilter() {
+						
+			@Override
+			public String getDescription() {
+				return "Directory containing " + RuntimeUtil.getLibVlcName();
+			}
+			
+			@Override
+			public boolean accept(File f) {
+				return f.isDirectory() || f.getName().matches("^" + RuntimeUtil.getLibVlcName() + (RuntimeUtil.isNix() ? "(\\.[0-9\\.]+)?" : "") + "$");
+			}
+		});
+		
+		
+		int status = fc.showOpenDialog(this);
+		
+		if (status == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = fc.getSelectedFile();
+			Settings.getInstance().setVlcLibDir(selectedFile);
+			txtVlcPath.setText(selectedFile.getAbsolutePath());
 		}
 	}
 
@@ -232,5 +309,8 @@ public class ParamEditDialog extends JDialog {
 				});				
 			}
 		});
+	}
+	public JTextField getTxtVlcPath() {
+		return txtVlcPath;
 	}
 }

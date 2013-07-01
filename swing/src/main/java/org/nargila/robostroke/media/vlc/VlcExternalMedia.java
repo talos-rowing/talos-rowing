@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.nargila.robostroke.app.Settings;
 import org.nargila.robostroke.data.media.ExternalMedia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class VlcExternalMedia implements ExternalMedia {
 	}
 	
 	public VlcExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
+		
+		VlcSetup.setupCheckVlc(Settings.getInstance().getVlcLibDir(), container);
 		
         this.videoFile = videoFile;
         this.container = container;        

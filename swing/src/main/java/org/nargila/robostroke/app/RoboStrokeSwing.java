@@ -35,8 +35,6 @@ import org.nargila.robostroke.param.Parameter;
 import org.nargila.robostroke.param.ParameterChangeListener;
 import org.nargila.robostroke.param.ParameterService;
 
-import com.sun.jna.Platform;
-
 public class RoboStrokeSwing {
 
 	private static Logger logger = Logger.getLogger(RoboStrokeSwing.class.getName());
@@ -53,35 +51,6 @@ public class RoboStrokeSwing {
 	public static void main(final String[] args) {
 		
 		logger.info("launching Talos Rowing");
-		
-		if (Platform.isWindows()) {
-			
-			logger.info("windows OS detected");
-			
-			String gstreamer_sdk_root = System.getenv().get("GSTREAMER_SDK_ROOT_X86");
-			
-			if (gstreamer_sdk_root == null) {
-				gstreamer_sdk_root = "C:/gstreamer-sdk/0.10/x86";
-			} else {
-				logger.info(String.format("gstreamer sdk root env variable points to %s", gstreamer_sdk_root));
-			}
-			
-			File f = new File(gstreamer_sdk_root);
-			
-			if (f.exists()) {
-				logger.info(String.format("found gstreamer sdk root under %s", gstreamer_sdk_root));				
-				gstreamer_sdk_root = f.getAbsolutePath();
-			} else {
-				logger.info(String.format("gstreamer sdk root %s is invalid", gstreamer_sdk_root));
-				gstreamer_sdk_root = null;
-			}
-			
-			if (gstreamer_sdk_root != null) {
-//				System.setProperty("java.library.path", new File(gstreamer_sdk_root, "bin").getAbsolutePath());
-//				setProperty("jna.library.path", new File(gstreamer_sdk_root, "bin").getAbsolutePath());
-//				setProperty("gst.plugin.path", new File(gstreamer_sdk_root, "lib" + File.separatorChar + "gstreamer-0.10").getAbsolutePath());
-			}
-		}
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -170,6 +139,6 @@ public class RoboStrokeSwing {
 		frmTalosRowing.getContentPane().setLayout(new BorderLayout());
 		frmTalosRowing.getContentPane().add(roboStrokeAppPanel, BorderLayout.CENTER);
 		frmTalosRowing.pack();
+		
 	}
-
 }
