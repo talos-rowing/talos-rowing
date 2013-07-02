@@ -35,7 +35,7 @@ public class VlcExternalMedia implements ExternalMedia {
 	
 	public VlcExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 		
-		VlcSetup.setupCheckVlc(Settings.getInstance().getVlcLibDir(), container);
+		VlcSetup.setupCheckVlc(container);
 		
         this.videoFile = videoFile;
         this.container = container;        

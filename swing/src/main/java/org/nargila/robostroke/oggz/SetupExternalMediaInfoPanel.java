@@ -34,7 +34,6 @@ import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.media.gst.GstFindQrMarkPipeline;
 import org.nargila.robostroke.media.vlc.SteppingPlayerDialog;
-import org.nargila.robostroke.media.vlc.VlcSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,14 +287,11 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 	
 	private void onManualMarkTime() {
-		if (VlcSetup.setupCheckVlc(Settings.getInstance().getVlcLibDir(), this)) {
+		SteppingPlayerDialog steppingPlayer = new SteppingPlayerDialog();
+		steppingPlayer.launch(mediaFile.get().getAbsolutePath());
 
-			SteppingPlayerDialog steppingPlayer = new SteppingPlayerDialog();
-			steppingPlayer.launch(mediaFile.get().getAbsolutePath());
-
-			if (steppingPlayer.getTime() != null) {
-				setSynchData(Pair.create(1, steppingPlayer.getTime().toMillis()));
-			}
+		if (steppingPlayer.getTime() != null) {
+			setSynchData(Pair.create(1, steppingPlayer.getTime().toMillis()));
 		}
 	}
 

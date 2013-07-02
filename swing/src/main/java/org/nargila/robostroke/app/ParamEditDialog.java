@@ -95,9 +95,9 @@ public class ParamEditDialog extends JDialog {
 				JPanel panel = new JPanel();
 				tabbedPane.addTab("Settings", null, panel, null);
 				GridBagLayout gbl_panel = new GridBagLayout();
-				gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0};
+				gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
 				gbl_panel.rowHeights = new int[]{0, 0, 0};
-				gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
+				gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE};
 				gbl_panel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 				panel.setLayout(gbl_panel);
 				{
@@ -124,6 +124,19 @@ public class ParamEditDialog extends JDialog {
 					gbc_txtVlcPath.gridy = 1;
 					panel.add(txtVlcPath, gbc_txtVlcPath);
 					txtVlcPath.setColumns(10);
+				}
+				{
+					JButton btnX = new JButton("X");
+					btnX.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							setVlcLibDir(null);
+						}
+					});
+					
+					GridBagConstraints gbc_btnX = new GridBagConstraints();
+					gbc_btnX.gridx = 4;
+					gbc_btnX.gridy = 1;
+					panel.add(btnX, gbc_btnX);
 				}
 			}
 			{
@@ -207,9 +220,13 @@ public class ParamEditDialog extends JDialog {
 		
 		if (status == JFileChooser.APPROVE_OPTION) {
 			File selectedFile = fc.getSelectedFile();
-			Settings.getInstance().setVlcLibDir(selectedFile);
-			txtVlcPath.setText(selectedFile.getAbsolutePath());
+			setVlcLibDir(selectedFile);
 		}
+	}
+
+	private void setVlcLibDir(File selectedFile) {
+		Settings.getInstance().setVlcLibDir(selectedFile);
+		txtVlcPath.setText(selectedFile == null ? "" : selectedFile.getAbsolutePath());
 	}
 
 	protected void resetParams() {

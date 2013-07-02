@@ -3,12 +3,6 @@ package org.nargila.robostroke.app;
 import java.io.File;
 import java.util.prefs.Preferences;
 
-import org.nargila.robostroke.media.vlc.VlcSetup;
-
-import uk.co.caprica.vlcj.runtime.RuntimeUtil;
-
-import com.sun.jna.Platform;
-
 public class Settings {
 	private static final String PROP_VLC_LIB_DIR = "vlcLibDir";
 	private static final String PROP_LAST_DIR = "lastDir";
@@ -37,7 +31,11 @@ public class Settings {
 	}
 	
 	public <T> void put(String key, T val) {
-		pref.put(key, String.valueOf(val));
+		if (val == null) {
+			del(key);
+		} else {
+			pref.put(key, String.valueOf(val));
+		}
 	}
 	
 	public void del(String key) {
@@ -54,14 +52,19 @@ public class Settings {
 
 
 	private File getPropAsDir(String propName, String path) {
-		File res = new File(path);
-		
-		if (res.isDirectory()) {
-			return res;
-		} else {
-			del(propName);
-			return null;
+
+		if (path != null && !path.equals("")) {
+
+			File res = new File(path);
+
+			if (res.isDirectory()) {
+				return res;
+			} else {
+				del(propName);
+			}
 		}
+		
+		return null;
 	}
 	
 	public static Settings getInstance() {
@@ -69,29 +72,11 @@ public class Settings {
 	}
 
 
-	public File getVlcLibDir() {
-		
-		File res = getPropAsDir(PROP_VLC_LIB_DIR, get(PROP_VLC_LIB_DIR, ""));
-		
-		if (res == null) {
-			String libPath = Platform.isWindows() ? "C:\\Program Files\\VideoLAN\\VLC" : "/usr/lib";
-			File candidatePath = new File(Platform.isWindows() ? libPath : "/usr/lib");
-			
-			String soFile = RuntimeUtil.getLibVlcName();
-			
-			if (candidatePath.isDirectory() && new File(candidatePath, soFile).exists()) {
-				setVlcLibDir(candidatePath);
-				
-				return candidatePath;
-			}
-		}
-		
-		return res;
+	public File getVlcLibDir() {		
+		return getPropAsDir(PROP_VLC_LIB_DIR, get(PROP_VLC_LIB_DIR, ""));
 	}
 	
 	public void setVlcLibDir(File dir) {
-		if (VlcSetup.checkAddVlcPath(dir)) {
-			put(PROP_VLC_LIB_DIR, dir.getAbsoluteFile());
-		}
+		put(PROP_VLC_LIB_DIR, dir == null ? null : dir.getAbsoluteFile());
 	}	
 }

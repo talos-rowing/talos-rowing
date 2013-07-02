@@ -47,7 +47,7 @@ public class SteppingPlayerDialog extends JDialog {
 	 */
 	public SteppingPlayerDialog() {
 		
-			VlcSetup.setupCheckVlc(Settings.getInstance().getVlcLibDir(), this);
+		VlcSetup.setupCheckVlc(this);
 		
 
 		setModalityType(ModalityType.APPLICATION_MODAL);

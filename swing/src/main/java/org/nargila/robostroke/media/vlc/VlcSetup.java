@@ -5,6 +5,7 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import org.nargila.robostroke.app.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,61 +14,70 @@ import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
+import com.sun.jna.Platform;
 
 public class VlcSetup {
 
 	private static final Logger logger = LoggerFactory.getLogger(VlcSetup.class);
 	
+	
+	private static Object loaded;
+	
 	private VlcSetup() {
 	}
 	
-	public static boolean setupCheckVlc(File vlcPath, Component comp) {
-
-		if (vlcPath == null) {
-			try {
-				Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), Library.class);
+	public static synchronized boolean setupCheckVlc(Component comp) {
+		
+		File vlcPath = Settings.getInstance().getVlcLibDir();
+				
+		if (loaded == null) {
+			if (checkAddVlcPath(vlcPath)) {
 				return true;
-			} catch (UnsatisfiedLinkError e) {
-				if (VlcSetup.checkVlcPath(vlcPath, comp)) {
-					return checkAddVlcPath(vlcPath);
+			} else if (Platform.isWindows()) {
+					
+				vlcPath = new File("C:\\Program Files\\VideoLAN\\VLC");
+					
+				if (checkAddVlcPath(vlcPath)) {
+					Settings.getInstance().setVlcLibDir(vlcPath);
+					return true;
+				} else {
+					vlcNotFoundMessage(comp);
 				}
-			}
+			}			
 		}
 		
 		return false;
 	}
 
 	public static boolean checkAddVlcPath(File vlcPath) {
-		VlcSetup.setupVlcLoadPath(vlcPath);
+		
+		VlcSetup.setupJnaLoadPath(vlcPath);
 		
 		try {
-			Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), Library.class);
+			loaded = Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), Library.class);
+			logger.info("'vlc' resolves with path set to {}", vlcPath);
 			return true;
-		} catch (UnsatisfiedLinkError e2) {					
-			return false;
-		}
-	}
-	
-	public static boolean checkVlcPath(File vlcPath, Component comp) {
-
-		if (vlcPath == null) {
-			
-			logger.info("vlc load path can not be determined");
-			
-			JOptionPane.showMessageDialog(comp, 
-					"You need to install vlc (available from videolan.org) \n" +
-					"if you want to play synchronized video files. \n" +
-					"If it is already installed on your computer, go to \n" +
-					"the 'settings' menu item and specify \n" +
-					"the location of the " + RuntimeUtil.getLibVlcName() + " and " + RuntimeUtil.getLibVlcCoreName() + " files." , "Missing VLC Player", JOptionPane.WARNING_MESSAGE);
-			return false;
+		} catch (UnsatisfiedLinkError e) {					
+			logger.info("'vlc' can not be resolved with path set to {}", vlcPath);
 		}
 		
-		return true;
+		return false;
 	}
 	
-	public static void setupVlcLoadPath(File vlcPath) {
-		if (vlcPath != null)  {
+	private static void vlcNotFoundMessage(Component comp) {
+			
+		logger.info("vlc load path can not be determined");
+
+		JOptionPane.showMessageDialog(comp, 
+				"You need to install vlc (available from videolan.org) \n" +
+						"if you want to play synchronized video files. \n" +
+						"If it is already installed on your computer, go to \n" +
+						"the 'settings' menu item and specify \n" +
+						"the location of the " + RuntimeUtil.getLibVlcName() + " and " + RuntimeUtil.getLibVlcCoreName() + " files." , "Missing VLC Player", JOptionPane.WARNING_MESSAGE);
+	}
+	
+	private static void setupJnaLoadPath(File vlcPath) {
+		if (vlcPath != null && vlcPath.isDirectory())  {
 			logger.info("add vlc path to JNA/Java load paths");
 			
 			NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), vlcPath.getAbsolutePath());
