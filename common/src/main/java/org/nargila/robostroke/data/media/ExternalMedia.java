@@ -41,5 +41,6 @@ public interface ExternalMedia {
 	public void start();
 	public void play();
 	public void pause();
-	public void stop();	
+	public void stop();
+	public boolean setRate(double rate);	
 }

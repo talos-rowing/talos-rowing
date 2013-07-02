@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.nargila.robostroke.app.Settings;
 import org.nargila.robostroke.data.media.ExternalMedia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +27,8 @@ public class VlcExternalMedia implements ExternalMedia {
 	private final VideoEffect videoEffect;
 
 	private EventListener listener;
+
+	private double rate = 1.0;
 	
 	VlcExternalMedia(File videoFile, Container container) throws Exception {
 		this(videoFile, container, VideoEffect.NONE);
@@ -120,25 +121,22 @@ public class VlcExternalMedia implements ExternalMedia {
 			
 			public void run() {
 				while (!stopped) {
-					if (playing) {
-						synchronized (time) { 
-							long t = time.get();
-							if (lastTime != t || t == 0 || lastTime - t > 200) {
-								lastSystemTime = System.currentTimeMillis();
-								lastTime = time.get();
-							} else {
-								long currentTime = System.currentTimeMillis();
-								lastTime += currentTime - lastSystemTime;
-								time.set(lastTime);
-								lastSystemTime = currentTime;
-							}
+					synchronized (time) { 
+						long t = time.get();
+						if (!playing || lastTime != t || t == 0 || lastTime - t > 200 || rate < 0.5) {
+							lastSystemTime = System.currentTimeMillis();
+							lastTime = t;
+						} else {
+							long currentTime = System.currentTimeMillis();
+							lastTime += currentTime - lastSystemTime;
+							time.set(lastTime);
+							lastSystemTime = currentTime;
 						}
 					}
 					
 					try {
 						Thread.sleep(20);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -183,7 +181,6 @@ public class VlcExternalMedia implements ExternalMedia {
 				playTimeSmoother.interrupt();
 				playTimeSmoother.join();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -229,5 +226,17 @@ public class VlcExternalMedia implements ExternalMedia {
 	    public void mediaDurationChanged(MediaPlayer mediaPlayer, long newDuration) {
 	    	setDuration(newDuration);
 	    }
+	    
+	    
+	}
+
+	@Override
+	public boolean setRate(double rate) {
+		if (playerComponent.mediaPlayer.setRate((float) rate) == 0) {
+			this.rate = rate;
+			return true;
+		}
+		
+		return false;
 	}
 }

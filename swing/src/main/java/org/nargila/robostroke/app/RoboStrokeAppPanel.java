@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerAdapter;
@@ -109,6 +110,8 @@ public class RoboStrokeAppPanel extends JPanel {
 	private JCheckBoxMenuItem chckbxmntmAccel;
 
 	private JSplitPane splitPane;
+	private JLabel lblSlowFast;
+	private JLabel lblBack;
 	
 	/**
 	 * Create the panel.
@@ -280,13 +283,11 @@ public class RoboStrokeAppPanel extends JPanel {
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setMaximumSize(new Dimension(32767, 20));
-		panel_2.setBackground(Color.BLACK);
-		panel_2.setBorder(new EmptyBorder(0, 5, 0, 5));
+		panel_2.setBackground(Color.WHITE);
 		panel.add(panel_2);
-		panel_2.setLayout(new BorderLayout(0, 0));
 		
 		slider = new JSlider();
-		slider.setBorder(new EmptyBorder(0, 5, 0, 0));
+		slider.setBorder(new EmptyBorder(2, 5, 2, 0));
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 			    if (rs != null && slider.getValueIsAdjusting()) {
@@ -301,14 +302,25 @@ public class RoboStrokeAppPanel extends JPanel {
 			    }
 			}
 		});
+		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.Y_AXIS));
 		
 
 		slider.setBackground(Color.BLACK);
 		panel_2.add(slider);
 		slider.setValue(0);
 		
-		final JLabel label = new JLabel("=");
-		label.addMouseListener(new MouseAdapter() {
+		JPanel horizontalBox = new JPanel();
+		horizontalBox.setOpaque(false);
+		horizontalBox.setBorder(new EmptyBorder(1, 0, 1, 0));
+		panel_2.add(horizontalBox);
+		horizontalBox.setLayout(new GridLayout(0, 4, 1, 0));
+		
+		final JLabel lblPlayPause = new JLabel("=");
+		lblPlayPause.setOpaque(true);
+		lblPlayPause.setBackground(Color.BLACK);
+		lblPlayPause.setHorizontalAlignment(SwingConstants.CENTER);
+		horizontalBox.add(lblPlayPause);
+		lblPlayPause.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				
@@ -318,13 +330,79 @@ public class RoboStrokeAppPanel extends JPanel {
 						input.setPaused(!paused);
 						paused = !paused;
 					}
-					label.setText(paused ? ">" : "=");
+					lblPlayPause.setText(paused ? ">" : "=");
 				}
 			}
 		});
-		label.setFont(new Font("Dialog", Font.BOLD, 32));
-		label.setForeground(Color.WHITE);
-		panel_2.add(label, BorderLayout.WEST);
+		lblPlayPause.setFont(new Font("Dialog", Font.BOLD, 22));
+		lblPlayPause.setForeground(Color.WHITE);
+		
+		lblSlowFast = new JLabel("S");
+		lblSlowFast.addMouseListener(new MouseAdapter() {
+			
+			private boolean slow;
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (rs != null) {
+					RecordDataInput input = (RecordDataInput) rs.getDataInput();
+					if (input instanceof MediaSynchedFileDataInput) {
+						
+						((MediaSynchedFileDataInput)input).setRate(slow ? 1.0 : 0.2);
+						slow = !slow;
+					}
+					lblSlowFast.setText(slow ? "F" : "S");
+				}
+			}
+		});
+		
+		lblSlowFast.setBackground(Color.BLACK);
+		lblSlowFast.setOpaque(true);
+		lblSlowFast.setHorizontalAlignment(SwingConstants.CENTER);
+		lblSlowFast.setForeground(Color.WHITE);
+		lblSlowFast.setFont(new Font("Dialog", Font.BOLD, 22));
+		horizontalBox.add(lblSlowFast);
+		
+		lblBack = new JLabel("-3");
+		lblBack.addMouseListener(new MouseAdapter() {
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (rs != null) {
+					RecordDataInput input = (RecordDataInput) rs.getDataInput();
+					if (input instanceof MediaSynchedFileDataInput) {
+						
+						((MediaSynchedFileDataInput)input).skipTime(-3000);
+					}
+				}
+			}
+		});
+		lblBack.setBackground(Color.BLACK);
+		lblBack.setOpaque(true);
+		lblBack.setHorizontalAlignment(SwingConstants.CENTER);
+		lblBack.setFont(new Font("Dialog", Font.BOLD, 22));
+		lblBack.setForeground(Color.WHITE);
+		horizontalBox.add(lblBack);
+		
+		JLabel lblForward = new JLabel("+1");
+		lblForward.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (rs != null) {
+					RecordDataInput input = (RecordDataInput) rs.getDataInput();
+					if (input instanceof MediaSynchedFileDataInput) {
+						
+						((MediaSynchedFileDataInput)input).skipTime(1000);
+					}
+				}
+			}
+		});
+		lblForward.setBackground(Color.BLACK);
+		lblForward.setOpaque(true);
+		lblForward.setHorizontalAlignment(SwingConstants.CENTER);
+		lblForward.setFont(new Font("Dialog", Font.BOLD, 22));
+		lblForward.setForeground(Color.WHITE);
+		horizontalBox.add(lblForward);
 		
 		JSeparator separator_2 = new JSeparator();
 		panel.add(separator_2);
@@ -445,7 +523,6 @@ public class RoboStrokeAppPanel extends JPanel {
 			RemoteDataInput dataInput = new RemoteDataInput(rs);
 			start(dataInput, false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}	
@@ -635,5 +712,8 @@ public class RoboStrokeAppPanel extends JPanel {
 	}
 	public JMenuItem getMntmExport() {
 		return mntmExport;
+	}
+	public JLabel getLblSlowFast() {
+		return lblSlowFast;
 	}
 }

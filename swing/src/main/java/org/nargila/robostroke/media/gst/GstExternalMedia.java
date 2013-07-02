@@ -11,10 +11,13 @@ import org.gstreamer.Bus;
 import org.gstreamer.BusSyncReply;
 import org.gstreamer.Caps;
 import org.gstreamer.Element;
+import org.gstreamer.Format;
 import org.gstreamer.GstObject;
 import org.gstreamer.Message;
 import org.gstreamer.Pad;
 import org.gstreamer.Pipeline;
+import org.gstreamer.SeekFlags;
+import org.gstreamer.SeekType;
 import org.gstreamer.State;
 import org.gstreamer.Structure;
 import org.gstreamer.event.BusSyncHandler;
@@ -240,5 +243,14 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
 	@Override
 	public boolean isPlaying() {
 		return pipe != null && pipe.isPlaying();
+	}
+
+	@Override
+	public boolean setRate(double rate) {
+		if (pipe != null) {
+			return pipe.seek(rate, Format.TIME, SeekFlags.FLUSH | SeekFlags.KEY_UNIT, SeekType.CUR, 0, SeekType.NONE, -1);
+		}
+		
+		return false;
 	}
 }

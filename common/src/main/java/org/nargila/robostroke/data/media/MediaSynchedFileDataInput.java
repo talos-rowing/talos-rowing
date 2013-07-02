@@ -61,6 +61,15 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
         media.start();
     }
 
+    public void skipTime(long ms) {
+    	double pos = (double)(media.getTime() + ms) / media.getDuration();
+    	setPos(pos);
+    }
+    
+    public void setRate(double rate) {
+    	media.setRate(rate);
+    }
+    
     @Override
     public void skipReplayTime(float velocityX) {
     }
