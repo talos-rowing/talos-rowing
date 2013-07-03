@@ -34,6 +34,7 @@ import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.media.gst.GstFindQrMarkPipeline;
 import org.nargila.robostroke.media.vlc.SteppingPlayerDialog;
+import org.nargila.robostroke.media.vlc.VlcFindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	private JFormattedTextField textMarkId;
 	private VideoEffect videoEffect = VideoEffect.NONE;
 	private JButton btnDetect;
-	private GstFindQrMarkPipeline findQr;
+	private VlcFindQrMarkPipeline findQr;
 	private boolean canceled;
 	private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer,Long>>();
 
@@ -322,7 +323,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		
 		final SetupExternalMediaInfoPanel self = this;
 
-		findQr = new GstFindQrMarkPipeline(mediaFile.get());
+		findQr = new VlcFindQrMarkPipeline(mediaFile.get());
 		
 		new Thread("DetectQrMark") {
 			public void run() {
