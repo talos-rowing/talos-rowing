@@ -56,7 +56,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 	private JButton btnSkipForeward;
 	private JLabel lblTime;
 	private JCheckBox chckbxAutoQR;
-	protected boolean qrSearchMode = true;
+	protected boolean qrScanMode = true;
 	private String mark;
 	private ClockTime timestamp;
 	private JLabel lblMark;
@@ -151,7 +151,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 		chckbxAutoQR = new JCheckBox("Auto QR");
 		chckbxAutoQR.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				qrSearchMode  = chckbxAutoQR.isSelected();
+				setQrScanMode(chckbxAutoQR.isSelected());
 			}
 		});
 		chckbxAutoQR.setSelected(true);
@@ -168,7 +168,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 		    protected void onImageChanged(BufferedImage image, final long timestamp) {
 		    	super.onImageChanged(image, timestamp);
 		    	
-		    	if (qrSearchMode) {
+		    	if (false && qrScanMode) {
 		    		
 		    		if (findQrCode(image, timestamp)) {		    	
 		    			vlc.getMediaPlayer().setPause(true);
@@ -188,6 +188,14 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 		
 	}
 
+	protected void setQrScanMode(boolean qrScanMode) {
+		
+		this.qrScanMode  = qrScanMode;
+		
+		vlc.getMediaPlayer().setRate(qrScanMode ? 0.33f : 1.0f);
+		vlc.getMediaPlayer().mute(qrScanMode);
+	}
+
 	public void setTimeListener(TimeChangeListener listener) {
 		this.timeListener = listener;		
 	}
@@ -198,18 +206,9 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 
 	private void updateTime(final long time) {
 
-		Runnable run = new Runnable() {
-			
-			@Override
-			public void run() {
-				timeListener.onTimeChanged(mark, ClockTime.fromMillis(time));
-				lblTime.setText(ClockTime.fromMillis(time).toString());
-//				sslider.setValue((int) (vlc.getMediaPlayer().getPosition() * slider.getMaximum()));
-				lblMark.setText(mark == null ? "S:1" : mark);
-			}
-		};
-		
-		EventQueue.invokeLater(run);
+		timeListener.onTimeChanged(mark, ClockTime.fromMillis(time));
+		lblTime.setText(ClockTime.fromMillis(time).toString());
+		lblMark.setText(mark == null ? "S:1" : mark);
 	}
 
 	private boolean findQrCode(BufferedImage image, long time) {
@@ -284,7 +283,8 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
 	}
 	
 	public void play(String mrl) {
-		vlc.getMediaPlayer().playMedia(mrl);		
+		vlc.getMediaPlayer().playMedia(mrl);
+		setQrScanMode(qrScanMode);
 	}
 
 	public void stop() {
