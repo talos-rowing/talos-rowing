@@ -29,10 +29,10 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
 import org.nargila.robostroke.app.Settings;
+import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
-import org.nargila.robostroke.media.gst.GstFindQrMarkPipeline;
 import org.nargila.robostroke.media.vlc.SteppingPlayerDialog;
 import org.nargila.robostroke.media.vlc.VlcFindQrMarkPipeline;
 import org.slf4j.Logger;
@@ -289,10 +289,13 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
 	private void onManualMarkTime() {
 		SteppingPlayerDialog steppingPlayer = new SteppingPlayerDialog();
-		steppingPlayer.launch(mediaFile.get().getAbsolutePath());
+		Pair<String, ClockTime> syncTime = steppingPlayer.launch(mediaFile.get().getAbsolutePath());
 
-		if (steppingPlayer.getTime() != null) {
-			setSynchData(Pair.create(1, steppingPlayer.getTime().toMillis()));
+		if (syncTime != null) {
+			
+			int markId = syncTime.first == null ? 1 : new Integer(syncTime.first.split(":")[1]);
+			
+			setSynchData(Pair.create(markId, syncTime.second.toMillis()));
 		}
 	}
 

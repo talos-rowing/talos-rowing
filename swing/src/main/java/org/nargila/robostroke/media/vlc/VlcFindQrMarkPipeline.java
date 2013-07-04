@@ -1,9 +1,7 @@
 package org.nargila.robostroke.media.vlc;
 
-import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.nargila.robostroke.common.ClockTime;
@@ -13,10 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.caprica.vlcj.component.DirectMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
-import uk.co.caprica.vlcj.player.direct.BufferFormat;
-import uk.co.caprica.vlcj.player.direct.BufferFormatCallback;
-import uk.co.caprica.vlcj.player.direct.DirectMediaPlayer;
-import uk.co.caprica.vlcj.player.direct.format.RV32BufferFormat;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.LuminanceSource;
@@ -25,7 +19,6 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
-import com.sun.jna.Memory;
 
 public class VlcFindQrMarkPipeline {
 
@@ -36,55 +29,17 @@ public class VlcFindQrMarkPipeline {
 	private String mark;
 
 	private ClockTime timestamp;
-	
-    private BufferedImage bi = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration().createCompatibleImage(1, 1);
-    private int[] rgbBuffer = new int[bi.getWidth() * bi.getHeight()];
-    
-    private final AtomicBoolean playerDone = new AtomicBoolean();
-    
-	private final DirectMediaPlayerComponent vlc = new DirectMediaPlayerComponent(new BufferFormatCallback() {
-				
-				@Override
-				public BufferFormat getBufferFormat(int sourceWidth, int sourceHeight) {
-					return new RV32BufferFormat(sourceWidth, sourceHeight);
-				}
-			}) {
-			   
-	    @Override
-	    public void display(DirectMediaPlayer mediaPlayer, Memory[] nativeBuffers, BufferFormat bufferFormat) {
-	    		    	
-				synchronized (playerDone) {
-					
-					if (playerDone.get()) {
-						return;
-					}
-					
-					int width = bufferFormat.getWidth();
-					int height = bufferFormat.getHeight();
-					if (width != bi.getWidth() || height != bi.getHeight()) {
-						bi = GraphicsEnvironment.getLocalGraphicsEnvironment()
-								.getDefaultScreenDevice()
-								.getDefaultConfiguration()
-								.createCompatibleImage(width, height);
-						rgbBuffer = new int[bi.getWidth() * bi.getHeight()];
-					}
-					nativeBuffers[0]
-							.getByteBuffer(0L, nativeBuffers[0].size())
-							.asIntBuffer()
-							.get(rgbBuffer,
-									0,
-									bufferFormat.getHeight()
-											* bufferFormat.getWidth());
-					bi.setRGB(0, 0, bi.getWidth(), bi.getHeight(), rgbBuffer,
-							0, bi.getWidth());
-					if (findQrCode(bi, mediaPlayer.getTime())) {
+	    
+	private final DirectMediaPlayerComponent vlc = new BufferedImageMediaPlayer() {
+		protected void onImageChanged(BufferedImage image, long timestamp)  {
+			
+			if (findQrCode(image, timestamp)) {
 
-						synchronized (finishSync) {
-							finishSync.notifyAll();
-						}
-					}
+				synchronized (finishSync) {
+					finishSync.notifyAll();
 				}
-	    }
+			}			
+		}
 	};
 
 	private File video;
@@ -109,18 +64,8 @@ public class VlcFindQrMarkPipeline {
 	}
 
 	private void doStop() {
-		synchronized (playerDone) {
-			
-			if (playerDone.get()) {
-				return;
-			}
-			
-			mp.stop();
-			vlc.release();
-			
-			
-			playerDone.set(true);
-		}
+		mp.stop();
+		vlc.release();
 	}
 	
 
