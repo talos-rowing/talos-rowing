@@ -17,8 +17,6 @@ import javax.swing.border.LineBorder;
 import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 
-import uk.co.caprica.vlcj.logger.Logger;
-
 @SuppressWarnings("serial")
 public class SteppingPlayerDialog extends JDialog {
 
@@ -71,8 +69,8 @@ public class SteppingPlayerDialog extends JDialog {
 			player.setTimeListener(new VlcFrameSteppingPlayerPanel.TimeChangeListener() {
 				
 				@Override
-				public void onTimeChanged(String m, ClockTime time) {
-					setRes(m, time);
+                public void onTimeChanged(long time) {
+                    setRes("S:1", ClockTime.fromMillis(time));
 				}
 			});
 		}
@@ -83,7 +81,8 @@ public class SteppingPlayerDialog extends JDialog {
 			{
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					@Override
+                    public void actionPerformed(ActionEvent e) {
 						setVisible(false);
 					}
 				});
@@ -94,7 +93,8 @@ public class SteppingPlayerDialog extends JDialog {
 			{
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					@Override
+                    public void actionPerformed(ActionEvent e) {
 						
 						synchronized (res) {
 							stop();
@@ -125,7 +125,7 @@ public class SteppingPlayerDialog extends JDialog {
 		super.processWindowEvent(e);
 
         if (e.getID() == WindowEvent.WINDOW_OPENED) {
-        	
+            runPlayer();
         }
     }
 	
@@ -181,8 +181,6 @@ public class SteppingPlayerDialog extends JDialog {
 	public Pair<String,ClockTime> launch(String mrl) {
 		
 		this.mrl = mrl;
-		
-		runPlayer();
 		
 		setVisible(true);
 		
