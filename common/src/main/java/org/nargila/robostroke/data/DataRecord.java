@@ -24,255 +24,257 @@ package org.nargila.robostroke.data;
 
 public class DataRecord {
 
-	public enum Type {
-		UUID,
-		RECORDING_START,
-		RECORDING_COUNTDOWN(false, new DataRecordSerializer() {
+    public enum Type {
+        UUID,
+        RECORDING_START,
+        RECORDING_COUNTDOWN(false, new DataRecordSerializer() {
 
-			@Override
-			protected String doSerialize(Object data) {
-				Object[] vals = (Object[]) data;
-				/* tag, countdown */
-				return String.format("%s,%d", vals);
-			}
-			
-			@Override
-			public Object doParse(String s) {
-				String[] tokens = s.split(",");
-				/* tag, countdown */
-				return new Object[] {tokens[0], new Integer(tokens[1])};
-			}			
-		}), 
-		STROKE_DROP_BELOW_ZERO,
-		STROKE_RISE_ABOVE_ZERO,
-		STROKE_POWER_START,
-		ROWING_STOP(false, new DataRecordSerializer() {
+            @Override
+            protected String doSerialize(Object data) {
+                Object[] vals = (Object[]) data;
+                /* tag, countdown */
+                return String.format("%s,%d", vals);
+            }
 
-			@Override
-			protected String doSerialize(Object data) {
-				Object[] vals = (Object[]) data;
-				/* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-				return String.format("%d,%f,%d,%d,%d", vals);
-			}
-			
-			@Override
-			public Object doParse(String s) {
-				String[] tokens = s.split(",");
-				/* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-				return new Object[] {new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
-			}			
-		}),
-		ROWING_START_TRIGGERED,
-		ROWING_START(false, new DataRecordSerializer.LONG()),
-		ROWING_COUNT(false, new DataRecordSerializer.INT()),
-		PARAMETER_CHANGE(false, new DataRecordSerializer.PARAMETER()),
-		SESSION_PARAMETER(true, new DataRecordSerializer.PARAMETER()),
-		STROKE_POWER_END(false, true, new DataExporter() {
+            @Override
+            public Object doParse(String s) {
+                String[] tokens = s.split(",");
+                /* tag, countdown */
+                return new Object[] {tokens[0], new Integer(tokens[1])};
+            }			
+        }), 
+        STROKE_DROP_BELOW_ZERO,
+        STROKE_RISE_ABOVE_ZERO,
+        STROKE_POWER_START,
+        ROWING_STOP(false, new DataRecordSerializer() {
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"power"};
-			}
+            @Override
+            protected String doSerialize(Object data) {
+                Object[] vals = (Object[]) data;
+                /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
+                return String.format("%d,%f,%d,%d,%d", vals);
+            }
 
-			@Override
-			public Object[] exportData(Object data) {
-				return new Object[]{data};
-				
-			}
-		}, new DataRecordSerializer.FLOAT()),
-		STROKE_RATE(false, true, new DataExporter() {
+            @Override
+            public Object doParse(String s) {
+                String[] tokens = s.split(",");
+                /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
+                return new Object[] {new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
+            }			
+        }),
+        ROWING_START_TRIGGERED,
+        ROWING_START(false, new DataRecordSerializer.LONG()),
+        ROWING_COUNT(false, new DataRecordSerializer.INT()),
+        PARAMETER_CHANGE(false, new DataRecordSerializer.PARAMETER()),
+        SESSION_PARAMETER(true, new DataRecordSerializer.PARAMETER()),
+        STROKE_POWER_END(false, true, new DataExporter() {
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"stroke_rate"};
-			}
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"power"};
+            }
 
-			@Override
-			public Object[] exportData(Object data) {
-				return new Object[]{data};
-			}
-		}, new DataRecordSerializer.INT()), 
-		STROKE_DECELERATION_TRESHOLD, 
-		STROKE_ACCELERATION_TRESHOLD, 
-		STROKE_ROLL(false, new DataRecordSerializer.FLOAT_ARR()),
-		RECOVERY_ROLL(false, new DataRecordSerializer.FLOAT_ARR()), 
-		ACCEL(true, false, new DataExporter() {
+            @Override
+            public Object[] exportData(Object data) {
+                return new Object[]{data};
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"x", "y", "z"};
-			}
+            }
+        }, new DataRecordSerializer.FLOAT()),
+        STROKE_RATE(false, true, new DataExporter() {
 
-			@Override
-			public Object[] exportData(Object data) {
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"stroke_rate"};
+            }
 
-				float[] fdata = (float[]) data;
+            @Override
+            public Object[] exportData(Object data) {
+                return new Object[]{data};
+            }
+        }, new DataRecordSerializer.INT()), 
+        STROKE_DECELERATION_TRESHOLD, 
+        STROKE_ACCELERATION_TRESHOLD, 
+        STROKE_ROLL(false, new DataRecordSerializer.FLOAT_ARR()),
+        RECOVERY_ROLL(false, new DataRecordSerializer.FLOAT_ARR()), 
+        ACCEL(true, false, new DataExporter() {
 
-				return new Object[]{fdata[0], fdata[1], fdata[2]};
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"x", "y", "z"};
+            }
 
-			}
-		}, new DataRecordSerializer.FLOAT_ARR()),
-		ORIENT(true, false, new DataExporter() {
+            @Override
+            public Object[] exportData(Object data) {
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"azimuth", "pitch", "roll"};
-			}
+                float[] fdata = (float[]) data;
 
-			@Override
-			public Object[] exportData(Object data) {
+                return new Object[]{fdata[0], fdata[1], fdata[2]};
 
-				float[] fdata = (float[]) data;
+            }
+        }, new DataRecordSerializer.FLOAT_ARR()),
+        ORIENT(true, false, new DataExporter() {
 
-				return new Object[]{fdata[0], fdata[1], fdata[2]};
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"azimuth", "pitch", "roll"};
+            }
 
-			}
-		}, new DataRecordSerializer.FLOAT_ARR()), 
-		GPS(true, false, new DataExporter() {
+            @Override
+            public Object[] exportData(Object data) {
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"lat", "long", "alt", "speed", "bearing", "accuracy"};
-			}
+                float[] fdata = (float[]) data;
 
-			@Override
-			public Object[] exportData(Object data) {
+                return new Object[]{fdata[0], fdata[1], fdata[2]};
 
-				double[] ddata = (double[]) data;
+            }
+        }, new DataRecordSerializer.FLOAT_ARR()), 
+        GPS(true, false, new DataExporter() {
 
-				return new Object[]{ddata[0], ddata[1], ddata[2], ddata[3], ddata[4], ddata[5]};
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"lat", "long", "alt", "speed", "bearing", "accuracy"};
+            }
 
-			}
-		}, new DataRecordSerializer.DOUBLE_ARR()), 
-		WAY(false, true, new DataExporter() {
+            @Override
+            public Object[] exportData(Object data) {
 
-			@Override
-			public String[] getColumnNames() {
-				return new String[] {"distance", "speed", "accuracy"};
-			}
+                double[] ddata = (double[]) data;
 
-			@Override
-			public Object[] exportData(Object data) {
+                return new Object[]{ddata[0], ddata[1], ddata[2], ddata[3], ddata[4], ddata[5]};
 
-				double[] ddata = (double[]) data;
+            }
+        }, new DataRecordSerializer.DOUBLE_ARR()), 
+        WAY(false, true, new DataExporter() {
 
-				return new Object[]{ddata[0], ddata[1], ddata[2]};
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"distance", "speed", "accuracy"};
+            }
 
-			}
-		}, new DataRecordSerializer.DOUBLE_ARR()), 
-		ACCUM_DISTANCE(true, new DataRecordSerializer.DOUBLE()),
-		FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()), 
-		HEART_BPM(true, new DataRecordSerializer.INT()), 
-		IMMEDIATE_DISTANCE_REQUESTED,
-		BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()), 				
-		ROWING_START_DISTANCE(false, new DistanceEventSerializer()), 
-		CRASH_STACK,
-		INPUT_START,
-		INPUT_STOP,
-		REPLAY_PROGRESS,
-		REPLAY_SKIPPED,
-		LOGFILE_VERSION(false, new DataRecordSerializer.INT());
+            @Override
+            public Object[] exportData(Object data) {
 
-		private static final class DistanceEventSerializer extends DataRecordSerializer {
-			@Override
-			protected String doSerialize(Object data) {
-				Object[] vals = (Object[]) data;
-				/* travelTime, travelDistance */
-				return String.format("%d,%f", vals);
-			}
+                double[] ddata = (double[]) data;
 
-			@Override
-			public Object doParse(String s) {
-				String[] tokens = s.split(",");
-				return new Object[] {new Long(tokens[0]), new Float(tokens[1])};
-			}
-		}
-		
-		public interface DataExporter {
-			String[] getColumnNames();
-			Object[] exportData(Object data);
-		}
-		
-		public final boolean isReplayableEvent;
-		public final boolean isParsableEvent;
-		public final boolean isBusEvent;
-		public final boolean isExportableEvent;
-		private final DataRecordSerializer dataParser;
-		private final DataExporter dataExporter;
-		
-		private Type(boolean isReplayableEvent, DataRecordSerializer dataParser) {
-			this(isReplayableEvent, true, null, dataParser);
-		}
-		
-		private Type(boolean isReplayableEvent, boolean isBusEvent, DataExporter dataExporter, DataRecordSerializer dataParser) {
-			this.isReplayableEvent = isReplayableEvent;
-			this.isBusEvent = isBusEvent;
-			this.isExportableEvent = dataExporter != null;
-			this.dataExporter = dataExporter;
-			this.dataParser = dataParser;
-			this.isParsableEvent = dataParser != null;
-		}
-		
-		private Type() {
-			this(false, true, null, null);
-		}
-		
-		public DataExporter getDataExporter() {
-			return dataExporter;
-		}		
-	}
-	
-	public final Type type;
-	public final long timestamp;
-	public final Object data;
-		
-	public DataRecord(Type type, long timestamp, Object data) {
-		this.type = type;
-		this.timestamp = timestamp;
-		this.data = data;
-	}
-	
-	@Override
-	public String toString() {
-		
-		String sdata = dataToString();
-		
-		return "" + type + " " + timestamp + " " + sdata;
-	}
+                return new Object[]{ddata[0], ddata[1], ddata[2]};
 
-	public String dataToString() {
-		String sdata;
-		
-		if (type.dataParser != null) {
-			sdata = type.dataParser.serialize(data);
-		} else {
-			sdata = String.valueOf(data);
-		}
-		return sdata;
-	}
+            }
+        }, new DataRecordSerializer.DOUBLE_ARR()), 
+        ACCUM_DISTANCE(true, new DataRecordSerializer.DOUBLE()),
+        FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()), 
+        HEART_BPM(true, new DataRecordSerializer.INT()), 
+        IMMEDIATE_DISTANCE_REQUESTED,
+        BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()), 				
+        ROWING_START_DISTANCE(false, new DistanceEventSerializer()), 
+        CRASH_STACK,
+        INPUT_START,
+        INPUT_STOP,
+        REPLAY_PROGRESS,
+        REPLAY_SKIPPED,
+        REPLAY_PAUSED,
+        REPLAY_PLAYING,
+        LOGFILE_VERSION(false, new DataRecordSerializer.INT());
 
-	public Object[] exportData() {
-		if (type.isExportableEvent) {
-			return type.dataExporter.exportData(data);
-		}
-		
-		return null;
-	}
-	
-	public static DataRecord create(Type type, long timestamp, Object data) {
-		return new DataRecord(type, timestamp, data);
-	}
+        private static final class DistanceEventSerializer extends DataRecordSerializer {
+            @Override
+            protected String doSerialize(Object data) {
+                Object[] vals = (Object[]) data;
+                /* travelTime, travelDistance */
+                return String.format("%d,%f", vals);
+            }
 
-	public static DataRecord create(Type type, long timestamp, String str) {
-		if (type.dataParser != null) {
-			Object data = type.dataParser.parse(str);
-			return create(type, timestamp, data);
-		} else {
-			throw new UnsupportedOperationException(
-					String
-							.format(
-									"StrokeEvent type %s does not have a serializer configured",
-									type));
-		}
-	}
+            @Override
+            public Object doParse(String s) {
+                String[] tokens = s.split(",");
+                return new Object[] {new Long(tokens[0]), new Float(tokens[1])};
+            }
+        }
+
+        public interface DataExporter {
+            String[] getColumnNames();
+            Object[] exportData(Object data);
+        }
+
+        public final boolean isReplayableEvent;
+        public final boolean isParsableEvent;
+        public final boolean isBusEvent;
+        public final boolean isExportableEvent;
+        private final DataRecordSerializer dataParser;
+        private final DataExporter dataExporter;
+
+        private Type(boolean isReplayableEvent, DataRecordSerializer dataParser) {
+            this(isReplayableEvent, true, null, dataParser);
+        }
+
+        private Type(boolean isReplayableEvent, boolean isBusEvent, DataExporter dataExporter, DataRecordSerializer dataParser) {
+            this.isReplayableEvent = isReplayableEvent;
+            this.isBusEvent = isBusEvent;
+            this.isExportableEvent = dataExporter != null;
+            this.dataExporter = dataExporter;
+            this.dataParser = dataParser;
+            this.isParsableEvent = dataParser != null;
+        }
+
+        private Type() {
+            this(false, true, null, null);
+        }
+
+        public DataExporter getDataExporter() {
+            return dataExporter;
+        }		
+    }
+
+    public final Type type;
+    public final long timestamp;
+    public final Object data;
+
+    public DataRecord(Type type, long timestamp, Object data) {
+        this.type = type;
+        this.timestamp = timestamp;
+        this.data = data;
+    }
+
+    @Override
+    public String toString() {
+
+        String sdata = dataToString();
+
+        return "" + type + " " + timestamp + " " + sdata;
+    }
+
+    public String dataToString() {
+        String sdata;
+
+        if (type.dataParser != null) {
+            sdata = type.dataParser.serialize(data);
+        } else {
+            sdata = String.valueOf(data);
+        }
+        return sdata;
+    }
+
+    public Object[] exportData() {
+        if (type.isExportableEvent) {
+            return type.dataExporter.exportData(data);
+        }
+
+        return null;
+    }
+
+    public static DataRecord create(Type type, long timestamp, Object data) {
+        return new DataRecord(type, timestamp, data);
+    }
+
+    public static DataRecord create(Type type, long timestamp, String str) {
+        if (type.dataParser != null) {
+            Object data = type.dataParser.parse(str);
+            return create(type, timestamp, data);
+        } else {
+            throw new UnsupportedOperationException(
+                    String
+                    .format(
+                            "StrokeEvent type %s does not have a serializer configured",
+                            type));
+        }
+    }
 }

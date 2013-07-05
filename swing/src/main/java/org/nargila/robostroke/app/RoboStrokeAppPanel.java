@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -98,7 +99,7 @@ public class RoboStrokeAppPanel extends JPanel {
 
     private final JSlider slider;
 
-    protected boolean paused;
+    private final AtomicBoolean paused = new AtomicBoolean(true);
 
     protected ParamEditDialog paramEditDialog;
     private final JMenuItem mntmExport;
@@ -112,6 +113,8 @@ public class RoboStrokeAppPanel extends JPanel {
     private final JSplitPane splitPane;
     private final JLabel lblSlowFast;
     private final JLabel lblBack;
+
+    private final JLabel lblPlayPause;
 
     /**
      * Create the panel.
@@ -325,9 +328,9 @@ public class RoboStrokeAppPanel extends JPanel {
         horizontalBox.setOpaque(false);
         horizontalBox.setBorder(new EmptyBorder(1, 0, 1, 0));
         panel_2.add(horizontalBox);
-        horizontalBox.setLayout(new GridLayout(0, 4, 1, 0));
+        horizontalBox.setLayout(new GridLayout(0, 5, 1, 0));
 
-        final JLabel lblPlayPause = new JLabel("=");
+        lblPlayPause = new JLabel(">");
         lblPlayPause.setOpaque(true);
         lblPlayPause.setBackground(Color.BLACK);
         lblPlayPause.setHorizontalAlignment(SwingConstants.CENTER);
@@ -339,13 +342,12 @@ public class RoboStrokeAppPanel extends JPanel {
                 if (rs != null) {
                     RecordDataInput input = (RecordDataInput) rs.getDataInput();
                     if (input != null) {
-                        input.setPaused(!paused);
-                        paused = !paused;
+                        input.setPaused(!paused.get());
                     }
-                    lblPlayPause.setText(paused ? ">" : "=");
                 }
             }
         });
+
         lblPlayPause.setFont(new Font("Dialog", Font.BOLD, 22));
         lblPlayPause.setForeground(Color.WHITE);
 
@@ -415,6 +417,26 @@ public class RoboStrokeAppPanel extends JPanel {
         lblForward.setFont(new Font("Dialog", Font.BOLD, 22));
         lblForward.setForeground(Color.WHITE);
         horizontalBox.add(lblForward);
+
+        JLabel lblStep = new JLabel("+>");
+        lblStep.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (rs != null) {
+                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                    if (input instanceof MediaSynchedFileDataInput) {
+
+                        ((MediaSynchedFileDataInput)input).step();
+                    }
+                }
+            }
+        });
+        lblStep.setFont(new Font("Dialog", Font.BOLD, 22));
+        lblStep.setHorizontalAlignment(SwingConstants.CENTER);
+        lblStep.setForeground(Color.WHITE);
+        lblStep.setBackground(Color.BLACK);
+        lblStep.setOpaque(true);
+        horizontalBox.add(lblStep);
 
         JSeparator separator_2 = new JSeparator();
         panel.add(separator_2);
@@ -568,8 +590,6 @@ public class RoboStrokeAppPanel extends JPanel {
 
     void start(File f) {
 
-        paused = false;
-
         try {						
             Pair<SensorDataInput, Boolean> input = setInput(f);
             start(input.first, input.second);
@@ -582,7 +602,6 @@ public class RoboStrokeAppPanel extends JPanel {
 
         rs.setInput(null);				
         reset();
-        paused = false;
         rs.setInput(dataInput);				
         mntmExport.setEnabled(canExport);
 
@@ -703,6 +722,14 @@ public class RoboStrokeAppPanel extends JPanel {
             public void onBusEvent(DataRecord event) {
 
                 switch (event.type) {
+                    case REPLAY_PAUSED:
+                    case INPUT_STOP:
+                        updatePlayPause(true);
+                        break;
+                    case REPLAY_PLAYING:
+                    case INPUT_START:
+                        updatePlayPause(false);
+                        break;                        
                     case REPLAY_PROGRESS:
 
                         if (!slider.getValueIsAdjusting()) {
@@ -717,6 +744,8 @@ public class RoboStrokeAppPanel extends JPanel {
                         graphsReset();
 
                         break;
+                    default:
+                        break;
 
                 }
             }
@@ -724,6 +753,12 @@ public class RoboStrokeAppPanel extends JPanel {
 
         splitPane.resetToPreferredSizes();
     }
+
+    private void updatePlayPause(boolean pauseState) {        
+        paused.set(pauseState);        
+        lblPlayPause.setText(paused.get() ? ">" : "=");
+    }
+
     public JMenuItem getMntmExport() {
         return mntmExport;
     }
