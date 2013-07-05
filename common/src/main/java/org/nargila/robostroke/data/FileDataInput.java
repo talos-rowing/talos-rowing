@@ -26,6 +26,7 @@ import java.io.RandomAccessFile;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.data.DataRecord.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +45,11 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     protected final RandomAccessFile reader;
 
-    private long startTimeDiff;
-
-    private boolean fixedTimeDiff;
-
     private float skipRequested = 0;
 
     private double setPosRequested = -1;
 
     private boolean paused;
-
-    private long pauseStart;
 
     private Thread runThread;
 
@@ -66,33 +61,49 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     private final File dataFile;
 
+    private ClockProvider clockProvider = new SystemClockProvider();
+
+    private boolean resetClockRequired;
+
+    private long startTimeOffset;
+
+    private final long firstTimestamp;
+    
     public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
         super(roboStroke);
+        
         this.dataFile = dataFile;
         this.reader = new RandomAccessFile(dataFile, "r");
         fileLength = dataFile.length();
 
         setSeakable(true);
 
-        checkVersion();
+        firstTimestamp = checkVersion();
 
     }
 
+    public void setClockProvider(ClockProvider clockProvider) {
+        this.clockProvider = clockProvider;
+    }
+    
     public File getDataFile() {
         return dataFile;
     }
 
-    protected void setStartTimeDiff(long startTimeDiff) {
-        this.fixedTimeDiff = true;
-        this.startTimeDiff = startTimeDiff;
+    protected void setStartTimeOffset(long startTimeOffset) {
+        this.startTimeOffset = startTimeOffset;
     }
 
-    private void checkVersion() throws IOException, SessionFileVersionError {
+    private long checkVersion() throws IOException, SessionFileVersionError {
+        
         String line = reader.readLine();
 
         int version = -1;
+        
         boolean validVersion = false;
 
+        long firstTimestamp = 0;
+        
         if (line != null) {
             String[] vals = readRecordLine(line);
 
@@ -105,7 +116,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
                     switch (type) {
                         case LOGFILE_VERSION:
                             version = new Integer(vals[3]);
-
+                            firstTimestamp = new Long(vals[0]);
                             if (version == SessionRecorderConstants.LOGFILE_VERSION) {
                                 validVersion = true;
                             }
@@ -123,6 +134,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
         if (!validVersion) {
             throw new SessionFileVersionError(version);
         }		
+        
+        return firstTimestamp;
     }
 
     @Override
@@ -152,9 +165,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
                     skipRequested = 0;
                     setPosRequested = -1;
 
-                    if (!fixedTimeDiff) {
-                        startTimeDiff = 0; // force re-adjust below
-                    }
+                    resetClockRequired = true;
 
                     if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 
@@ -169,11 +180,9 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
                     double progress = calcProgress();
 
-                    if (!paused && bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
+                    if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_PROGRESS, progress);
 
                 }
-
-                if (paused) continue;
 
                 long lastFilePos = reader.getFilePointer();
 
@@ -239,20 +248,17 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     private void handleRecord(long logTimestamp, DataRecord record, long lastReaderPos) throws Exception {
 
+        long normalizedLogfileTime = logTimestamp - firstTimestamp + startTimeOffset;
+
+        if (resetClockRequired) {
+            clockProvider.reset(normalizedLogfileTime);
+            resetClockRequired = false;
+        }
+        
         final long currentTime = getCurrentTime();
 
-        if (startTimeDiff == 0) {
-            if (fixedTimeDiff) {
-                throw new AssertionError("startTimeDiff should not be 0 in fixedTimeDiff mode");
-            }
-
-            startTimeDiff = logTimestamp - currentTime;
-        }
-
-        long normalizedTime = logTimestamp - startTimeDiff;
-
-        if (!batchMode && normalizedTime > currentTime + 20) {					
-            logger.debug("data time {} later than current time {} - too soon to play, putting data back in reader", normalizedTime, currentTime);				
+        if (!batchMode && normalizedLogfileTime > currentTime + 20) {					
+            logger.debug("data time {} later than current time {} - too soon to play, putting data back in reader", normalizedLogfileTime, currentTime);				
             reader.seek(lastReaderPos);
             Thread.sleep(50);
             return;
@@ -263,8 +269,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
         playRecord(record);
     }
 
-    protected long getCurrentTime() {
-        return System.currentTimeMillis();
+    private long getCurrentTime() {
+        return clockProvider.getTime();
     }
 
     private static String[] readRecordLine(String line) {
@@ -304,21 +310,21 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
         if (this.paused != paused) {
             logger.info("setting paused = {}", paused);
-            if (!fixedTimeDiff) {
-                if (paused) {
-                    pauseStart = getCurrentTime();
-                } else {
-                    startTimeDiff -= getCurrentTime() - pauseStart;
-                }
-            }
+            
+            
             this.paused = paused;
-            if (bus != null) {
-                if (paused) {
-                    bus.fireEvent(DataRecord.Type.REPLAY_PAUSED, null);
-                } else {
-                    bus.fireEvent(DataRecord.Type.REPLAY_PLAYING, null);
-                }
+
+            Type event;
+            
+            if (paused) {
+                event = DataRecord.Type.REPLAY_PAUSED;
+                clockProvider.stop();
+            } else {
+                event = DataRecord.Type.REPLAY_PLAYING;
+                clockProvider.run();
             }
+
+            if (bus != null) bus.fireEvent(event, null);
         }
     }
 
@@ -334,6 +340,9 @@ public class FileDataInput extends RecordDataInput implements Runnable {
         };
 
         runThread.start();
+        
+        clockProvider.reset(startTimeOffset);
+        clockProvider.run();
     }
 
     @Override

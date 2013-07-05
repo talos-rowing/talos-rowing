@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class RecordDataInput extends SensorDataInputBase {
 	
-	// TODO extend ThreadedQueue instead of Thread
+    // TODO extend ThreadedQueue instead of Thread
 	private static class SensorQueueProcessor extends Thread {
 		
 		private final String name;

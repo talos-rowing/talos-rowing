@@ -3,13 +3,15 @@ package org.nargila.robostroke.media.vlc;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicLong;
 
+import org.nargila.robostroke.data.ClockProvider;
+import org.nargila.robostroke.data.SystemClockProvider;
 import org.nargila.robostroke.data.media.ExternalMedia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
+import uk.co.caprica.vlcj.logger.Logger.Level;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 
 public class VlcExternalMedia implements ExternalMedia {
@@ -37,7 +39,9 @@ public class VlcExternalMedia implements ExternalMedia {
     public VlcExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 
         VlcSetup.setupCheckVlc(container);
-
+                
+        uk.co.caprica.vlcj.logger.Logger.setLevel(Level.DEBUG);
+        
         this.videoFile = videoFile;
         this.container = container;        
         this.videoEffect = videoEffect;
@@ -110,37 +114,54 @@ public class VlcExternalMedia implements ExternalMedia {
     }
 
 
-
+    
     @SuppressWarnings("serial")
     private class VlcEmbeddedPlayer extends EmbeddedMediaPlayerComponent {
 
-        private final Thread playTimeSmoother = new Thread("playTimeSmoother") {
-
-            private long lastTime;
-            private long lastSystemTime;
-
+        private final ClockProvider clock = new ClockProvider() {
+            
+            private final ClockProvider deadReconingClock = new SystemClockProvider() {
+                {
+                    run();
+                }
+            };
+            
+            private long lastPlayTime;
+            
+            @Override
+            public void stop() {
+                // nothing to do                
+            }
+            
             @Override
             public void run() {
-                while (!stopped) {
-                    synchronized (time) { 
-                        long t = time.get();
-                        if (!playing || lastTime != t || t == 0 || lastTime - t > 200 || rate < 0.5) {
-                            lastSystemTime = System.currentTimeMillis();
-                            lastTime = t;
-                        } else {
-                            long currentTime = System.currentTimeMillis();
-                            lastTime += currentTime - lastSystemTime;
-                            time.set(lastTime);
-                            lastSystemTime = currentTime;
-                        }
-                    }
-
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                // nothing to do
+            }
+            
+            @Override
+            public void reset(long initialTime) {
+                // nothing to do
+                
+            }
+            
+            @Override
+            public long getTime() {
+                            
+                long playTime = mediaPlayer.getTime();
+                
+                if (!playing || playTime != lastPlayTime || rate < 0.5) {
+                    lastPlayTime = playTime;
+                    deadReconingClock.reset(0);
+                    return playTime;
                 }
+
+                long deadReconingTimeElapsed = deadReconingClock.getTime();
+                if (playing && deadReconingTimeElapsed < 200) {
+                    logger.info("dead reconing timestamp {} (diff={})", lastPlayTime + deadReconingTimeElapsed, deadReconingTimeElapsed);
+                    return lastPlayTime + deadReconingTimeElapsed;
+                }
+                
+                return playTime;
             }
         };
 
@@ -148,18 +169,12 @@ public class VlcExternalMedia implements ExternalMedia {
         private boolean stopped;
         private boolean playing;
 
-        private final AtomicLong time = new AtomicLong();
-
         private VlcEmbeddedPlayer() {
             mediaPlayer = getMediaPlayer();
         }
 
         public void setTime(long time) {
-            synchronized (this.time) {
-                this.time.set(time - 1);
-                mediaPlayer.setTime(time);
-            }
-
+            mediaPlayer.setTime(time);
         }
 
         public void setPause(boolean paused) {
@@ -168,7 +183,7 @@ public class VlcExternalMedia implements ExternalMedia {
         }
 
         private long getTime() {
-            return time.get();
+            return clock.getTime();
         }
 
         private synchronized void stop() {
@@ -178,24 +193,32 @@ public class VlcExternalMedia implements ExternalMedia {
 
             stopped = true;
 
-            try {
-                playTimeSmoother.interrupt();
-                playTimeSmoother.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
 
         private synchronized void start(File file) {
-            mediaPlayer.playMedia(file.getAbsolutePath());
-            playTimeSmoother.start();
-        }
 
-        @Override
-        public void timeChanged(MediaPlayer mediaPlayer, long newTime) {
-            synchronized (time) {
-                time.set(newTime);
+            String transformation;
+
+            switch (videoEffect) {
+                case ROTATE180:
+                    transformation = "180";
+                    break;
+                case ROTATE270:
+                    transformation = "270";
+                    break;
+                case ROTATE90:
+                    transformation = "90";
+                    break;
+                default:
+                    transformation = null;
+                    break;                    
             }
+
+
+            String[] args = transformation == null ? new String[0] : new String[]{"--video-filter=transform", "--transform-type=" + transformation};  
+
+            mediaPlayer.setStandardMediaOptions(args);
+            mediaPlayer.startMedia(file.getAbsolutePath());
         }
 
         @Override

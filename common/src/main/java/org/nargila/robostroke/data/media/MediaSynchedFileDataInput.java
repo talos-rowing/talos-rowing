@@ -48,6 +48,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
             }
         });
 
+        setClockProvider(new MediaSynchedClockProvider(media));
     }
 
 
@@ -125,14 +126,6 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
             setPaused(false);
         }
     }
-
-
-    @Override
-    protected long getCurrentTime() {
-
-        return media.getTime();
-    }
-
 
     public boolean step() {
         return media.step();        

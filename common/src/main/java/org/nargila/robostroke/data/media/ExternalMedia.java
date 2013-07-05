@@ -1,5 +1,6 @@
 package org.nargila.robostroke.data.media;
 
+
 public interface ExternalMedia {
 
     public enum EventType {
@@ -43,5 +44,5 @@ public interface ExternalMedia {
     public void pause();
     public void stop();
     public boolean step();
-    public boolean setRate(double rate);	
+    public boolean setRate(double rate);
 }

@@ -16,7 +16,6 @@ public class SynchedFileDataInput extends FileDataInput {
 
 	private final TreeMap<Long /* timestamp */, Long /* file byte offset */> time2offsets = new TreeMap<Long, Long>();
 	private final TreeMap<Long /* timestamp */, Long /* file byte offset */> offsets2time = new TreeMap<Long, Long>();
-	private long lastSetTime;
 	
 	public SynchedFileDataInput(RoboStroke roboStroke, File dataFile, long startTime, int coundDownId) throws IOException {
 		
@@ -106,13 +105,10 @@ public class SynchedFileDataInput extends FileDataInput {
 		}
 		
 		logger.info("scanned {} offsets", time2offsets.size());
-		
-        
-		long startTimeDiff = firstTimestamp - absoluteStartTime;
-        
+		        
         logger.info("setting start at {}ms from start", absoluteStartTime);
         
-		setStartTimeDiff(startTimeDiff);
+		setStartTimeOffset(absoluteStartTime);
 	}
 	
 
@@ -130,11 +126,5 @@ public class SynchedFileDataInput extends FileDataInput {
 		logger.debug("translated timestamp {} to pos {}", timestamp, pos);
 
 		return pos;
-	}
-
-
-	@Override
-	protected long getCurrentTime() {
-		return System.currentTimeMillis() - lastSetTime;
 	}
 }
