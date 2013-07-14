@@ -2,30 +2,20 @@ package org.nargila.robostroke.media.gst;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.imageio.ImageIO;
-
 import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
-import org.gstreamer.Caps;
 import org.gstreamer.ClockTime;
-import org.gstreamer.Fraction;
-import org.gstreamer.Gst;
 import org.gstreamer.GstObject;
-import org.gstreamer.Pad;
 import org.gstreamer.Pipeline;
-import org.gstreamer.Structure;
 import org.gstreamer.elements.BaseSink;
-import org.gstreamer.elements.FakeSink;
 import org.gstreamer.elements.FileSrc;
 import org.gstreamer.elements.RGBDataSink;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.media.FindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,23 +27,22 @@ import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 
-public class GstFindQrMarkPipeline {
+public class GstFindQrMarkPipeline implements FindQrMarkPipeline {
 
 	private static final Logger logger = LoggerFactory.getLogger(GstFindQrMarkPipeline.class);
 	
 	private final AtomicReference<Exception> finishSync = new AtomicReference<Exception>();
 	
-	private Pipeline pipe;
+	private final Pipeline pipe;
 
 	private String mark;
 
 	private ClockTime timestamp;
 
 	private BufferedImage currentImage;
-
-	static {
-		Gst.init();
-	}
+    
+    @SuppressWarnings("unused")
+    private static final GstInitializer gstInitializer = GstInitializer.getInstance();
 	
 	public GstFindQrMarkPipeline(File video) {
 		
@@ -104,7 +93,11 @@ public class GstFindQrMarkPipeline {
 		pipe.play();
 	}
 	
-	public void stop() {
+	/* (non-Javadoc)
+     * @see org.nargila.robostroke.media.gst.FindQrMarkPipeline#stop()
+     */
+	@Override
+    public void stop() {
 		pipe.stop();
 		
 		synchronized (finishSync) {
@@ -140,7 +133,11 @@ public class GstFindQrMarkPipeline {
 	}
 	
 	
-	public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
+	/* (non-Javadoc)
+     * @see org.nargila.robostroke.media.gst.FindQrMarkPipeline#findMark(int)
+     */
+	@Override
+    public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
 				
 		synchronized (finishSync) {
 			start();
@@ -163,9 +160,7 @@ public class GstFindQrMarkPipeline {
 
 	public static void main(String[] args) throws Exception {
 		
-		Gst.init();
-		
-		GstFindQrMarkPipeline qrFind = new GstFindQrMarkPipeline(new File(args[0]));
+		FindQrMarkPipeline qrFind = new GstFindQrMarkPipeline(new File(args[0]));
 		
 		qrFind.findMark(160);
 	}
@@ -192,7 +187,8 @@ public class GstFindQrMarkPipeline {
 
 		public RGBSink() {
 			super("rgb", new RGBDataSink.Listener() {
-				public synchronized void rgbFrame(boolean isPrerollFrame, int width, int height, IntBuffer rgb) {
+				@Override
+                public synchronized void rgbFrame(boolean isPrerollFrame, int width, int height, IntBuffer rgb) {
 
 					if (mark == null) {
 						try {

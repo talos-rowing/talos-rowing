@@ -39,6 +39,7 @@ import javax.swing.border.EmptyBorder;
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.data.version.DataVersionConverter;
 
+@SuppressWarnings("serial")
 public class PrepareFileDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -92,7 +93,8 @@ public class PrepareFileDialog extends JDialog {
 			{
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
+					@Override
+                    public void actionPerformed(ActionEvent e) {
 						cancelled = true;
 						setVisible(false);
 					}
@@ -107,9 +109,20 @@ public class PrepareFileDialog extends JDialog {
 		}
 	}
 	
-	void launch(File trsd) {
-				
-		File f;
+	
+    void launch(final File trsd) {
+        new Thread("RoboStrokeAppPanel prepareFile") {
+            
+            @Override
+            public void run() {
+                reallyLaunch(trsd);
+            }
+        }.start();
+    }        
+	
+	void reallyLaunch(File trsd) {				
+
+		File f = null;
 
 		try {
 			if (trsd.getName().endsWith(".trsd")) {
@@ -118,15 +131,16 @@ public class PrepareFileDialog extends JDialog {
 				f = convertFileVersion(trsd);
 			}
 
-			onFinish(f);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+		    setVisible(false);
+		    onFinish(f);		    
 		}
 		
 	}
-	
-	
+		
 	void cancel() {
 		cancelled = true;
 	}
@@ -142,6 +156,8 @@ public class PrepareFileDialog extends JDialog {
 				@Override
 				public boolean onProgress(double d) {
 
+				    verifyVisibility(d);
+				    
 					progressBar.setValue((int)(100 * d));
 
 					Thread.yield();
@@ -164,23 +180,17 @@ public class PrepareFileDialog extends JDialog {
 			File res = File.createTempFile("talos-rowing-data", ".txt");
 			res.deleteOnExit();
 
-			DataStreamCopier converter = new DataStreamCopier(
+			@SuppressWarnings("resource")
+            DataStreamCopier converter = new DataStreamCopier(
 					new GZIPInputStream(new FileInputStream(trsd)), 
 					new FileOutputStream(res), 
 					trsd.length()) {
 				
 				@Override
-				protected void onStart() {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-					}
-					
-				}
-				
-				@Override
 				protected boolean onProgress(double d) {
 					
+				    verifyVisibility(d);
+				    
 					Thread.yield();
 
 					int pos = (int) (100.0 * d);
@@ -188,14 +198,6 @@ public class PrepareFileDialog extends JDialog {
 					progressBar.setValue(pos);
 					
 					return !cancelled;
-				}
-				
-				@Override
-				protected void onFinish() {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-					}										
 				}
 				
 				@Override
@@ -219,5 +221,11 @@ public class PrepareFileDialog extends JDialog {
 	protected void onFinish(File f) {
 		
 	}
+
+    private void verifyVisibility(double progress) {
+        if (!cancelled && !isVisible() && progress < 1.0) {
+            setVisible(true);
+        }
+    }
 
 }

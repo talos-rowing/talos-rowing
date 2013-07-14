@@ -17,6 +17,8 @@ import javax.swing.border.LineBorder;
 import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 
+import uk.co.caprica.vlcj.logger.Logger;
+
 @SuppressWarnings("serial")
 public class SteppingPlayerDialog extends JDialog {
 
@@ -154,13 +156,13 @@ public class SteppingPlayerDialog extends JDialog {
 						
 						res.notifyAll();
 						
-						player.play(mrl);
-
 						try {
+						    player.play(mrl);
 							res.wait();
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						    e.printStackTrace();
+						} catch (Exception e) {
+						    Logger.error("error while trying to play " + mrl, e);
 						}
 					}
 

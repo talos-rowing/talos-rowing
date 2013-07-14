@@ -7,6 +7,7 @@ import java.awt.Container;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.gstreamer.Buffer;
 import org.gstreamer.Bus;
 import org.gstreamer.BusSyncReply;
 import org.gstreamer.Caps;
@@ -20,6 +21,7 @@ import org.gstreamer.SeekFlags;
 import org.gstreamer.SeekType;
 import org.gstreamer.State;
 import org.gstreamer.Structure;
+import org.gstreamer.elements.Identity;
 import org.gstreamer.event.BusSyncHandler;
 import org.gstreamer.interfaces.XOverlay;
 import org.nargila.robostroke.data.media.ExternalMedia;
@@ -54,30 +56,61 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
     private final File videoFile;
     private final VideoEffect videoEffect;
 
-    private EventListener listener;
+    private final Listeners listeners = new Listeners();
 
-    GstExternalMedia(File videoFile, Container container) throws Exception {
+    private Element volume;
+
+    private Identity stepscanner;
+
+    private boolean stepMode;
+
+    private double rate = 1.0;
+
+    private TimeNotifiyer timeNotifyer;
+
+    public GstExternalMedia(File videoFile, Container container) throws Exception {
         this(videoFile, container, VideoEffect.NONE);
     }
 
-    GstExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
+    public GstExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 
         this.videoFile = videoFile;
         this.container = container;        
         this.videoEffect = videoEffect;
+        
+        timeNotifyer = new TimeNotifiyer(listeners) {
+
+            @Override
+            protected long getTime() {
+                return pipe.queryPosition(TimeUnit.MILLISECONDS);
+            }            
+        };
+
     }
 
 
     private void setupPipeline(final File video) throws Exception {
 
         String pipedesc = String.format("filesrc name=oggsrc location=%s ! decodebin2 name=dec  " +
-                "dec. ! ffmpegcolorspace ! videoflip method=%s ! %s name=videoSink force-aspect-ratio=true " +
-                "dec. ! audioconvert ! autoaudiosink ", video.getAbsolutePath().replace('\\', '/'), videoEffect.method, overlayFactory);
+                "dec. ! ffmpegcolorspace ! videoflip method=%s ! identity name=stepscanner signal-handoffs=false ! %s name=videoSink force-aspect-ratio=true " +
+                "dec. ! audioconvert ! volume name=volume ! autoaudiosink", video.getAbsolutePath().replace('\\', '/'), videoEffect.method, overlayFactory);
 
         pipe = Pipeline.launch(pipedesc);
 
         videoSink = pipe.getElementByName("videoSink");
 
+        volume = pipe.getElementByName("volume");
+
+        stepscanner = (Identity)pipe.getElementByName("stepscanner");
+
+        stepscanner.connect(new Identity.HANDOFF() {
+            
+            @Override
+            public void handoff(Identity identity, Buffer buffer) {
+                pipe.pause();
+            }
+        });
+        
         canvas.setBackground(Color.BLACK);
 
         container.add(canvas, BorderLayout.CENTER);
@@ -132,7 +165,7 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
         if (this.duration == 0 && duration != 0) {
             this.duration = duration;
             logger.info("duration: {}", duration);
-            listener.onEvent(EventType.DURATION);
+            listeners.dispatch(EventType.DURATION, duration);
         }
     }
 
@@ -149,6 +182,7 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
 
     @Override
     public void stop() {
+        timeNotifyer.stop();
         logger.info("stopping pipeline..");
         pipe.stop();        
         container.remove(canvas);
@@ -164,17 +198,25 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
             logger.error("failed to setup pipeline", e);
             return;
         }
-
+        
+        timeNotifyer.start();
+        
         pipe.play();
     }
 
     @Override
     public void pause() {
+        
+        updateStepMode(false);
+        
         pipe.pause();
     }
 
     @Override
     public void play() {
+        
+        updateStepMode(false);
+        
         pipe.play();
     }
 
@@ -200,17 +242,19 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
         if (source == pipe) {
             switch (current) {
                 case PLAYING:
-                    listener.onEvent(EventType.PLAY);
+                    if (!stepMode) {
+                        listeners.dispatch(EventType.PLAY, true);
+                    }
                     break;
                 case PAUSED:
-                    listener.onEvent(EventType.PAUSE);
+                    listeners.dispatch(EventType.PAUSE, true);
 
                     if (duration == 0) {
                         setDuration(pipe.queryDuration(TimeUnit.MILLISECONDS));
                     }
                     break;
                 case NULL:
-                    listener.onEvent(EventType.STOP);
+                    listeners.dispatch(EventType.STOP, true);
                     break;
                 default:
                     break;
@@ -219,8 +263,13 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
     }
 
     @Override
-    public void setEventListener(EventListener listener) {
-        this.listener = listener;
+    public void addEventListener(EventListener listener) {
+        listeners.addListener(listener);
+    }
+
+    @Override
+    public void removeEventListener(EventListener listener) {
+        listeners.removeListener(listener);
     }
 
     @Override
@@ -230,14 +279,17 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
 
     @Override
     public long getTime() {
-        return pipe == null ? 0 : pipe.queryPosition(TimeUnit.MILLISECONDS);
+        return timeNotifyer.getLastTime();
     }
 
     @Override
     public boolean setTime(long time) {
 
         if (pipe != null) {
-            return pipe.seek(time, TimeUnit.MILLISECONDS);
+
+            updateStepMode(false);
+            long nanos = TimeUnit.MILLISECONDS.toNanos(time);
+            return pipe.seek(rate, Format.TIME, SeekFlags.FLUSH | SeekFlags.KEY_UNIT, SeekType.SET, nanos, SeekType.NONE, -1);
         }
 
         return false;
@@ -250,15 +302,41 @@ public class GstExternalMedia implements ExternalMedia, Bus.ERROR, Bus.WARNING, 
 
     @Override
     public boolean setRate(double rate) {
+        
+        boolean success = false;
+        
         if (pipe != null) {
-            return pipe.seek(rate, Format.TIME, SeekFlags.FLUSH | SeekFlags.KEY_UNIT, SeekType.CUR, 0, SeekType.NONE, -1);
+            success = pipe.seek(rate, Format.TIME, SeekFlags.FLUSH | SeekFlags.KEY_UNIT, SeekType.CUR, 0, SeekType.NONE, -1);
+            this.rate = rate;
         }
 
-        return false;
+        if (success) {
+            updateVolume();
+        }
+        
+        return success;
+    }
+
+    private void updateVolume() {
+        volume.set("mute", stepMode || rate < 1.0);
     }
 
     @Override
     public boolean step() {
-        return false;
+                
+        pipe.pause();
+        updateStepMode(true);
+        pipe.play();
+        
+        return true;
+    }
+
+    private void updateStepMode(boolean stepMode) {        
+                
+        if (this.stepMode != stepMode) {
+            this.stepMode = stepMode;
+            stepscanner.set("signal-handoffs", stepMode);
+            updateVolume();
+        }
     }
 }

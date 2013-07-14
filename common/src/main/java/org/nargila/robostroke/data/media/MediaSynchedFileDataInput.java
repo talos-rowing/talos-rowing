@@ -15,7 +15,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
     public static final String PROP_TIME_OFFSET = "timeOffset";
 
-    public static final String PROP_TALOS_DATA = "talosData";
+    public static final String PROP_MEDIA_FILE = "mediaFile";
 
     public static final String PROP_VIDEO_EFFECT = "videoEffect";
 
@@ -28,10 +28,10 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
         this.media = _media;
 
-        this.media.setEventListener(new ExternalMedia.EventListener() {
+        this.media.addEventListener(new ExternalMedia.EventListener() {
 
             @Override
-            public void onEvent(ExternalMedia.EventType event) {
+            public void onEvent(ExternalMedia.EventType event, Object data) {
                 switch (event) {
                     case DURATION:
                         setSeakable(media.getDuration() != 0);
@@ -48,7 +48,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
             }
         });
 
-        setClockProvider(new MediaSynchedClockProvider(media));
+        setClock(new MediaSynchedClockProvider(media));
     }
 
 
@@ -73,6 +73,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
     public void setRate(double rate) {
         media.setRate(rate);
+        skipTime(0);
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
+import org.nargila.robostroke.media.FindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 
-public class VlcFindQrMarkPipeline {
+public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
 
 	private static final Logger logger = LoggerFactory.getLogger(VlcFindQrMarkPipeline.class);
 	
@@ -30,24 +31,30 @@ public class VlcFindQrMarkPipeline {
 
 	private ClockTime timestamp;
 	    
-	private final DirectMediaPlayerComponent vlc = new BufferedImageMediaPlayer() {
-		protected void onImageChanged(BufferedImage image, long timestamp)  {
-			
-			if (findQrCode(image, timestamp)) {
+    private final DirectMediaPlayerComponent vlc;
 
-				synchronized (finishSync) {
-					finishSync.notifyAll();
-				}
-			}			
-		}
-	};
+	private final File video;
 
-	private File video;
-
-	private MediaPlayer mp;
+	private final MediaPlayer mp;
 	
-	public VlcFindQrMarkPipeline(File video) {		
-		this.video = video;
+	public VlcFindQrMarkPipeline(File video) {	
+	    
+        VlcSetup.setupCheckVlc(null);
+
+        vlc = new BufferedImageMediaPlayer() {
+            @Override
+            protected void onImageChanged(BufferedImage image, long timestamp)  {
+
+                if (findQrCode(image, timestamp)) {
+
+                    synchronized (finishSync) {
+                        finishSync.notifyAll();
+                    }
+                }           
+            }
+        };
+        
+        this.video = video;
 		mp = vlc.getMediaPlayer();
 	}
 	
@@ -56,7 +63,8 @@ public class VlcFindQrMarkPipeline {
 	}
 	
 	
-	public void stop() {
+	@Override
+    public void stop() {
 		
 		synchronized (finishSync) {
 			finishSync.notifyAll();
@@ -64,48 +72,55 @@ public class VlcFindQrMarkPipeline {
 	}
 
 	private void doStop() {
-		mp.stop();
+//		mp.stop();
 		vlc.release();
 	}
 	
 
 	private boolean findQrCode(BufferedImage image, long time) {
 		
-        LuminanceSource source =  new BufferedImageLuminanceSource(image);
-                
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-        
-        ClockTime t = ClockTime.fromMillis(time);
-        
-        try {
-            
-        	Result result = new MultiFormatReader().decode(bitmap);
-            mark = result.getText();
-            
-            timestamp = t;
-            
-            logger.info("mark: {}, timestamp: {}, pipetime: {}", new Object[]{ mark, timestamp.toMillis(), vlc.getMediaPlayer().getTime() });
-            
-        } catch (NotFoundException e) {
-            
-            logger.info("timestamp: {}", t);
-            
-        	return false;
+        if (mark == null) {
+            LuminanceSource source = new BufferedImageLuminanceSource(image);
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+            ClockTime t = ClockTime.fromMillis(time);
+            try {
+
+                Result result = new MultiFormatReader().decode(bitmap);
+                mark = result.getText();
+
+                timestamp = t;
+
+                logger.info("mark: {}, timestamp: {}, pipetime: {}",
+                        new Object[] { mark, timestamp.toMillis(),
+                                vlc.getMediaPlayer().getTime() });
+
+            } catch (NotFoundException e) {
+
+                logger.info("timestamp: {}", t);
+
+                return false;
+            }
+            return true;
         }
         
-        return true;
+        return false;
 	}
 	
 	
-	public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
-				
+	@Override
+    public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
+		
 		synchronized (finishSync) {
 			start();
 			finishSync.wait(timeoutSeconds * 1000);
 		}
 		
+        logger.info("################ calling doStop()...");
+        
 		doStop();
 		
+        logger.info("################ done.");
+        
 		if (mark == null) {
 			
 			if (finishSync.get() != null) {

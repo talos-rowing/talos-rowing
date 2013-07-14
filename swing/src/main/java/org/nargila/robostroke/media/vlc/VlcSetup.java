@@ -6,6 +6,7 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 import org.nargila.robostroke.app.Settings;
+import org.nargila.robostroke.data.media.ExternalMedia.MediaFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class VlcSetup {
 	
 	public static synchronized boolean setupCheckVlc(Component comp) {
 		
-		File vlcPath = Settings.getInstance().getVlcLibDir();
+		File vlcPath = Settings.getInstance().getMediaFrameworkNativeDir(MediaFramework.VLC);
 				
 		if (loaded == null) {
 			if (checkAddVlcPath(vlcPath)) {
@@ -38,7 +39,7 @@ public class VlcSetup {
 				vlcPath = new File("C:\\Program Files\\VideoLAN\\VLC");
 					
 				if (checkAddVlcPath(vlcPath)) {
-					Settings.getInstance().setVlcLibDir(vlcPath);
+					Settings.getInstance().setMediaFrameworkNativeDir(MediaFramework.VLC, vlcPath);
 					return true;
 				} else {
 					vlcNotFoundMessage(comp);

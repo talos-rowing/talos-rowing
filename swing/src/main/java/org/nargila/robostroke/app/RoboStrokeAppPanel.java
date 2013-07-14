@@ -32,9 +32,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.Box;
@@ -58,17 +56,20 @@ import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.BusEventListener;
 import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 import org.nargila.robostroke.data.SensorDataInput;
+import org.nargila.robostroke.data.media.ExternalMedia;
+import org.nargila.robostroke.data.media.ExternalMedia.EventType;
 import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
 import org.nargila.robostroke.data.remote.RemoteDataInput;
-import org.nargila.robostroke.media.vlc.VlcExternalMedia;
+import org.nargila.robostroke.media.MediaPlayerFactory;
+import org.nargila.robostroke.media.SetupExternalMeidaInfoDialog;
 import org.nargila.robostroke.oggz.CovertVideoDialog;
-import org.nargila.robostroke.oggz.SetupExternalMeidaInfoDialog;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeAnalysisGraphView;
 import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
@@ -116,6 +117,14 @@ public class RoboStrokeAppPanel extends JPanel {
 
     private final JLabel lblPlayPause;
 
+    private Settings dataPrefs;
+    private final JMenuItem mntmMediaSetup;
+    private final JLabel lblForward;
+    private final JLabel lblStep;
+    private final JLabel lblMediaTime;
+
+    private File currentFile;
+
     /**
      * Create the panel.
      */
@@ -132,19 +141,10 @@ public class RoboStrokeAppPanel extends JPanel {
         mntmOpen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openFileAction(false);
+                openFileAction();
             }
         });
         mnFile.add(mntmOpen);
-
-        JMenuItem mntmOpenMedia = new JMenuItem("Open (Media)");
-        mntmOpenMedia.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openFileAction(true);
-            }
-        });
-        mnFile.add(mntmOpenMedia);
 
         JMenuItem mntmExit = new JMenuItem("Exit");
         mntmExit.addActionListener(new ActionListener() {
@@ -245,7 +245,8 @@ public class RoboStrokeAppPanel extends JPanel {
 
         mnTools.add(mntmOggConvert);
 
-        JMenuItem mntmMediaSetup = new JMenuItem("Media Setup");
+        mntmMediaSetup = new JMenuItem("Media Setup");
+        mntmMediaSetup.setEnabled(false);
         mnTools.add(mntmMediaSetup);
         mntmMediaSetup.addActionListener(new ActionListener() {
             @Override
@@ -281,9 +282,11 @@ public class RoboStrokeAppPanel extends JPanel {
             }
             @Override
             public void componentRemoved(ContainerEvent e) {
-                splitPane.setDividerSize(0);
-                videoPanel.setPreferredSize(new Dimension(0, 0));
-                SwingUtilities.getWindowAncestor(splitPane).pack();
+                if (videoPanel.getComponentCount() == 0) {
+                    splitPane.setDividerSize(0);
+                    videoPanel.setPreferredSize(new Dimension(0, 0));
+                    SwingUtilities.getWindowAncestor(splitPane).pack();
+                }
             }
         });
 
@@ -296,147 +299,165 @@ public class RoboStrokeAppPanel extends JPanel {
         panel.add(meterView);
 
         JPanel panel_2 = new JPanel();
+        panel_2.setOpaque(false);
         panel_2.setMaximumSize(new Dimension(32767, 20));
         panel_2.setBackground(Color.WHITE);
         panel.add(panel_2);
+                panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.Y_AXIS));
+                
+                JPanel panel_3 = new JPanel();
+                panel_3.setOpaque(false);
+                panel_2.add(panel_3);
+                panel_3.setLayout(new BorderLayout(0, 0));
+                
+                        slider = new JSlider();
+                        panel_3.add(slider, BorderLayout.CENTER);
+                        slider.setBorder(new EmptyBorder(2, 5, 2, 0));
+                        slider.addChangeListener(new ChangeListener() {
+                            @Override
+                            public void stateChanged(ChangeEvent e) {
+                                if (rs != null && slider.getValueIsAdjusting()) {
 
-        slider = new JSlider();
-        slider.setBorder(new EmptyBorder(2, 5, 2, 0));
-        slider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                if (rs != null && slider.getValueIsAdjusting()) {
+                                    double progress = slider.getValue() / (double)slider.getMaximum();
 
-                    double progress = slider.getValue() / (double)slider.getMaximum();
+                                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
 
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                    if (input != null) {
+                                        input.setPos(progress);
+                                    }
+                                }
+                            }
+                        });
+                        
+                        
+                                slider.setBackground(Color.BLACK);
+                                slider.setValue(0);
+                                
+                                lblMediaTime = new JLabel("00:00:00,000");
+                                lblMediaTime.setVisible(false);
+                                lblMediaTime.setForeground(Color.WHITE);
+                                panel_3.add(lblMediaTime, BorderLayout.EAST);
+                                lblMediaTime.setBorder(new EmptyBorder(0, 0, 0, 5));
+                                lblMediaTime.setFont(new Font("Dialog", Font.BOLD, 8));
+        
+                JPanel horizontalBox = new JPanel();
+                horizontalBox.setOpaque(false);
+                horizontalBox.setBorder(new EmptyBorder(1, 0, 1, 0));
+                panel_2.add(horizontalBox);
+                horizontalBox.setLayout(new GridLayout(0, 5, 1, 0));
+                
+                        lblPlayPause = new JLabel(">");
+                        lblPlayPause.setEnabled(false);
+                        lblPlayPause.setOpaque(true);
+                        lblPlayPause.setBackground(Color.BLACK);
+                        lblPlayPause.setHorizontalAlignment(SwingConstants.CENTER);
+                        horizontalBox.add(lblPlayPause);
+                        lblPlayPause.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mouseClicked(MouseEvent e) {
 
-                    if (input != null) {
-                        input.setPos(progress);
-                    }
-                }
-            }
-        });
-        panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.Y_AXIS));
+                                if (rs != null) {
+                                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                    if (input != null) {
+                                        input.setPaused(!paused.get());
+                                    }
+                                }
+                            }
+                        });
+                        
+                                lblPlayPause.setFont(new Font("Dialog", Font.BOLD, 22));
+                                lblPlayPause.setForeground(Color.WHITE);
+                                
+                                        lblSlowFast = new JLabel("S");
+                                        lblSlowFast.setEnabled(false);
+                                        lblSlowFast.addMouseListener(new MouseAdapter() {
 
+                                            private boolean slow;
 
-        slider.setBackground(Color.BLACK);
-        panel_2.add(slider);
-        slider.setValue(0);
+                                            @Override
+                                            public void mouseClicked(MouseEvent e) {
+                                                if (rs != null) {
+                                                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                                    if (input instanceof MediaSynchedFileDataInput) {
 
-        JPanel horizontalBox = new JPanel();
-        horizontalBox.setOpaque(false);
-        horizontalBox.setBorder(new EmptyBorder(1, 0, 1, 0));
-        panel_2.add(horizontalBox);
-        horizontalBox.setLayout(new GridLayout(0, 5, 1, 0));
+                                                        ((MediaSynchedFileDataInput)input).setRate(slow ? 1.0 : 0.2);
+                                                        slow = !slow;
+                                                    }
+                                                    lblSlowFast.setText(slow ? "F" : "S");
+                                                }
+                                            }
+                                        });
+                                        
+                                                lblSlowFast.setBackground(Color.BLACK);
+                                                lblSlowFast.setOpaque(true);
+                                                lblSlowFast.setHorizontalAlignment(SwingConstants.CENTER);
+                                                lblSlowFast.setForeground(Color.WHITE);
+                                                lblSlowFast.setFont(new Font("Dialog", Font.BOLD, 22));
+                                                horizontalBox.add(lblSlowFast);
+                                                
+                                                        lblBack = new JLabel("-3");
+                                                        lblBack.setEnabled(false);
+                                                        lblBack.addMouseListener(new MouseAdapter() {
 
-        lblPlayPause = new JLabel(">");
-        lblPlayPause.setOpaque(true);
-        lblPlayPause.setBackground(Color.BLACK);
-        lblPlayPause.setHorizontalAlignment(SwingConstants.CENTER);
-        horizontalBox.add(lblPlayPause);
-        lblPlayPause.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
+                                                            @Override
+                                                            public void mouseClicked(MouseEvent e) {
+                                                                if (rs != null) {
+                                                                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                                                    if (input instanceof MediaSynchedFileDataInput) {
 
-                if (rs != null) {
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
-                    if (input != null) {
-                        input.setPaused(!paused.get());
-                    }
-                }
-            }
-        });
+                                                                        ((MediaSynchedFileDataInput)input).skipTime(-4000);
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
+                                                        lblBack.setBackground(Color.BLACK);
+                                                        lblBack.setOpaque(true);
+                                                        lblBack.setHorizontalAlignment(SwingConstants.CENTER);
+                                                        lblBack.setFont(new Font("Dialog", Font.BOLD, 22));
+                                                        lblBack.setForeground(Color.WHITE);
+                                                        horizontalBox.add(lblBack);
+                                                        
+                                                                lblForward = new JLabel("+3");
+                                                                lblForward.setEnabled(false);
+                                                                lblForward.addMouseListener(new MouseAdapter() {
+                                                                    @Override
+                                                                    public void mouseClicked(MouseEvent e) {
+                                                                        if (rs != null) {
+                                                                            RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                                                            if (input instanceof MediaSynchedFileDataInput) {
 
-        lblPlayPause.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblPlayPause.setForeground(Color.WHITE);
+                                                                                ((MediaSynchedFileDataInput)input).skipTime(3000);
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                });
+                                                                lblForward.setBackground(Color.BLACK);
+                                                                lblForward.setOpaque(true);
+                                                                lblForward.setHorizontalAlignment(SwingConstants.CENTER);
+                                                                lblForward.setFont(new Font("Dialog", Font.BOLD, 22));
+                                                                lblForward.setForeground(Color.WHITE);
+                                                                horizontalBox.add(lblForward);
+                                                                
+                                                                        lblStep = new JLabel("+>");
+                                                                        lblStep.setEnabled(false);
+                                                                        lblStep.addMouseListener(new MouseAdapter() {
+                                                                            @Override
+                                                                            public void mouseClicked(MouseEvent e) {
+                                                                                if (rs != null) {
+                                                                                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
+                                                                                    if (input instanceof MediaSynchedFileDataInput) {
 
-        lblSlowFast = new JLabel("S");
-        lblSlowFast.addMouseListener(new MouseAdapter() {
-
-            private boolean slow;
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (rs != null) {
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
-                    if (input instanceof MediaSynchedFileDataInput) {
-
-                        ((MediaSynchedFileDataInput)input).setRate(slow ? 1.0 : 0.2);
-                        slow = !slow;
-                    }
-                    lblSlowFast.setText(slow ? "F" : "S");
-                }
-            }
-        });
-
-        lblSlowFast.setBackground(Color.BLACK);
-        lblSlowFast.setOpaque(true);
-        lblSlowFast.setHorizontalAlignment(SwingConstants.CENTER);
-        lblSlowFast.setForeground(Color.WHITE);
-        lblSlowFast.setFont(new Font("Dialog", Font.BOLD, 22));
-        horizontalBox.add(lblSlowFast);
-
-        lblBack = new JLabel("-3");
-        lblBack.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (rs != null) {
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
-                    if (input instanceof MediaSynchedFileDataInput) {
-
-                        ((MediaSynchedFileDataInput)input).skipTime(-4000);
-                    }
-                }
-            }
-        });
-        lblBack.setBackground(Color.BLACK);
-        lblBack.setOpaque(true);
-        lblBack.setHorizontalAlignment(SwingConstants.CENTER);
-        lblBack.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblBack.setForeground(Color.WHITE);
-        horizontalBox.add(lblBack);
-
-        JLabel lblForward = new JLabel("+3");
-        lblForward.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (rs != null) {
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
-                    if (input instanceof MediaSynchedFileDataInput) {
-
-                        ((MediaSynchedFileDataInput)input).skipTime(3000);
-                    }
-                }
-            }
-        });
-        lblForward.setBackground(Color.BLACK);
-        lblForward.setOpaque(true);
-        lblForward.setHorizontalAlignment(SwingConstants.CENTER);
-        lblForward.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblForward.setForeground(Color.WHITE);
-        horizontalBox.add(lblForward);
-
-        JLabel lblStep = new JLabel("+>");
-        lblStep.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (rs != null) {
-                    RecordDataInput input = (RecordDataInput) rs.getDataInput();
-                    if (input instanceof MediaSynchedFileDataInput) {
-
-                        ((MediaSynchedFileDataInput)input).step();
-                    }
-                }
-            }
-        });
-        lblStep.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblStep.setHorizontalAlignment(SwingConstants.CENTER);
-        lblStep.setForeground(Color.WHITE);
-        lblStep.setBackground(Color.BLACK);
-        lblStep.setOpaque(true);
-        horizontalBox.add(lblStep);
+                                                                                        ((MediaSynchedFileDataInput)input).step();
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                        lblStep.setFont(new Font("Dialog", Font.BOLD, 22));
+                                                                        lblStep.setHorizontalAlignment(SwingConstants.CENTER);
+                                                                        lblStep.setForeground(Color.WHITE);
+                                                                        lblStep.setBackground(Color.BLACK);
+                                                                        lblStep.setOpaque(true);
+                                                                        horizontalBox.add(lblStep);
 
         JSeparator separator_2 = new JSeparator();
         panel.add(separator_2);
@@ -490,8 +511,13 @@ public class RoboStrokeAppPanel extends JPanel {
 
         dialog.setLocationRelativeTo(this);
 
+        dialog.loadSettings(dataPrefs, ((FileDataInput)this.rs.getDataInput()).getClock().getTime());
+        
         dialog.setVisible(true);
-
+        
+        if (!dialog.isCanceled()) {
+            restart();
+        }
     }
 
     private void launchVideoConverter() {
@@ -515,13 +541,13 @@ public class RoboStrokeAppPanel extends JPanel {
         exportDialog.setVisible(true);
     }
 
-    private void openFileAction(final boolean ogg) {
+    private void openFileAction() {
         JFileChooser fc = new JFileChooser(Settings.getInstance().getLastDir());
         fc.setFileFilter(new FileFilter() {
 
             @Override
             public String getDescription() {
-                return ogg ? "Video Files" : "Talos Rowing Data Files";
+                return "Talos Rowing Data Files";
             }
 
             @Override
@@ -530,9 +556,8 @@ public class RoboStrokeAppPanel extends JPanel {
                 if (f.isDirectory()) {
                     return true;
                 } else {
-                    //					String name = f.getName();
-                    //					return ogg ? name.endsWith(".ogg") : (name.endsWith(".trsd") || name.endsWith(".txt"));
-                    return true;
+                    String name = f.getName();
+                    return name.endsWith(".trsd") || name.endsWith(".txt");
                 }
             }
         });
@@ -543,11 +568,7 @@ public class RoboStrokeAppPanel extends JPanel {
 
             Settings.getInstance().setLastDir(f.getParentFile());
 
-            if (ogg) {
-                start(f);
-            } else {
-                prepareFile(f);
-            }
+            prepareFile(f);
         }
     }
 
@@ -566,10 +587,7 @@ public class RoboStrokeAppPanel extends JPanel {
         @SuppressWarnings("serial")
         final PrepareFileDialog pfd = new PrepareFileDialog() {
             @Override
-            protected void onFinish(File res) {
-
-                setVisible(false);
-
+            protected void onFinish(File res) {                
                 if (res != null) {
                     start(res);
                 }
@@ -578,18 +596,22 @@ public class RoboStrokeAppPanel extends JPanel {
 
         pfd.setLocationRelativeTo(this);
 
-        new Thread("RoboStrokeAppPanel prepareFile") {
-            @Override
-            public void run() {
-                pfd.launch(f);
-            }
-        }.start();	
-
-        pfd.setVisible(true);
+        pfd.launch(f);
     }
 
+    void restart() {
+        File f = currentFile;
+        start(f);
+    }
+    
     void start(File f) {
-
+        
+        if (f != null) {
+            start(null);
+        }
+        
+        currentFile = f;
+        
         try {						
             Pair<SensorDataInput, Boolean> input = setInput(f);
             start(input.first, input.second);
@@ -610,68 +632,65 @@ public class RoboStrokeAppPanel extends JPanel {
 
     private Pair<SensorDataInput,Boolean> setInput(File inputFile) throws Exception {
 
-        boolean isVideo = !inputFile.getName().toLowerCase().matches(".*\\.(txt|trsd)$");
+        boolean isVideo = false;
+        SensorDataInput dataInput = null;
+        
+        if (inputFile != null) {
+            FileDataInput tmp = new FileDataInput(rs, inputFile);        
+            dataPrefs = Settings.getInstance(tmp.getUuid(), tmp.getFirstTimestamp());        
+            File mediaFile = dataPrefs.getAsFile(MediaSynchedFileDataInput.PROP_MEDIA_FILE);     
+            isVideo = mediaFile != null;
 
-        SensorDataInput dataInput;
 
-        if (isVideo) {			
-            dataInput = setupSynchedMediaDataInput(inputFile);
-        } else {
-            dataInput = new FileDataInput(rs, inputFile);
+            if (isVideo) {			
+                dataInput = setupSynchedMediaDataInput(inputFile, mediaFile, dataPrefs);
+            } else {
+                dataInput = new FileDataInput(rs, inputFile);
+            }
         }
-
-
+        
+        lblBack.setEnabled(isVideo);
+        lblSlowFast.setEnabled(isVideo);
+        lblForward.setEnabled(isVideo);
+        lblStep.setEnabled(isVideo);
+        lblMediaTime.setVisible(isVideo);
+        
+        lblPlayPause.setEnabled(inputFile != null);
+        mntmMediaSetup.setEnabled(inputFile != null);
+        
         return Pair.create(dataInput, !isVideo);
     }
-    private SensorDataInput setupSynchedMediaDataInput(File inputFile)
+    
+    private SensorDataInput setupSynchedMediaDataInput(File inputFile, File mediaFile, Settings dataPrefs)
             throws IOException, FileNotFoundException, Exception {
 
         SensorDataInput dataInput;
-        File mediaPropertyFile = new File(String.format("%s.talos.properties",  inputFile.getAbsolutePath()));
-
-
-        if (!mediaPropertyFile.canRead()) {
-            throw new IllegalArgumentException("can not read mediaPropertyFile file '" + mediaPropertyFile + "' - read manual for instructions on how to create such file");
-        }
-
-        Properties props = new Properties();
-
-        props.load(new FileReader(mediaPropertyFile));
 
         for (String key: new String[]{MediaSynchedFileDataInput.PROP_TIME_OFFSET, MediaSynchedFileDataInput.PROP_SYCH_MARK_ID}) {
-            if (!props.containsKey(key)) {
-                throw new IllegalArgumentException("property " + key + " must be defined in property file " + mediaPropertyFile + " - read manual for instructions on how to create such file");
+            if (null == dataPrefs.get(key, (String)null)) {
+                logger.warn("property {} is not defined for media file {} - read manual for instructions on how to create such file", key, mediaFile);
             }				
         }
 
-        long synchTimeOffset = Long.parseLong(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET));
-        int synchMarkId = Integer.parseInt(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID));					
+        long synchTimeOffset = dataPrefs.get(MediaSynchedFileDataInput.PROP_TIME_OFFSET, 0L);
+        int synchMarkId = dataPrefs.get(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, 1);					
 
-        String talosDataPath = props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA);					
+        VideoEffect videoEffect = VideoEffect.valueOf(dataPrefs.get(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
 
-        VideoEffect videoEffect = VideoEffect.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
+        ExternalMedia mediaPlayer = MediaPlayerFactory.createMediaPlayer(mediaFile, videoPanel, videoEffect, new ExternalMedia.EventListener() {
 
-        if (talosDataPath == null) {
-
-            talosDataPath = inputFile.getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt");
-
-            logger.warn("talosDataPath was not defined, will try to use " + talosDataPath);
-        }
-
-        File talosData = null;
-
-        for (File f: new File[] {new File(talosDataPath), new File(mediaPropertyFile.getParentFile(), talosDataPath)}) {
-            if (f.exists()) {
-                talosData = f;
-                break;
+            @Override
+            public void onEvent(EventType event, Object data) {
+                switch (event) {
+                    case TIME:
+                        long time = (Long) data;
+                        lblMediaTime.setText(ClockTime.fromMillis(time).toString());
+                        break;                        
+                }                
             }
-        }
+        });
 
-        if (talosData == null) {
-            throw new IllegalArgumentException("can not read talosData file " + talosDataPath);
-        }
-
-        dataInput = new MediaSynchedFileDataInput(rs, talosData, new VlcExternalMedia(inputFile, videoPanel, videoEffect), synchTimeOffset, synchMarkId);
+        dataInput = new MediaSynchedFileDataInput(rs, inputFile, mediaPlayer, synchTimeOffset, synchMarkId);
 
         return dataInput;
     }
@@ -757,12 +776,5 @@ public class RoboStrokeAppPanel extends JPanel {
     private void updatePlayPause(boolean pauseState) {        
         paused.set(pauseState);        
         lblPlayPause.setText(paused.get() ? ">" : "=");
-    }
-
-    public JMenuItem getMntmExport() {
-        return mntmExport;
-    }
-    public JLabel getLblSlowFast() {
-        return lblSlowFast;
     }
 }

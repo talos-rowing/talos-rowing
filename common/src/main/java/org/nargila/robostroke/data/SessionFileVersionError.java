@@ -32,7 +32,22 @@ public class SessionFileVersionError extends IOException {
 	
 	private final int version;
 	
-	public SessionFileVersionError() {
+	public SessionFileVersionError(String message, Throwable cause) {
+        super(message, cause);
+        version = -1;
+    }
+
+    public SessionFileVersionError(String message) {
+        super(message);
+        version = -1;
+    }
+
+    public SessionFileVersionError(Throwable cause) {
+        super(cause);
+        version = -1;
+    }
+
+    public SessionFileVersionError() {
 		this(-1);
 	}
 
@@ -42,6 +57,6 @@ public class SessionFileVersionError extends IOException {
 
 	@Override
 	public String getMessage() {
-		return version == -1 ? "session file version number missing" : "incompatible session file version " + version;
+		return super.getMessage() == null ? version == -1 ? "session file version number missing" : "incompatible session file version " + version : super.getMessage();
 	}
 }

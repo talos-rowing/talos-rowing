@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FileDataInput extends RecordDataInput implements Runnable {
 
+    private static final int MAX_VALIDATION_LINE_COUNT = 100;
+
     private final boolean batchMode = Boolean.getBoolean(FileDataInput.class.getName() + ".batchMode");
 
     private static final Logger logger = LoggerFactory.getLogger(FileDataInput.class);
@@ -68,6 +70,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     private long startTimeOffset;
 
     private final long firstTimestamp;
+
+    private final String uuid;
     
     public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
         super(roboStroke);
@@ -78,12 +82,27 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
         setSeakable(true);
 
-        firstTimestamp = checkVersion();
+        Pair<String, Long> p = checkVersion();
+        
+        uuid = p.first;
+        firstTimestamp = p.second;
 
     }
 
-    public void setClockProvider(ClockProvider clockProvider) {
+    public long getFirstTimestamp() {
+        return firstTimestamp;
+    }
+    
+    public String getUuid() {
+        return uuid;
+    }
+    
+    public void setClock(ClockProvider clockProvider) {
         this.clockProvider = clockProvider;
+    }
+    
+    public ClockProvider getClock() {
+        return clockProvider;
     }
     
     public File getDataFile() {
@@ -94,17 +113,22 @@ public class FileDataInput extends RecordDataInput implements Runnable {
         this.startTimeOffset = startTimeOffset;
     }
 
-    private long checkVersion() throws IOException, SessionFileVersionError {
-        
-        String line = reader.readLine();
-
+    private Pair<String /* UUID */, Long /* firstTimestamp */> checkVersion() throws IOException, SessionFileVersionError {
         int version = -1;
-        
-        boolean validVersion = false;
-
         long firstTimestamp = 0;
+        String uuid = null;
+        boolean validVersion = false;
+        int lineNum = 0;
         
-        if (line != null) {
+        do {
+            String line = reader.readLine();
+            
+            lineNum++;
+            
+            if (line == null) {
+                break;
+            }
+            
             String[] vals = readRecordLine(line);
 
             if (vals != null) {
@@ -112,30 +136,42 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
                 try {
                     type = DataRecord.Type.valueOf(vals[1]);
-
-                    switch (type) {
-                        case LOGFILE_VERSION:
-                            version = new Integer(vals[3]);
-                            firstTimestamp = new Long(vals[0]);
-                            if (version == SessionRecorderConstants.LOGFILE_VERSION) {
-                                validVersion = true;
-                            }
-
-                            break;
-                        default:
-                            break;
-                    }
                 } catch (IllegalArgumentException e) {
-                    // SessionFileVersionError() is thrown later
+                    continue; // SessionFileVersionError() is thrown later
+                }
+
+                switch (type) {
+                    case LOGFILE_VERSION:
+
+                        if (lineNum != 1) {
+                            throw new IllegalArgumentException("LOGFILE_VERSION must appear in the first line of the data file");
+                        }
+                        
+                        version = new Integer(vals[3]);
+                        firstTimestamp = new Long(vals[0]);
+                        if (version == SessionRecorderConstants.LOGFILE_VERSION) {
+                            validVersion = true;
+                        }
+
+                        break;
+                    case UUID:
+                        uuid = vals[0];
+                        break;
+                    default:
+                        break;
                 }
             }
-        }
+        } while (uuid == null && lineNum < MAX_VALIDATION_LINE_COUNT);
 
         if (!validVersion) {
             throw new SessionFileVersionError(version);
         }		
         
-        return firstTimestamp;
+        if (uuid == null) {
+            throw new SessionFileVersionError("UUID was not found within the first " + MAX_VALIDATION_LINE_COUNT + " lines of data log file");
+        }
+        
+        return Pair.create(uuid, firstTimestamp);
     }
 
     @Override

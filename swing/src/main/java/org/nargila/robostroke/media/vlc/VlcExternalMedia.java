@@ -28,7 +28,7 @@ public class VlcExternalMedia implements ExternalMedia {
 
     private final VideoEffect videoEffect;
 
-    private EventListener listener;
+    private final Listeners listeners = new Listeners();
 
     private double rate = 1.0;
 
@@ -47,6 +47,9 @@ public class VlcExternalMedia implements ExternalMedia {
         this.videoEffect = videoEffect;
 
         playerComponent = new VlcEmbeddedPlayer();
+        
+        container.add(playerComponent, BorderLayout.CENTER);
+        
     }
 
 
@@ -56,7 +59,7 @@ public class VlcExternalMedia implements ExternalMedia {
         if (this.duration == 0 && duration != 0) {
             this.duration = duration;
             logger.info("duration: {}", duration);
-            listener.onEvent(EventType.DURATION);
+            listeners.dispatch(EventType.DURATION, duration);
         }
     }
 
@@ -65,14 +68,14 @@ public class VlcExternalMedia implements ExternalMedia {
     public void stop() {
         logger.info("stopping pipeline..");
         playerComponent.stop();
+        playerComponent.release();
         container.remove(playerComponent);
     }
 
 
     @Override
     public void start() {
-        container.add(playerComponent, BorderLayout.CENTER);
-        playerComponent.start(videoFile);
+        playerComponent.start(videoFile);                
     }
 
     @Override
@@ -86,10 +89,15 @@ public class VlcExternalMedia implements ExternalMedia {
     }
 
     @Override
-    public void setEventListener(EventListener listener) {
-        this.listener = listener;
+    public void addEventListener(EventListener listener) {
+        listeners.addListener(listener);
     }
 
+    @Override
+    public void removeEventListener(EventListener listener) {
+        listeners.removeListener(listener);
+    }
+    
     @Override
     public long getDuration() {
         return duration;
@@ -224,13 +232,19 @@ public class VlcExternalMedia implements ExternalMedia {
         @Override
         public void playing(MediaPlayer mediaPlayer) {
             playing = true;
-            listener.onEvent(EventType.PLAY);
+            listeners.dispatch(EventType.PLAY, true);
         }
 
         @Override
+        public void timeChanged(MediaPlayer mediaPlayer, long newTime) {
+            listeners.dispatch(EventType.TIME, newTime);
+        }
+        
+        @Override
         public void paused(MediaPlayer mediaPlayer) {
+            listeners.dispatch(EventType.TIME, getTime());
             playing = false;
-            listener.onEvent(EventType.PAUSE);
+            listeners.dispatch(EventType.PAUSE, true);
         }
 
 
@@ -238,7 +252,7 @@ public class VlcExternalMedia implements ExternalMedia {
         public void stopped(MediaPlayer mediaPlayer) {
             stopped = true;
             playing = false;
-            listener.onEvent(EventType.STOP);
+            listeners.dispatch(EventType.STOP, true);
         }
 
         @Override
@@ -267,6 +281,7 @@ public class VlcExternalMedia implements ExternalMedia {
     @Override
     public boolean step() {
         playerComponent.mediaPlayer.nextFrame();
+        listeners.dispatch(EventType.TIME, getTime());
         return true;
     }
 }
