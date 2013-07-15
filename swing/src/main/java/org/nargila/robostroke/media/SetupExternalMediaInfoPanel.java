@@ -33,10 +33,10 @@ import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
-import org.nargila.robostroke.media.vlc.VlcFindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("serial")
 public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
 	private static final String MEDIA_CONFIG_FILE_SUFFIX = ".trsm";
@@ -64,7 +64,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	private final JFormattedTextField textMarkId;
 	private VideoEffect videoEffect = VideoEffect.NONE;
 	private final JButton btnDetect;
-	private VlcFindQrMarkPipeline findQr;
+	private FindQrMarkPipeline findQr;
 	private boolean canceled;
 	private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer,Long>>();
 
@@ -336,8 +336,12 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		saveBtn.setEnabled(false);
 		
 		final SetupExternalMediaInfoPanel self = this;
-
-		findQr = new VlcFindQrMarkPipeline(mediaFile.get());
+		
+		try {
+            findQr = MediaPlayerFactory.createFindQrMarkPipeline(mediaFile.get());
+        } catch (Exception e) {
+            error.set(e);
+        }
 		
 		new Thread("DetectQrMark") {
 			@Override
@@ -345,7 +349,11 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 				
 				final AtomicReference<Pair<Integer, Long>> res = new AtomicReference<Pair<Integer,Long>>();
 				
-				try {					
+				try {
+				    if (error.get() != null) {
+				        throw error.get();
+				    }
+				    
 					res.set(findQr.findMark(60));
 				} catch (Exception e) {
 					error.set(e);
