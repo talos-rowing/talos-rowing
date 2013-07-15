@@ -41,7 +41,7 @@ public class RoboStrokeSwing {
 	
 	private JFrame frmTalosRowing;
 
-	private RoboStroke rs = new RoboStroke();
+	private final RoboStroke rs = new RoboStroke();
 
 	private RoboStrokeAppPanel roboStrokeAppPanel;
 		
@@ -53,7 +53,8 @@ public class RoboStrokeSwing {
 		logger.info("launching Talos Rowing");
 		
 		EventQueue.invokeLater(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				try {
 					RoboStrokeSwing window = new RoboStrokeSwing();
 
@@ -63,7 +64,7 @@ public class RoboStrokeSwing {
 					
 					if (args.length > 0) {
 						File f = new File(args[0]);
-						window.roboStrokeAppPanel.start(f);
+						window.roboStrokeAppPanel.start(f, null);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();

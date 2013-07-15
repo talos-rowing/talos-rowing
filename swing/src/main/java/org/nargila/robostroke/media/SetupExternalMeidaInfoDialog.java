@@ -2,11 +2,8 @@ package org.nargila.robostroke.media;
 
 import javax.swing.JDialog;
 
-import org.nargila.robostroke.app.Settings;
-
+@SuppressWarnings("serial")
 public class SetupExternalMeidaInfoDialog extends JDialog {
-
-	private final SetupExternalMediaInfoPanel setupPanel;
 
     public SetupExternalMeidaInfoDialog() {
 
@@ -15,23 +12,14 @@ public class SetupExternalMeidaInfoDialog extends JDialog {
 		
 		setTitle("Talos Video Merge");
 		
-		setupPanel = new SetupExternalMediaInfoPanel() {
-			
-			@Override
-			protected void onClose() {
-				setVisible(false);
-				dispose();
-			}
-		};
-		
-        setContentPane(setupPanel);		
+        setContentPane(new SetupExternalMediaInfoPanel() {
+            
+            @Override
+            protected void onClose() {
+                setVisible(false);
+                dispose();
+            }
+        });		
 	}
 
-    public void loadSettings(Settings dataPrefs, long time) {
-        setupPanel.loadSettings(dataPrefs, time);
-    }
-    
-    public boolean isCanceled() {
-        return setupPanel.canceled;
-    }
 }

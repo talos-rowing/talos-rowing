@@ -31,8 +31,9 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.Box;
@@ -43,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -117,13 +119,10 @@ public class RoboStrokeAppPanel extends JPanel {
 
     private final JLabel lblPlayPause;
 
-    private Settings dataPrefs;
     private final JMenuItem mntmMediaSetup;
     private final JLabel lblForward;
     private final JLabel lblStep;
     private final JLabel lblMediaTime;
-
-    private File currentFile;
 
     /**
      * Create the panel.
@@ -141,7 +140,7 @@ public class RoboStrokeAppPanel extends JPanel {
         mntmOpen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openFileAction();
+                openFileAction(false);
             }
         });
         mnFile.add(mntmOpen);
@@ -169,6 +168,15 @@ public class RoboStrokeAppPanel extends JPanel {
                 openRemoteAction();
             }
         });
+        
+        JMenuItem mntmMedia = new JMenuItem("Open (Media)");
+        mntmMedia.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openFileAction(true);
+            }
+        });
+        mnFile.add(mntmMedia);
         mnFile.add(mntmOpenRemote);
         mntmExport.setEnabled(false);
         mnFile.add(mntmExport);
@@ -246,7 +254,6 @@ public class RoboStrokeAppPanel extends JPanel {
         mnTools.add(mntmOggConvert);
 
         mntmMediaSetup = new JMenuItem("Media Setup");
-        mntmMediaSetup.setEnabled(false);
         mnTools.add(mntmMediaSetup);
         mntmMediaSetup.addActionListener(new ActionListener() {
             @Override
@@ -510,14 +517,8 @@ public class RoboStrokeAppPanel extends JPanel {
         dialog.setSize(500, 450);
 
         dialog.setLocationRelativeTo(this);
-
-        dialog.loadSettings(dataPrefs, ((FileDataInput)this.rs.getDataInput()).getClock().getTime());
         
         dialog.setVisible(true);
-        
-        if (!dialog.isCanceled()) {
-            restart();
-        }
     }
 
     private void launchVideoConverter() {
@@ -541,13 +542,13 @@ public class RoboStrokeAppPanel extends JPanel {
         exportDialog.setVisible(true);
     }
 
-    private void openFileAction() {
+    private void openFileAction(final boolean isMedia) {
         JFileChooser fc = new JFileChooser(Settings.getInstance().getLastDir());
         fc.setFileFilter(new FileFilter() {
 
             @Override
             public String getDescription() {
-                return "Talos Rowing Data Files";
+                return isMedia ? "Talos Rowing Data/Media conf files" : "Talos Rowing Data Files";
             }
 
             @Override
@@ -557,7 +558,7 @@ public class RoboStrokeAppPanel extends JPanel {
                     return true;
                 } else {
                     String name = f.getName();
-                    return name.endsWith(".trsd") || name.endsWith(".txt");
+                    return isMedia ? name.endsWith(".trsm") : name.endsWith(".trsd") || name.endsWith(".txt");
                 }
             }
         });
@@ -568,10 +569,49 @@ public class RoboStrokeAppPanel extends JPanel {
 
             Settings.getInstance().setLastDir(f.getParentFile());
 
-            prepareFile(f);
+            Properties mediaConf;
+            
+            if (isMedia) {
+                
+                try {
+                    mediaConf = new Properties();
+                    mediaConf.load(new FileReader(f));
+                    
+                    f = validateFileProperty(mediaConf, MediaSynchedFileDataInput.PROP_TALOS_DATA);
+                    validateFileProperty(mediaConf, MediaSynchedFileDataInput.PROP_TALOS_DATA);
+                } catch (Exception e) {
+                    showError("Media configuration load error", e.getMessage());
+                    return;
+                }                                                
+            } else {
+                mediaConf = null;
+            }
+            
+            prepareFile(f, mediaConf);
         }
     }
 
+    private void showError(String title, String msg) {
+        JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
+    }
+    
+    private File validateFileProperty(Properties prop, String propName) throws Exception {
+        
+        String val = prop.getProperty(propName, null);
+        
+        File f = val == null ? null : new File(val);
+
+        if (f == null) {
+            throw new IllegalArgumentException("property " + propName + " must be defined");
+        }
+        
+        if (!f.canRead() || !f.isFile()) {
+            throw new IllegalArgumentException(f + " does is not be opened as a file");                    
+        }
+        
+        return f;
+    }
+    
     private void openRemoteAction() {		
 
         try {
@@ -582,14 +622,14 @@ public class RoboStrokeAppPanel extends JPanel {
         }
     }	
 
-    private void prepareFile(final File f) {
-
+    private void prepareFile(final File f, final Properties mediaConf) {
+        
         @SuppressWarnings("serial")
         final PrepareFileDialog pfd = new PrepareFileDialog() {
             @Override
             protected void onFinish(File res) {                
                 if (res != null) {
-                    start(res);
+                    start(res, mediaConf);
                 }
             }
         };
@@ -599,21 +639,14 @@ public class RoboStrokeAppPanel extends JPanel {
         pfd.launch(f);
     }
 
-    void restart() {
-        File f = currentFile;
-        start(f);
-    }
-    
-    void start(File f) {
+    void start(File f, Properties mediaConf) {
         
         if (f != null) {
-            start(null);
+            start(null, null);
         }
-        
-        currentFile = f;
-        
+                
         try {						
-            Pair<SensorDataInput, Boolean> input = setInput(f);
+            Pair<SensorDataInput, Boolean> input = setInput(f, mediaConf);
             start(input.first, input.second);
         } catch (Exception e) {
             logger.error("error opening file " + f, e);
@@ -630,20 +663,16 @@ public class RoboStrokeAppPanel extends JPanel {
     }
 
 
-    private Pair<SensorDataInput,Boolean> setInput(File inputFile) throws Exception {
+    private Pair<SensorDataInput,Boolean> setInput(File inputFile, Properties mediaConf) throws Exception {
 
-        boolean isVideo = false;
         SensorDataInput dataInput = null;
+
+        boolean isVideo = mediaConf != null;
         
         if (inputFile != null) {
-            FileDataInput tmp = new FileDataInput(rs, inputFile);        
-            dataPrefs = Settings.getInstance(tmp.getUuid(), tmp.getFirstTimestamp());        
-            File mediaFile = dataPrefs.getAsFile(MediaSynchedFileDataInput.PROP_MEDIA_FILE);     
-            isVideo = mediaFile != null;
-
 
             if (isVideo) {			
-                dataInput = setupSynchedMediaDataInput(inputFile, mediaFile, dataPrefs);
+                dataInput = setupSynchedMediaDataInput(inputFile, mediaConf);
             } else {
                 dataInput = new FileDataInput(rs, inputFile);
             }
@@ -656,26 +685,25 @@ public class RoboStrokeAppPanel extends JPanel {
         lblMediaTime.setVisible(isVideo);
         
         lblPlayPause.setEnabled(inputFile != null);
-        mntmMediaSetup.setEnabled(inputFile != null);
         
         return Pair.create(dataInput, !isVideo);
     }
     
-    private SensorDataInput setupSynchedMediaDataInput(File inputFile, File mediaFile, Settings dataPrefs)
-            throws IOException, FileNotFoundException, Exception {
+    private SensorDataInput setupSynchedMediaDataInput(File inputFile, Properties mediaConf) throws Exception {
 
         SensorDataInput dataInput;
 
         for (String key: new String[]{MediaSynchedFileDataInput.PROP_TIME_OFFSET, MediaSynchedFileDataInput.PROP_SYCH_MARK_ID}) {
-            if (null == dataPrefs.get(key, (String)null)) {
-                logger.warn("property {} is not defined for media file {} - read manual for instructions on how to create such file", key, mediaFile);
+            if (null == mediaConf.getProperty(key, (String)null)) {
+                logger.warn("mandatory property {} is not defined", key);
             }				
         }
 
-        long synchTimeOffset = dataPrefs.get(MediaSynchedFileDataInput.PROP_TIME_OFFSET, 0L);
-        int synchMarkId = dataPrefs.get(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, 1);					
+        long synchTimeOffset = new Long(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "0"));
+        int synchMarkId = new Integer(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "1"));					
+        File mediaFile = validateFileProperty(mediaConf, MediaSynchedFileDataInput.PROP_MEDIA_FILE); 
 
-        VideoEffect videoEffect = VideoEffect.valueOf(dataPrefs.get(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
+        VideoEffect videoEffect = VideoEffect.valueOf(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));
 
         ExternalMedia mediaPlayer = MediaPlayerFactory.createMediaPlayer(mediaFile, videoPanel, videoEffect, new ExternalMedia.EventListener() {
 

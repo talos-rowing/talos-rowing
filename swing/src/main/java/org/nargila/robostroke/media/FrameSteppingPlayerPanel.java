@@ -1,4 +1,4 @@
-package org.nargila.robostroke.media.vlc;
+package org.nargila.robostroke.media;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,8 +19,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.nargila.robostroke.common.ClockTime;
+import org.nargila.robostroke.data.media.ExternalMedia;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 
-public class VlcFrameSteppingPlayerPanel extends JPanel {
+@SuppressWarnings("serial")
+public class FrameSteppingPlayerPanel extends JPanel {
 
     public interface TimeChangeListener {
         public void onTimeChanged(long time);
@@ -34,12 +37,12 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
     private final JButton btnSkipForeward;
     private final JLabel lblTime;
     private final JPanel movieArea;
-    private VlcExternalMedia vlcMedia;
+    private ExternalMedia mediaPlayer;
 
     /**
      * Create the panel.
      */
-    public VlcFrameSteppingPlayerPanel() {
+    public FrameSteppingPlayerPanel() {
         setLayout(new BorderLayout(0, 0));
 
         JPanel panel = new JPanel();
@@ -55,7 +58,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
             public void stateChanged(ChangeEvent e) {
                 if (slider.getValueIsAdjusting()) {
                     double pos = (double) slider.getValue() / slider.getMaximum();
-                    vlcMedia.setTime((long) (pos * vlcMedia.getDuration()));
+                    mediaPlayer.setTime((long) (pos * mediaPlayer.getDuration()));
                 }
             }
         });
@@ -70,16 +73,21 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
         btnPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                vlcMedia.pause();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                } else {
+                    mediaPlayer.play();
+                }
             }
         });
+        
         panel_1.add(btnPlay);
 
         btnSkipBack = new JButton("-3");
         btnSkipBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                vlcMedia.setTime(vlcMedia.getTime() -3000);
+                mediaPlayer.setTime(mediaPlayer.getTime() -3000);
                 updateTime();
             }
         });
@@ -89,7 +97,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
         btnSkipForeward.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                vlcMedia.setTime(vlcMedia.getTime() + 3000);
+                mediaPlayer.setTime(mediaPlayer.getTime() + 3000);
                 updateTime();
             }
         });
@@ -99,7 +107,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
         btnNext.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                vlcMedia.step();
+                mediaPlayer.step();
                 updateTime();
             }
         });
@@ -112,7 +120,7 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
         panel_3.add(lblTime);
 
         movieArea = new JPanel();
-        movieArea.setBackground(Color.YELLOW);             
+        movieArea.setBackground(Color.BLACK);             
 
         add(movieArea, BorderLayout.CENTER);
         movieArea.setLayout(new BorderLayout(0, 0));
@@ -124,16 +132,16 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
     }
 
     private void updateTime() {
-        long time = vlcMedia.getTime();
+        long time = mediaPlayer.getTime();
         timeListener.onTimeChanged(time);
         lblTime.setText(ClockTime.fromMillis(time).toString());
-        double pos = (double)time / vlcMedia.getDuration();
+        double pos = (double)time / mediaPlayer.getDuration();
         slider.setValue((int) (pos * slider.getMaximum()));
     }
 
     public static void main(String[] args) throws Exception {
 
-        final VlcFrameSteppingPlayerPanel player = new VlcFrameSteppingPlayerPanel();
+        final FrameSteppingPlayerPanel player = new FrameSteppingPlayerPanel();
 
         JFrame f = new JFrame("Test Player");
         //	    f.setIconImage(new ImageIcon(MinimalTestPlayer.class.getResource("/icons/vlcj-logo.png")).getImage());
@@ -177,13 +185,23 @@ public class VlcFrameSteppingPlayerPanel extends JPanel {
     }
 
     public void play(String mrl) throws Exception {
-        vlcMedia = new VlcExternalMedia(new File(mrl), movieArea);
-        vlcMedia.play();
-//        vlc.getMediaPlayer().playMedia(mrl);		
+        mediaPlayer = MediaPlayerFactory.createMediaPlayer(new File(mrl), movieArea, VideoEffect.NONE, new ExternalMedia.EventListener() {
+            
+            @Override
+            public void onEvent(ExternalMedia.EventType event, Object data) {
+                switch (event) {
+                    case TIME:
+                        timeListener.onTimeChanged((Long)data);
+                        break;
+                }
+            }
+        });
+        
+        mediaPlayer.start();
     }
 
     public void stop() {
-        vlcMedia.stop();
+        mediaPlayer.stop();
     }
     
     public JPanel getMovieArea() {

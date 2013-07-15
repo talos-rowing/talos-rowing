@@ -1,4 +1,4 @@
-package org.nargila.robostroke.media;
+package org.nargila.robostroke.oggz;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -33,26 +33,25 @@ import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 import org.nargila.robostroke.data.media.MediaSynchedFileDataInput;
+import org.nargila.robostroke.media.SteppingPlayerDialog;
 import org.nargila.robostroke.media.vlc.VlcFindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
-	private static final String MEDIA_CONFIG_FILE_SUFFIX = ".trsm";
+	private static final Logger logger = LoggerFactory.getLogger(SetupExternalMediaInfoPanel.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(SetupExternalMediaInfoPanel.class);
-
-	private final JTextField inputOgg;
-	private final JTextField inputTalos;
-	private final JButton cancelBtn;
-	private final JButton saveBtn;
-	private final JButton btnSelectMedia;
-	private final JButton btnSelectTalos;
-	private final JButton btnSelectOutput;
-	private final JTextField resultTalos;
-	private final JLabel statusLine;
-	private final JProgressBar progressBar;
+	private JTextField inputOgg;
+	private JTextField inputTalos;
+	private JButton cancelBtn;
+	private JButton saveBtn;
+	private JButton btnSelectMedia;
+	private JButton btnSelectTalos;
+	private JButton btnSelectOutput;
+	private JTextField resultTalos;
+	private JLabel statusLine;
+	private JProgressBar progressBar;
 	private JFileChooser fc;
 	private final AtomicReference<File> resultTalosConfFile = new AtomicReference<File>();
 	private final AtomicReference<File> talosFile = new AtomicReference<File>();
@@ -60,17 +59,17 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 	
 	private final AtomicReference<Exception> error = new AtomicReference<Exception>();
 
-	private final JFormattedTextField textTimeOffset;
-	private final JFormattedTextField textMarkId;
+	private JFormattedTextField textTimeOffset;
+	private JFormattedTextField textMarkId;
 	private VideoEffect videoEffect = VideoEffect.NONE;
-	private final JButton btnDetect;
+	private JButton btnDetect;
 	private VlcFindQrMarkPipeline findQr;
 	private boolean canceled;
 	private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer,Long>>();
 
-	private final JComboBox cbxVideoEfects;
+	private JComboBox cbxVideoEfects;
 
-	private final JButton btnManual;
+	private JButton btnManual;
 	
 	/**
 	 * Create the panel.
@@ -84,8 +83,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.NORTH, btnSelectMedia, 22, SpringLayout.NORTH, this);
 		springLayout.putConstraint(SpringLayout.WEST, btnSelectMedia, 21, SpringLayout.WEST, this);
 		btnSelectMedia.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				chooseMediaFile();
 			}
 		});
@@ -104,8 +102,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.WEST, btnSelectTalos, 0, SpringLayout.WEST, btnSelectMedia);
 		springLayout.putConstraint(SpringLayout.EAST, btnSelectTalos, 0, SpringLayout.EAST, btnSelectMedia);
 		btnSelectTalos.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				chooseTalosFile();
 			}
 		});
@@ -123,8 +120,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.WEST, cancelBtn, 100, SpringLayout.WEST, this);
 		springLayout.putConstraint(SpringLayout.EAST, cancelBtn, 181, SpringLayout.WEST, this);
 		cancelBtn.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				cancel();
 			}
 		});
@@ -136,8 +132,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.SOUTH, saveBtn, -31, SpringLayout.SOUTH, this);
 		saveBtn.setEnabled(false);
 		saveBtn.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				onSave();
 			}
 		});
@@ -151,8 +146,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.SOUTH, inputTalos, -6, SpringLayout.NORTH, btnSelectOutput);
 		springLayout.putConstraint(SpringLayout.WEST, btnSelectOutput, 21, SpringLayout.WEST, this);
 		btnSelectOutput.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				chooseOutputFile();
 			}
 		});
@@ -200,8 +194,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			@Override
 			public void focusGained(FocusEvent e) {
 				EventQueue.invokeLater(new Runnable() {
-					@Override
-                    public void run() {
+					public void run() {
 						textTimeOffset.selectAll();					
 					}
 				});
@@ -225,8 +218,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			@Override
 			public void focusGained(FocusEvent e) {
 				EventQueue.invokeLater(new Runnable() {
-					@Override
-                    public void run() {
+					public void run() {
 						textMarkId.selectAll();					
 					}
 				});			
@@ -248,8 +240,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		springLayout.putConstraint(SpringLayout.EAST, btnDetect, -110, SpringLayout.EAST, this);
 		btnDetect.setEnabled(false);
 		btnDetect.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				onDetect();
 			}
 		});
@@ -266,8 +257,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		cbxVideoEfects = new JComboBox();
 		cbxVideoEfects.setEnabled(false);
 		cbxVideoEfects.addItemListener(new ItemListener() {
-			@Override
-            public void itemStateChanged(ItemEvent e) {
+			public void itemStateChanged(ItemEvent e) {
 				videoEffect = (VideoEffect) e.getItem();
 			}
 		});
@@ -280,8 +270,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		
 		btnManual = new JButton("Manual");
 		btnManual.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				onManualMarkTime();
 			}
 		});
@@ -340,8 +329,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		findQr = new VlcFindQrMarkPipeline(mediaFile.get());
 		
 		new Thread("DetectQrMark") {
-			@Override
-            public void run() {
+			public void run() {
 				
 				final AtomicReference<Pair<Integer, Long>> res = new AtomicReference<Pair<Integer,Long>>();
 				
@@ -398,10 +386,9 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 		Properties props = new Properties();
 
-		props.setProperty(MediaSynchedFileDataInput.PROP_MEDIA_FILE, mediaFile.get().getAbsolutePath());
-		props.setProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, talosFile.get().getAbsolutePath());		
 		props.setProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, syncData.get().first.toString());
 		props.setProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, syncData.get().second.toString());
+		props.setProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, talosFile.get().getAbsolutePath());		
 		props.setProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, videoEffect.name());		
 
 		try {
@@ -440,7 +427,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
 	protected void chooseOutputFile() {
 		
-		File suggestedFile = mediaFile.get() == null ? null : new File(mediaFile.get().getAbsolutePath() + MEDIA_CONFIG_FILE_SUFFIX);
+		File suggestedFile = mediaFile.get() == null ? null : new File(mediaFile.get().getAbsolutePath() + ".talos.properties");
 		
 		String path = chooseFile(TALOS_MEDIA_INFO_FILES_FILTER, true, suggestedFile);		
 				
@@ -519,7 +506,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 		
 		if (mediaFile.get() != null && !mediaFile.get().equals(media)) {
 			
-			setOutfile(mediaFile.get().getAbsolutePath() + MEDIA_CONFIG_FILE_SUFFIX);
+			setOutfile(mediaFile.get().getAbsolutePath() + ".talos.properties");
 
 			if (talosFile.get() == null) {
 				setPathItem(mediaFile.get().getAbsolutePath().replaceFirst("\\.[a-zA-Z0-9]+$", ".txt"), talosFile, inputTalos, true);
@@ -585,10 +572,10 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 			if (f.isDirectory()) {
 				return true;
 			} else {
-				return f.getName().endsWith(MEDIA_CONFIG_FILE_SUFFIX);
+				return f.getName().endsWith(".talos.properties");
 			}
 		}
 	};
 
-	private final JLabel lblVideoEvects;	
+	private JLabel lblVideoEvects;	
 }

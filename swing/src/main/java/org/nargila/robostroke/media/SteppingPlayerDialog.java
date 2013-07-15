@@ -1,4 +1,4 @@
-package org.nargila.robostroke.media.vlc;
+package org.nargila.robostroke.media;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,14 +16,17 @@ import javax.swing.border.LineBorder;
 
 import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
-
-import uk.co.caprica.vlcj.logger.Logger;
+import org.nargila.robostroke.media.vlc.VlcSetup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class SteppingPlayerDialog extends JDialog {
 
+    private static final Logger logger = LoggerFactory.getLogger(SteppingPlayerDialog.class);
+    
 	private final JPanel contentPanel = new JPanel();
-	private VlcFrameSteppingPlayerPanel player;
+	private FrameSteppingPlayerPanel player;
 	private String mrl;
 
 	public final AtomicReference<Pair<String,ClockTime>> res = new  AtomicReference<Pair<String,ClockTime>>();
@@ -64,11 +67,11 @@ public class SteppingPlayerDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
-			player = new VlcFrameSteppingPlayerPanel();
+			player = new FrameSteppingPlayerPanel();
 			player.setBorder(new LineBorder(Color.GRAY, 5));
 			contentPanel.add(player);
 			
-			player.setTimeListener(new VlcFrameSteppingPlayerPanel.TimeChangeListener() {
+			player.setTimeListener(new FrameSteppingPlayerPanel.TimeChangeListener() {
 				
 				@Override
                 public void onTimeChanged(long time) {
@@ -162,7 +165,7 @@ public class SteppingPlayerDialog extends JDialog {
 						} catch (InterruptedException e) {
 						    e.printStackTrace();
 						} catch (Exception e) {
-						    Logger.error("error while trying to play " + mrl, e);
+						    logger.error("error while trying to play " + mrl, e);
 						}
 					}
 
