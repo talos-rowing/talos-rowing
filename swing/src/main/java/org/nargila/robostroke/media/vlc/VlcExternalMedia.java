@@ -164,7 +164,7 @@ public class VlcExternalMedia implements ExternalMedia {
                 }
 
                 long deadReconingTimeElapsed = deadReconingClock.getTime();
-                if (playing && deadReconingTimeElapsed < 200) {
+                if (playing && deadReconingTimeElapsed < 300) {
                     logger.info("dead reconing timestamp {} (diff={})", lastPlayTime + deadReconingTimeElapsed, deadReconingTimeElapsed);
                     return lastPlayTime + deadReconingTimeElapsed;
                 }
