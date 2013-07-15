@@ -61,55 +61,6 @@
     </dependency>
 
 
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-codecs</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-jst</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-jheora</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-jcraft</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-jkate</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-jtiger</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-plugin</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.nargila.robostroke.cortado</groupId>
-      <artifactId>cortado-utils</artifactId>
-      <version>${cortado.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.google.zxing</groupId>
       <artifactId>javase</artifactId>

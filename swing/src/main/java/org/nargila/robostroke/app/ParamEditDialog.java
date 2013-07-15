@@ -53,6 +53,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 
 import org.nargila.robostroke.RoboStroke;
@@ -84,7 +85,8 @@ public class ParamEditDialog extends JDialog {
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private JButton btnVlcPath;
 	private JButton btnGstPath;
-	private JRadioButton radioUseJgst;
+	private JPanel panel_1;
+	private JPanel horizontalBox;
 	
 	/**
 	 * Launch the application.
@@ -105,7 +107,7 @@ public class ParamEditDialog extends JDialog {
 	public ParamEditDialog() {
 		setTitle("Parameters");
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 550, 350);
         
 		getContentPane().setLayout(new BorderLayout());
 		{
@@ -113,6 +115,7 @@ public class ParamEditDialog extends JDialog {
 			getContentPane().add(tabbedPane, BorderLayout.CENTER);
 			{
 				JPanel panel = new JPanel();
+				panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 				tabbedPane.addTab("Settings", null, panel, null);
 				GridBagLayout gbl_panel = new GridBagLayout();
 				gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
@@ -224,8 +227,8 @@ public class ParamEditDialog extends JDialog {
 				    panel.add(btnGstPath, gbc_btnGstPath);
 				}
 				{
-                    File dir = Settings.getInstance().getMediaFrameworkNativeDir(MediaFramework.VLC);
-                    txtGstPath = new JTextField(dir == null ? "" : dir.getAbsolutePath());
+                    File dir = Settings.getInstance().getMediaFrameworkNativeDir(MediaFramework.GST);
+                    txtGstPath = new JTextField("");
 				    txtGstPath.setEditable(false);
 				    txtGstPath.setColumns(10);
 				    GridBagConstraints gbc_txtGstPath = new GridBagConstraints();
@@ -251,37 +254,37 @@ public class ParamEditDialog extends JDialog {
 				    gbc_btnClearGstPath.gridy = 2;
 				    panel.add(btnClearGstPath, gbc_btnClearGstPath);
 				}
-				{
-				    radioUseJgst = new JRadioButton("JST");
-				    radioUseJgst.addItemListener(new ItemListener() {
-				        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                            if (radioUseJgst.isSelected()) {
-                                onFrameWorkSelected(MediaFramework.JST);
-                            }
-				        }
-				    });
-				    buttonGroup.add(radioUseJgst);
-				    GridBagConstraints gbc_radioUseJgst = new GridBagConstraints();
-				    gbc_radioUseJgst.anchor = GridBagConstraints.WEST;
-				    gbc_radioUseJgst.insets = new Insets(0, 0, 0, 5);
-				    gbc_radioUseJgst.gridx = 1;
-				    gbc_radioUseJgst.gridy = 3;
-				    panel.add(radioUseJgst, gbc_radioUseJgst);
-				}
 			}
 			{
+			    panel_1 = new JPanel();
+			    tabbedPane.addTab("Parameters", null, panel_1, null);
 				JScrollPane scrollPane = new JScrollPane();
-				tabbedPane.addTab("Parameters", null, scrollPane, null);
 				{
 					gridPanel = new JPanel();
+					gridPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 					scrollPane.setViewportView(gridPanel);
 					gridPanel.setLayout(new GridBagLayout());
+				}
+				panel_1.setLayout(new BorderLayout(0, 0));
+				panel_1.add(scrollPane);
+				{
+				    horizontalBox = new JPanel();
+				    panel_1.add(horizontalBox, BorderLayout.SOUTH);
+                    JButton btnReset = new JButton("Reset");
+                    btnReset.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    btnReset.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            resetParams();
+                        }
+                    });
+                    horizontalBox.add(btnReset);
 				}
 			}
 		}
 		{
 			JPanel buttonPane = new JPanel();
+			buttonPane.setBorder(new EmptyBorder(10, 0, 10, 0));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
@@ -298,14 +301,14 @@ public class ParamEditDialog extends JDialog {
 					buttonPane.add(horizontalGlue);
 				}
 				{
-					JButton btnReset = new JButton("Reset");
-					btnReset.addActionListener(new ActionListener() {
+					JButton btnCancel = new JButton("Cancel");
+					btnCancel.addActionListener(new ActionListener() {
 						@Override
                         public void actionPerformed(ActionEvent e) {
-							resetParams();
+						    setVisible(false);
 						}
 					});
-					buttonPane.add(btnReset);
+					buttonPane.add(btnCancel);
 				}
 				{
 					Component horizontalGlue = Box.createHorizontalGlue();
@@ -329,7 +332,6 @@ public class ParamEditDialog extends JDialog {
 	    	    
 	    radioUseVlc.setSelected(mediaFramework == MediaFramework.VLC);
         radioUseGst.setSelected(mediaFramework == MediaFramework.GST);
-        radioUseJgst.setSelected(mediaFramework == MediaFramework.JST);
         
         btnClearGstPath.setEnabled(mediaFramework == MediaFramework.GST);
         btnClearVlcPath.setEnabled(mediaFramework == MediaFramework.VLC);

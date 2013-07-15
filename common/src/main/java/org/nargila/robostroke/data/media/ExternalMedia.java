@@ -88,8 +88,7 @@ public interface ExternalMedia {
 
     public enum MediaFramework {
         VLC,
-        GST,
-        JST
+        GST
     }
     
     public enum EventType {
