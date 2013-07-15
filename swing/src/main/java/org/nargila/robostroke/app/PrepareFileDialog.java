@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import javax.swing.Box;
@@ -38,14 +39,20 @@ import javax.swing.border.EmptyBorder;
 
 import org.nargila.robostroke.common.DataStreamCopier;
 import org.nargila.robostroke.data.version.DataVersionConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class PrepareFileDialog extends JDialog {
 
+    private static final Logger logger = LoggerFactory.getLogger(PrepareFileDialog.class);
+    
 	private final JPanel contentPanel = new JPanel();
 	protected boolean cancelled;
 	private JProgressBar progressBar;
 
+	private final AtomicBoolean showRequested = new AtomicBoolean();
+	
 	/**
 	 * Launch the application.
 	 */
@@ -111,22 +118,43 @@ public class PrepareFileDialog extends JDialog {
 	
 	
     void launch(final File trsd) {
+        
+        logger.info("deffered launching of {} conversion/decompression", trsd);
+
         new Thread("RoboStrokeAppPanel prepareFile") {
-            
+
             @Override
             public void run() {
                 reallyLaunch(trsd);
             }
         }.start();
+
+        synchronized (showRequested) {
+            try {
+                showRequested.wait();
+                
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return;
+            }
+        }
+        
+        if (showRequested.get() && !cancelled) {
+            setVisible(true);
+        }
+        
     }        
 	
 	void reallyLaunch(File trsd) {				
 
-		File f = null;
+        logger.info("real launching of {} conversion/decompression", trsd);
+
+        File f = null;
 
 		try {
 			if (trsd.getName().endsWith(".trsd")) {
-				f = uncimpressFile(trsd);
+				f = uncompressFile(trsd);
 			} else {
 				f = convertFileVersion(trsd);
 			}
@@ -136,6 +164,7 @@ public class PrepareFileDialog extends JDialog {
 			e.printStackTrace();
 		} finally {
 		    setVisible(false);
+		    cancel();
 		    onFinish(f);		    
 		}
 		
@@ -143,6 +172,11 @@ public class PrepareFileDialog extends JDialog {
 		
 	void cancel() {
 		cancelled = true;
+		
+		synchronized (showRequested) {
+		    showRequested.set(false);
+		    showRequested.notifyAll();
+		}
 	}
 	
 	private File convertFileVersion(File input) throws Exception {
@@ -172,9 +206,11 @@ public class PrepareFileDialog extends JDialog {
 		return input;
 	}
 	
-	private File uncimpressFile(File trsd) {
+	private File uncompressFile(File trsd) {
 		
-		try {
+        logger.info("uncompressing {}", trsd);
+
+        try {
 			
 
 			File res = File.createTempFile("talos-rowing-data", ".txt");
@@ -195,8 +231,11 @@ public class PrepareFileDialog extends JDialog {
 
 					int pos = (int) (100.0 * d);
 
+					logger.info("setting progressBar to {}", pos);
+
 					progressBar.setValue(pos);
 					
+
 					return !cancelled;
 				}
 				
@@ -223,8 +262,23 @@ public class PrepareFileDialog extends JDialog {
 	}
 
     private void verifyVisibility(double progress) {
-        if (!cancelled && !isVisible() && progress < 1.0) {
-            setVisible(true);
+        boolean justShown = false;
+
+        synchronized (showRequested) {
+            if (!cancelled && !isVisible() && progress < 1.0) {
+                showRequested.set(true);
+                showRequested.notifyAll();
+                justShown = true;
+            }
+        }
+        
+        if (justShown) { // ensure progress is shown for one second insteed of a possible mere flicker on screen
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 
