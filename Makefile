@@ -5,6 +5,10 @@ ifeq ($(TEST),0)
 MVN_ARGS += -Dmaven.test.skip=true
 endif
 
+all:
+	@echo available targets:
+	@grep '^[^#[:space:]].*:' Makefile | sed 's,:.*,,' | grep -v $@
+
 push: $(REPOS:%=push-%)
 
 
