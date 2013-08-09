@@ -47,5 +47,6 @@
     <string name="crash_dialog_text">An unexpected error has occurred. Please help us fix this by sending us error data,
     all you have to do is click OK.</string>
     <string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
+    <string name="about_dialog_guide_url">http://nargila.org/trac/robostroke/chrome/site/docs/guide/robostroke.html</string>
     <string name="sharedUserLabel">Talos Rowing</string>
 </resources>

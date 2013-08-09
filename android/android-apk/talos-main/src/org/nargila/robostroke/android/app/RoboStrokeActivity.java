@@ -1243,7 +1243,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				String url = "http://nargila.org/trac/robostroke/wiki/GuideIntroduction";
+				String url = getString(R.string.about_dialog_guide_url);
 				Intent i = new Intent(Intent.ACTION_VIEW);
 				i.setData(Uri.parse(url));
 				startActivity(i);
