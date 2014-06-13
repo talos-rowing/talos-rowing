@@ -19,6 +19,7 @@
 
 package org.nargila.robostroke.android.app;
 
+import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.data.DataRecord;
 
 import android.app.Dialog;
@@ -43,7 +44,7 @@ class RecordSyncLeaderDialog extends Dialog {
 	
 	private final TextView text;
 	private final RoboStrokeActivity owner;
-	private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+	private final ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
 	private final ColorDrawable[] colors = {new ColorDrawable(Color.RED), new ColorDrawable(Color.YELLOW), new ColorDrawable(Color.GREEN)};
 	private boolean stopped;
 	private final Handler handler = new Handler();
@@ -56,7 +57,8 @@ class RecordSyncLeaderDialog extends Dialog {
 		super(owner);
 		this.owner = owner;	
 		LinearLayout layout = new LinearLayout(owner);
-		layout.setOrientation(LinearLayout.VERTICAL);
+		
+		layout.setOrientation(owner.roboStroke.getParameters().getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId()) ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
 		
 		qrView = new ImageView(owner);
 		qrView.setScaleType(ScaleType.CENTER);
