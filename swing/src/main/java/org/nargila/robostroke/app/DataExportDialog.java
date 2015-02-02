@@ -41,10 +41,10 @@ import javax.swing.border.EmptyBorder;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.DataRecord;
-import org.nargila.robostroke.data.DataRecord.Type;
 import org.nargila.robostroke.data.FileDataInput;
 import org.nargila.robostroke.data.RecordDataInput;
 
+@SuppressWarnings("serial")
 public class DataExportDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -144,9 +144,9 @@ public class DataExportDialog extends JDialog {
 		FileDataInput input = (FileDataInput) rs.getDataInput();
 		
 		final File dataFile = input.getDataFile();
-		final HashSet<Type> exportSet = new HashSet<DataRecord.Type>();
+		final HashSet<DataRecord.Type> exportSet = new HashSet<DataRecord.Type>();
 		
-		for (Entry<Type, JCheckBox> e: exportTypeMap.entrySet()) {
+		for (Entry<DataRecord.Type, JCheckBox> e: exportTypeMap.entrySet()) {
 			if (e.getValue().isSelected()) {
 				exportSet.add(e.getKey());
 			}
