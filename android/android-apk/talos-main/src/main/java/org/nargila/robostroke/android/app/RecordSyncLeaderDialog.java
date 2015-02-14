@@ -57,8 +57,8 @@ class RecordSyncLeaderDialog extends Dialog {
 		super(owner);
 		this.owner = owner;	
 		LinearLayout layout = new LinearLayout(owner);
-		
-		layout.setOrientation(owner.roboStroke.getParameters().getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId()) ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL);
+				
+		layout.setOrientation(LinearLayout.VERTICAL);
 		
 		qrView = new ImageView(owner);
 		qrView.setScaleType(ScaleType.CENTER);
@@ -68,9 +68,7 @@ class RecordSyncLeaderDialog extends Dialog {
 		text.setTextColor(Color.BLACK);
 		text.setGravity(Gravity.CENTER_HORIZONTAL);
 		
-		LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(
-				FrameLayout.LayoutParams.WRAP_CONTENT, 
-				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+		LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.FILL_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
 
 		LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
 				FrameLayout.LayoutParams.WRAP_CONTENT, 
@@ -90,6 +88,10 @@ class RecordSyncLeaderDialog extends Dialog {
 
 	@Override
 	protected void onStart() {
+		
+		final boolean isLandscape = owner.roboStroke.getParameters().getValue(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId());
+
+		owner.setLandscapeLayout(false);
 		
 		text.setText(tag == null ? "" : tag);
 		
@@ -134,6 +136,7 @@ class RecordSyncLeaderDialog extends Dialog {
 					e.printStackTrace();
 				} finally {
 					dismiss();
+					owner.setLandscapeLayout(isLandscape);
 				}
 			}
 		});
