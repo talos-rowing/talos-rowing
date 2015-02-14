@@ -35,7 +35,7 @@ public enum ParamKeys implements ParameterInfo {
                                "min distance",
                                "Minimum distance boat must travel between each distance/speed calculation",
                                "GPS",
-                               ParameterLevel.ADVANCED, 20) {
+                               ParameterLevel.ADVANCED, 10) {
 
         @Override
             public Integer[] makeChoices() {
@@ -146,7 +146,7 @@ public enum ParamKeys implements ParameterInfo {
             PARAM_SESSION_RECORDING_LEADER_ENABLE("org.nargila.talos.rowing.android.record.leader.enable",
                                                   "session recording sync mark", 
                                                   "Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", 
-                                                  "Session", ParameterLevel.BASIC, false),
+                                                  "Session", ParameterLevel.BASIC, true),
     
             PARAM_SESSION_BROADCAST_ON("org.nargila.talos.rowing.session.broadcast.on",
                                        "session broadcast on", 
