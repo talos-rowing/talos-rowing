@@ -32,13 +32,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.6.4</version>
+      <version>${slf4j.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>1.6.4</version>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.gstreamer-java</groupId>
