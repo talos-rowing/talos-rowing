@@ -10,7 +10,7 @@
 			nargila:displayFormat="%.0fm"
 			nargila:minValue="10"
 			nargila:maxValue="100"
-			android:defaultValue="20"
+			android:defaultValue="10"
 			nargila:seekRange="9"
 			nargila:valueType="INTEGER"
 			android:summary="Report GPS distance every so many meters - the larger, the more accurate" />
@@ -118,7 +118,7 @@
 		<CheckBoxPreference
 			android:title="Recording start mark"
 			android:persistent="true" 
-			android:defaultValue="false"
+			android:defaultValue="true"
 			android:summary="Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media" 
 			android:key="org.nargila.talos.rowing.android.record.leader.enable"/>
 	</PreferenceCategory>
@@ -138,7 +138,7 @@
 		<CheckBoxPreference
 			android:title="Create Log"
 			android:persistent="true" 
-			android:defaultValue="true"
+			android:defaultValue="false"
 			android:summary="If selected, next time you start Talos Rowing, a log file 'talos-main.log' will be created at the root of your SD card which can be sent to the developer for debugging purposes" 
 			android:key="org.nargila.talos.rowing.android.preferences.log"/>
 		<CheckBoxPreference
@@ -162,7 +162,7 @@
 				<ListPreference android:title="Sensor Delay"
 					android:key="org.nargila.talos.rowing.android.sensor.sensorUpdateDelay"
 					android:persistent="true"
-					android:defaultValue="50"
+					android:defaultValue="30"
 					android:summary="Time in millis between each sensor update - 0 means as fast as possible (requires restart)"
 					android:entries="@array/sensor_update_delay_display"
 					android:entryValues="@array/sensor_update_delay"/>								
