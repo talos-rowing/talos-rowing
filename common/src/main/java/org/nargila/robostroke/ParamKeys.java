@@ -70,7 +70,7 @@ public enum ParamKeys implements ParameterInfo {
                                                       "stroke amplitude filter", 
                                                       "Lowpass filter to 'smooth' the rowing sinusoids and establish single rise-above/drop-below zero points in each rowing cycle", 
                                                       "Stroke", 
-                                                      ParameterLevel.ADVANCED, .05f),
+                                                      ParameterLevel.ADVANCED, .025f),
         
                         
             PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor",

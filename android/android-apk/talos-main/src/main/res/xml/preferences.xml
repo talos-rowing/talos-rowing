@@ -168,7 +168,7 @@
 					android:persistent="true"
 					nargila:minValue="0.001"
 					nargila:maxValue="0.1"
-					android:defaultValue="0.05"
+					android:defaultValue="0.025"
 					android:summary="Raw acceleration value lowpass filtering factor - removes 'noise' from rowing graph for ease of rate detection" />
 				<org.nargila.robostroke.android.common.SeekBarPreference
 					android:title="Min Amplitude"
