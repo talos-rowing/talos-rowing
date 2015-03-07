@@ -20,7 +20,7 @@
   </security> 
   
   <resources>
-    <j2se version="1.6+" java-vm-args="-Dnargila.org=true"/> 
+    <j2se version="1.6" java-vm-args="-Dnargila.org=true"/> 
     $dependencies
   </resources>
 
