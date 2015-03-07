@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
-import uk.co.caprica.vlcj.logger.Logger.Level;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 
 public class VlcExternalMedia implements ExternalMedia {
@@ -39,9 +38,7 @@ public class VlcExternalMedia implements ExternalMedia {
     public VlcExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 
         VlcSetup.setupCheckVlc(container);
-                
-        uk.co.caprica.vlcj.logger.Logger.setLevel(Level.DEBUG);
-        
+                        
         this.videoFile = videoFile;
         this.container = container;        
         this.videoEffect = videoEffect;
