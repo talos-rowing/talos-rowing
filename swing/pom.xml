@@ -40,26 +40,6 @@
       <artifactId>slf4j-jdk14</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.googlecode.gstreamer-java</groupId>
-      <artifactId>gstreamer-java</artifactId>
-      <version>1.6-SNAPSHOT</version>
-     <exclusions>
-       <exclusion>
-         <groupId>com.apple</groupId>
-         <artifactId>AppleJavaExtensions</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.eclipse.swt.gtk.linux</groupId>
-         <artifactId>x86_64</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.eclipse.swt.gtk.linux</groupId>
-          <artifactId>x86</artifactId>
-       </exclusion>
-     </exclusions>
-    </dependency>
-
 
     <dependency>
       <groupId>com.google.zxing</groupId>
