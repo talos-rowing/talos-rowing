@@ -15,7 +15,7 @@
   <name>android-apk</name>
 
   <properties>
-    <target.api.level>4</target.api.level>
+    <target.api.level>10</target.api.level>
   </properties>
 
   <modules>
