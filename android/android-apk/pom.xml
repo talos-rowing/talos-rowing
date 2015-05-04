@@ -45,6 +45,10 @@
             <platform>${target.api.level}</platform>
           </sdk>
           <undeployBeforeDeploy>true</undeployBeforeDeploy>
+          <failOnNonStandardStructure>false</failOnNonStandardStructure>
+          <androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
+          <resourceDirectory>${project.basedir}/res</resourceDirectory>
+          <assetsDirectory>${project.basedir}/assets</assetsDirectory>
         </configuration>
       </plugin>
     </plugins>
