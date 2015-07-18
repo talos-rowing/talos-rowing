@@ -35,7 +35,7 @@ public enum ParamKeys implements ParameterInfo {
                                "min distance",
                                "Minimum distance boat must travel between each distance/speed calculation",
                                "GPS",
-                               ParameterLevel.ADVANCED, 20) {
+                               ParameterLevel.ADVANCED, 10) {
 
         @Override
             public Integer[] makeChoices() {
@@ -51,7 +51,7 @@ public enum ParamKeys implements ParameterInfo {
                                         "GPS",
                                         ParameterLevel.ADVANCED, 6.5f),
                         
-            PARAM_SENSOR_ORIENTATION_CHANGE_DAMP_FACTOR("org.nargila.talos.rowing.sensor.orientationDampFactor",
+            PARAM_SENSOR_ORIENTATION_CHANGE_DAMP_FACTOR("org.nargila.talos.rowing.sensor.orientationChangeDampFactor",
                                                  "orientation damper", 
                                                  "Lowpass filter used as stabalizer for the 'down' notion of the application", 
                                                  "Sensors", 
@@ -70,7 +70,7 @@ public enum ParamKeys implements ParameterInfo {
                                                       "stroke amplitude filter", 
                                                       "Lowpass filter to 'smooth' the rowing sinusoids and establish single rise-above/drop-below zero points in each rowing cycle", 
                                                       "Stroke", 
-                                                      ParameterLevel.ADVANCED, .05f),
+                                                      ParameterLevel.ADVANCED, .025f),
         
                         
             PARAM_STROKE_RATE_AMPLITUDE_CHANGE_DAMPER_FACTOR("org.nargila.talos.rowing.stroke.rate.amplitudeChangeDamperFactor",
@@ -146,7 +146,7 @@ public enum ParamKeys implements ParameterInfo {
             PARAM_SESSION_RECORDING_LEADER_ENABLE("org.nargila.talos.rowing.android.record.leader.enable",
                                                   "session recording sync mark", 
                                                   "Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media", 
-                                                  "Session", ParameterLevel.BASIC, false),
+                                                  "Session", ParameterLevel.BASIC, true),
     
             PARAM_SESSION_BROADCAST_ON("org.nargila.talos.rowing.session.broadcast.on",
                                        "session broadcast on", 

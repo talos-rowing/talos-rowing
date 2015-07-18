@@ -8,8 +8,6 @@ import org.nargila.robostroke.data.media.ExternalMedia;
 import org.nargila.robostroke.data.media.ExternalMedia.EventListener;
 import org.nargila.robostroke.data.media.ExternalMedia.MediaFramework;
 import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
-import org.nargila.robostroke.media.gst.GstExternalMedia;
-import org.nargila.robostroke.media.gst.GstFindQrMarkPipeline;
 import org.nargila.robostroke.media.vlc.VlcExternalMedia;
 import org.nargila.robostroke.media.vlc.VlcFindQrMarkPipeline;
 
@@ -22,7 +20,7 @@ public class MediaPlayerFactory {
         
         switch (getFramework()) {
             case GST:
-                return new GstFindQrMarkPipeline(video);
+                throw new AssertionError("GST support removed");
             case VLC:
                 return new VlcFindQrMarkPipeline(video);
                 default:
@@ -39,8 +37,7 @@ public class MediaPlayerFactory {
         
         switch (getFramework()) {
             case GST:
-                res = new GstExternalMedia(videoFile, container, videoEffect);
-                break;
+                throw new AssertionError("GST support removed");
             case VLC:
                 res = new VlcExternalMedia(videoFile, container, videoEffect);
                 break;

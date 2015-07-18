@@ -233,7 +233,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		}
 
 		private boolean showFilmLeaderDialog(Runnable runAfter, String tag) {
-			Boolean enabled = preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), false);
+			Boolean enabled = preferencesHelper.getPref(ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getId(), (Boolean)ParamKeys.PARAM_SESSION_RECORDING_LEADER_ENABLE.getDefaultValue());
 						
 			if (enabled) {
 				

@@ -14,6 +14,7 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <slf4j.version>1.7.10</slf4j.version>
   </properties>
 
   <modules>

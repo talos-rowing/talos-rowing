@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.nargila.robostroke.acceleration.AccelerationFilter;
+import org.nargila.robostroke.acceleration.GravityFilter;
 import org.nargila.robostroke.common.SimpleLock;
 import org.nargila.robostroke.data.AxisDataReverseFilter;
 import org.nargila.robostroke.data.AxisDataSwapFilter;
@@ -73,6 +74,10 @@ public class RoboStroke {
 	private SensorDataInput dataInput;
 	
 	private final SimpleLock inputLock = new SimpleLock();
+	/**
+	 * filters-out gravity from acceleration data 
+	 */
+	private GravityFilter gravityFilter;
 	
 	/**
 	 * scans acceleration event to detect stroke-rate
@@ -271,15 +276,14 @@ public class RoboStroke {
 	 */
 	private void initPipeline(DistanceResolver distanceResolver) {
 
-		logger.debug("initializing pipeline");
-		
 		landscapeAccelFilter = new AxisDataSwapFilter(DataIdx.ACCEL_Y, DataIdx.ACCEL_X);
 		landscapeOrientationFilter = new AxisDataSwapFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
 		coaxModeOrientationFilter = new AxisDataReverseFilter(DataIdx.ORIENT_PITCH, DataIdx.ORIENT_ROLL);
 
 		accelerationFilter = new AccelerationFilter(this);
-				
+		gravityFilter = new GravityFilter(this, accelerationFilter);
+		
 		strokeRateScanner = new StrokeRateScanner(this);
 		rowingDetector = new RowingDetector(this); 
 		strokePowerScanner = new StrokePowerScanner(this, strokeRateScanner);
@@ -313,8 +317,6 @@ public class RoboStroke {
 
 			if (dataInput != null) {
 
-				logger.debug("setting input type {}", dataInput);
-				
 				bus.fireEvent(Type.INPUT_START, null);
 
 				if (!dataInput.isLocalSensorInput()) {
@@ -385,6 +387,15 @@ public class RoboStroke {
 	}
 
 	/**
+	 * Get the gravity filter object.
+	 * GravityFilter normalizes-out gravity from row acceleration data 
+	 * @return
+	 */
+	public GravityFilter getGravityFilter() {
+		return gravityFilter;
+	}
+
+	/**
 	 * Get the stroke rate scanner object.
 	 * <code>StrokeRateScanner</code> scans acceleration event to detect the stroke-rate
 	 * @return StrokeRateScanner object
@@ -440,11 +451,13 @@ public class RoboStroke {
 			dataInput.getAccelerometerDataSource().addSensorDataSink(landscapeAccelFilter, 0.0);	
 		}
 		
+		dataInput.getOrientationDataSource().addSensorDataSink(gravityFilter.getOrientationDataSink());
+		
 		dataInput.getOrientationDataSource().addSensorDataSink(coaxModeOrientationFilter);
 
 		dataInput.getOrientationDataSource().addSensorDataSink(rollScanner);
 		
-		dataInput.getAccelerometerDataSource().addSensorDataSink(accelerationFilter);
+		dataInput.getAccelerometerDataSource().addSensorDataSink(gravityFilter);
 		
 		dataInput.getGPSDataSource().addSensorDataSink(gpsFilter);
 	}

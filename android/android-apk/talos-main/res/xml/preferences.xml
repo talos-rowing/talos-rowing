@@ -10,7 +10,7 @@
 			nargila:displayFormat="%.0fm"
 			nargila:minValue="10"
 			nargila:maxValue="100"
-			android:defaultValue="20"
+			android:defaultValue="10"
 			nargila:seekRange="9"
 			nargila:valueType="INTEGER"
 			android:summary="Report GPS distance every so many meters - the larger, the more accurate" />
@@ -118,7 +118,7 @@
 		<CheckBoxPreference
 			android:title="Recording start mark"
 			android:persistent="true" 
-			android:defaultValue="false"
+			android:defaultValue="true"
 			android:summary="Display a 'film leader' countdown dialog to assist synchronizing session recording with external audio/video media" 
 			android:key="org.nargila.talos.rowing.android.record.leader.enable"/>
 	</PreferenceCategory>
@@ -138,15 +138,9 @@
 		<CheckBoxPreference
 			android:title="Create Log"
 			android:persistent="true" 
-			android:defaultValue="true"
+			android:defaultValue="false"
 			android:summary="If selected, next time you start Talos Rowing, a log file 'talos-main.log' will be created at the root of your SD card which can be sent to the developer for debugging purposes" 
 			android:key="org.nargila.talos.rowing.android.preferences.log"/>
-		<CheckBoxPreference
-			android:title="Enable Zephyr HRM"
-			android:persistent="true" 
-			android:defaultValue="false"
-			android:summary="For using the unsupported Zephyr bluetooth heart monitor (requires 'Talos Heart' from this application's home page)" 
-			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Advanced">
 		<PreferenceScreen android:title="Advanced Settings" android:summary="Don't touch these unless you know what you are doing!">
@@ -162,7 +156,7 @@
 				<ListPreference android:title="Sensor Delay"
 					android:key="org.nargila.talos.rowing.android.sensor.sensorUpdateDelay"
 					android:persistent="true"
-					android:defaultValue="50"
+					android:defaultValue="30"
 					android:summary="Time in millis between each sensor update - 0 means as fast as possible (requires restart)"
 					android:entries="@array/sensor_update_delay_display"
 					android:entryValues="@array/sensor_update_delay"/>								
@@ -174,7 +168,7 @@
 					android:persistent="true"
 					nargila:minValue="0.001"
 					nargila:maxValue="0.1"
-					android:defaultValue="0.05"
+					android:defaultValue="0.025"
 					android:summary="Raw acceleration value lowpass filtering factor - removes 'noise' from rowing graph for ease of rate detection" />
 				<org.nargila.robostroke.android.common.SeekBarPreference
 					android:title="Min Amplitude"

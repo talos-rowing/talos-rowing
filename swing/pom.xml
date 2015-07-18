@@ -32,34 +32,14 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.6.4</version>
+      <version>${slf4j.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>1.6.4</version>
+      <version>${slf4j.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.googlecode.gstreamer-java</groupId>
-      <artifactId>gstreamer-java</artifactId>
-      <version>1.6-SNAPSHOT</version>
-     <exclusions>
-       <exclusion>
-         <groupId>com.apple</groupId>
-         <artifactId>AppleJavaExtensions</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.eclipse.swt.gtk.linux</groupId>
-         <artifactId>x86_64</artifactId>
-       </exclusion>
-       <exclusion>
-         <groupId>org.eclipse.swt.gtk.linux</groupId>
-          <artifactId>x86</artifactId>
-       </exclusion>
-     </exclusions>
-    </dependency>
-
 
     <dependency>
       <groupId>com.google.zxing</groupId>
@@ -67,10 +47,17 @@
       <version>2.2</version>
     </dependency>   
 
+
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+
     <dependency>
       <groupId>uk.co.caprica</groupId>
       <artifactId>vlcj</artifactId>
-      <version>2.3.1</version>
+      <version>3.7.0</version>
     </dependency> 
   </dependencies>
   <build>    

@@ -42,35 +42,13 @@ public class AccelerationFilter extends SensorDataFilter implements ParameterLis
 	private final static int COAX_MODE = -1;
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+	private final LowpassFilter ZERO_SHIFT_HACK_FILTER = new LowpassFilter(0.005f);
 	
-	protected int accelMode = ROWER_MODE;
+	private int accelMode = ROWER_MODE;
 	
 	private final ParameterService params;
 	
-	private final LowpassFilter zeroY = new LowpassFilter(0.005f);
-	private final LowpassFilter zeroZ = new LowpassFilter(0.005f);
-
-	/**
-	 * calculate horizontal acceleration amplitude according to device pitch
-	 * @param values accelerometer sensor data
-	 * @return acceleration amplitude
-	 */
-	private float calcAcceleration(final float[] values) {
-		
-		float y = values[DataIdx.ACCEL_Y];
-		float z = values[DataIdx.ACCEL_Z];
-		
-		final double ay = y - zeroY.filter(new float[]{y})[0];
-		final double az = z - zeroZ.filter(new float[]{z})[0];
-		
-		final double accelOrDecelDeterminer = Math.abs(ay) > Math.abs(az) ? -ay : az; // if device is exactly flat or vertical, one axis has to be ignored
-		
-		final int accelDir = accelMode * accelOrDecelDeterminer < 0 ? -1 : 1;
-		
-		final float a = (float)(accelDir * Math.sqrt(ay*ay + az*az));
-				
-		return a;
-	}
 	public AccelerationFilter(RoboStroke owner) {
 		this.params = owner.getParameters();
 		
@@ -81,13 +59,33 @@ public class AccelerationFilter extends SensorDataFilter implements ParameterLis
 	}
 	
 	@Override
-	protected final Object filterData(long timestamp, Object value) {
+	protected Object filterData(long timestamp, Object value) {
 		float[] values = (float[]) value;
 		return new float[] {
 				calcAcceleration(values)
 		};
 	}
 	
+	/**
+	 * calculate horizontal acceleration amplitude according to device pitch
+	 * @param values accelerometer sensor data
+	 * @return acceleration amplitude
+	 */
+	private float calcAcceleration(final float[] values) {
+		
+		final double ay = values[DataIdx.ACCEL_Y];
+		final double az = values[DataIdx.ACCEL_Z];
+		
+		final double accelOrDecelDeterminer = Math.abs(ay) > Math.abs(az) ? -ay : az;
+		
+		final int accelDir = accelMode * accelOrDecelDeterminer < 0 ? -1 : 1;
+		
+		final float a = (float)(accelDir * Math.sqrt(ay*ay + az*az));
+		
+		final float ZERO_SHIFT_HACK = ZERO_SHIFT_HACK_FILTER.filter(new float[]{a})[0];//.075f; // TODO: calculation of a average is -.1f for some reason..
+		
+		return a - ZERO_SHIFT_HACK;
+	}
 
 	private final ParameterListenerRegistration[] listenerRegistrations = {
 			new ParameterListenerRegistration(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {

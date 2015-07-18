@@ -47,9 +47,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     protected final RandomAccessFile reader;
 
-    private float skipRequested = 0;
-
-    private double setPosRequested = -1;
+    private long setPosRequested = -1;
 
     private boolean paused;
 
@@ -72,6 +70,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     private final long firstTimestamp;
 
     private final String uuid;
+
+	private Object seekLock = "";
     
     public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
         super(roboStroke);
@@ -174,6 +174,38 @@ public class FileDataInput extends RecordDataInput implements Runnable {
         return Pair.create(uuid, firstTimestamp);
     }
 
+    public void setTime(long time) throws IOException {
+    	synchronized (seekLock) {
+    
+    		reader.seek(0);
+    		
+    		String line;
+    		
+    		while ((line = reader.readLine()) != null) {
+        
+    			String[] vals = readRecordLine(line);
+
+    			if (vals == null) {
+    				continue;
+    			}
+    				
+    			long ts = new Long(vals[0]);
+    			
+    			long curTime = ts - firstTimestamp;
+    			
+    			if (curTime >= time) {
+    				break;
+    			}
+    		}
+    	}
+    }
+
+    private void seekPos(long pos) {
+    	synchronized (seekLock) {
+    		setPosRequested = pos;
+		}
+    }
+    
     @Override
     public void run() {
         String l = "";
@@ -184,31 +216,28 @@ public class FileDataInput extends RecordDataInput implements Runnable {
                 Thread.yield();
 
                 long pos = reader.getFilePointer();
+                                
+                synchronized (seekLock ) {
 
-                if (setPosRequested != -1 || skipRequested != 0) {
+                	if (setPosRequested != -1) {
+                		pos = setPosRequested;						                	
 
-                    if (setPosRequested != -1) {
-                        pos = (long)(fileLength * setPosRequested);
-                    } else {
-                        assert skipRequested != 0;
 
-                        pos += -skipRequested * SKIP_BYTES;
-                    }
+                		pos = Math.max(Math.min(reader.length() - 1, pos), 0);
+                		reader.seek(pos);
+                		reader.readLine();
+                		setPosRequested = -1;
 
-                    pos = Math.max(Math.min(reader.length() - 1,pos), 0);
-                    reader.seek(pos);
-                    reader.readLine();
-                    skipRequested = 0;
-                    setPosRequested = -1;
+                		resetClockRequired = true;
 
-                    resetClockRequired = true;
+                		if (bus != null)
+                			bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 
-                    if (bus != null) bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
-
-                    continue;
+                		continue;
+                	}
                 }
-
-                long currentTimeMillis = System.currentTimeMillis();
+                
+				long currentTimeMillis = System.currentTimeMillis();
 
                 if (currentTimeMillis - lastProgressNotifyTime > 500) {
 
@@ -328,9 +357,13 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     @Override
     public void skipReplayTime(float velocityX) {
         if (!paused) {
-            skipRequested = velocityX;
+        	try {
+				seekPos((long) (this.reader.getFilePointer() - (velocityX * SKIP_BYTES)));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
-
     }
 
     @Override
@@ -340,7 +373,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
             throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
         }
 
-        setPosRequested = pos;		
+        seekPos((long) (pos * fileLength));
     }
 
     @Override
