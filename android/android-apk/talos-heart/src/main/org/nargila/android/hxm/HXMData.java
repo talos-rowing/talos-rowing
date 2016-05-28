@@ -21,6 +21,9 @@ package org.nargila.android.hxm;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -34,6 +37,8 @@ import android.util.Log;
 
 public class HXMData extends Service implements HXMConstants {
  
+	private static final Logger logger = LoggerFactory.getLogger(HXMData.class);
+	
 	private static int SERVICE_NOTIFICATION_ID = 1;
 	
 	private final Handler mainHandler = new Handler();
@@ -61,6 +66,8 @@ public class HXMData extends Service implements HXMConstants {
 	private ServiceRestartTask serviceRestartTask = new ServiceRestartTask();
 	private NotificationManager notificationManager;
 
+	private BluetoothLeConncect btConnect;
+
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -77,7 +84,7 @@ public class HXMData extends Service implements HXMConstants {
 	}
    
 	private void restartHRMService() {
-		if (D) Log.d(TAG, "scheduling serviceRestartTask every 5 seconds");
+		logger.debug("scheduling serviceRestartTask every 5 seconds");
 		serviceRestartTask.cancel();
 		serviceRestartTask = new ServiceRestartTask();
 		timer.schedule(serviceRestartTask, 5000);
@@ -94,35 +101,49 @@ public class HXMData extends Service implements HXMConstants {
 	}
 	
 	private void startHRMService() {
-		if (D) Log.d(TAG, "starting HXM data service");
+		logger.debug("starting HXM data service");
 
-		HXMHeartDataInput tmp = new HXMHeartDataInput(new HXMHeartDataInput.BPMListener() {
-
+		if (this.btConnect != null) {
+			this.btCo
+		}
+		BluetoothLeConncect btConnect = new BluetoothLeConncect(this, new BluetoothLeConncect.HeartRateListener() {
+			
+			int count = 0;
+			
 			@Override
-			public void onError(String deviceName, HRMError e) {
-				if (D) Log.e(TAG, String.format("error in HXM data thread (device: %s)", deviceName == null ? "none" : deviceName), e);
-				restartOnError(deviceName, e);
-			}
+			public void onHeartRate(int rate) {
+				Bundle data = new Bundle();
+				
+				data.putInt("bpm", rate);
+				data.putInt("battery", 100);
+				data.putInt("beatNumber", ++count);
+				data.putString("deviceName", "-");
 
-			@Override
-			public void onBPMUpdate(Bundle data) {
 				Intent intent = new Intent(broadcastId);
 				intent.putExtras(data);
 				sendBroadcast(intent);				
+				
 			}
-
+			@Override
+			public void onError(String deviceName, HRMError e) {
+				logger.error(String.format("error in HXM data thread (device: %s)", deviceName == null ? "none" : deviceName), e);
+				restartOnError(deviceName, e);
+			}
 			@Override
 			public void onConnect(String deviceName) {
 				statusNotify("monitoring " + deviceName, "HRM Monitor",  "HRM Monitor", false);
 			}
 		});
+		
+
 
 		try {
-			dataInput = tmp;
+			this.btConnect = btConnect;
+			btConnect.initialize();
 			dataInput.start();
-			Log.i(TAG, "HXM data input started");
+			logger.info("HXM data input started");
 		} catch (HRMError e) {
-			if (D) Log.e(TAG, "error starting HXM data service", e);
+			logger.error("error starting HXM data service", e);
 			restartOnError(null, e);
 		} 
 	}
@@ -130,14 +151,22 @@ public class HXMData extends Service implements HXMConstants {
 	public void statusNotify(String msg, String contentTitle, String tickerText, boolean error) {
 		long when = System.currentTimeMillis();
 
-		Notification notification = new Notification(error ? R.drawable.noheart : R.drawable.heart, tickerText, when);
 		
 		
 		CharSequence contentText = msg;
 		Intent notificationIntent = new Intent(getClass().getName());
 		PendingIntent contentIntent = PendingIntent.getService(this, 0, notificationIntent, 0);
 
-		notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);	
+		Notification.Builder builder =
+			    new Notification.Builder(this)
+			    .setSmallIcon(error ? R.drawable.noheart : R.drawable.heart)
+			    .setContentTitle(contentTitle)
+			    .setContentText(contentText)
+			    .setContentIntent(contentIntent)
+			    .setWhen(when)
+			    .setTicker(tickerText);
+
+		Notification notification = builder.build();				
 		
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
 		notificationManager.notify(SERVICE_NOTIFICATION_ID, notification);		
