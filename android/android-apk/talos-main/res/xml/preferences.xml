@@ -141,6 +141,12 @@
 			android:defaultValue="false"
 			android:summary="If selected, next time you start Talos Rowing, a log file 'talos-main.log' will be created at the root of your SD card which can be sent to the developer for debugging purposes" 
 			android:key="org.nargila.talos.rowing.android.preferences.log"/>
+		<CheckBoxPreference
+			android:title="Enable Heart Monitor"
+			android:persistent="true" 
+			android:defaultValue="false"
+			android:summary="For using low-energy bluetooth heart monitors (requires 'Talos Heart' from this application's home page)" 
+			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Advanced">
 		<PreferenceScreen android:title="Advanced Settings" android:summary="Don't touch these unless you know what you are doing!">
