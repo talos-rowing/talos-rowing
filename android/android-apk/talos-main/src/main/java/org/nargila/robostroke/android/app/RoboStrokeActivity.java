@@ -128,8 +128,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			})
 	};
 	
-	private final Intent hrmService = new Intent(HRM_SERVICE_ACTION);
-
 	private boolean recordingOn;
 	final Handler handler = new Handler();
 
@@ -728,13 +726,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 
 	private void registerBpmReceiver() {
-		IntentFilter filter = new IntentFilter(HRM_SERVICE_ACTION);
-
+		
 		hxmDataReceiver = new HXMDataReceiver(roboStroke.getBus());
 
-		registerReceiver(hxmDataReceiver, filter);
+		for (String intentSpec: HRM_SERVICE_ACTIONS) {
+			IntentFilter filter = new IntentFilter(intentSpec);
+			registerReceiver(hxmDataReceiver, filter);
+		}
 
-		startService(hrmService);
 	}
 
 	private void unregisterBpmReceiver() {

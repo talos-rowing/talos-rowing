@@ -21,7 +21,12 @@ package org.nargila.robostroke.android.app;
 public interface RoboStrokeConstants {
 	public static final int ROBOSTROKE_ERROR = 0;
 	public static final int HEART_MONITOR_SERVICE_ERROR = 1;
-	public static String HRM_SERVICE_ACTION = "org.nargila.android.hxm.HXMData";
+	public static final String BLE_SAMPLE_HRV_DATA_SERVICE = "com.sample.hrv.ACTION_DATA_AVAILABLE";
+	public static final String BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_CHARACTERISTIC_UUI = "com.sample.hrv.EXTRA_CHARACTERISTIC_UUI";
+	public static final String BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_TEXT = "com.sample.hrv.EXTRA_TEXT";
+	public static final String BLE_SAMPLE_HRV_HEART_RATE_DATA_UUID = "00002a37-0000-1000-8000-00805f9b34fb";
+	
+	public static String[] HRM_SERVICE_ACTIONS = {BLE_SAMPLE_HRV_DATA_SERVICE};
 	public static final String TAG = "RoboStroke";
     public static final boolean D = true;
     public final int TILT_FREEZE_CALIBRATION_TIME = 15;
