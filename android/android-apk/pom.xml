@@ -19,7 +19,6 @@
   </properties>
 
   <modules>
-    <module>talos-heart</module>
     <module>talos-remote</module>
     <module>talos-main</module>
   </modules>
