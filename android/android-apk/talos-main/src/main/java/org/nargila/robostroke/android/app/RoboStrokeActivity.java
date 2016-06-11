@@ -714,7 +714,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 	
 		
-	private void reportError(Throwable throwable, String msg) {
+	void reportError(Throwable throwable, String msg) {
 		logger.error(msg, throwable);
 
 		notificationHelper.notifyError(ROBOSTROKE_ERROR, msg + ": " + throwable.getMessage(),
