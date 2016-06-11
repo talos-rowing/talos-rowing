@@ -66,7 +66,7 @@ public class PreferencesHelper {
 			setParameterFromPreferences(key); 
 			
 			if (key.equals(PREFERENCE_KEY_HRM_ENABLE)) {
-				owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), true);
+				owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, true), true);
 			} else if (key.equals(PREFERENCE_KEY_PREFERENCES_RESET)) {
 				preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, true).commit();
 				owner.graphPanelDisplayManager.resetNextRun();
@@ -201,7 +201,7 @@ public class PreferencesHelper {
 			onSharedPreferenceChangeListener.onSharedPreferenceChanged(preferences, key);
 		}
 		
-		owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), false);
+		owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, true), false);
 		owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
 	}
 
