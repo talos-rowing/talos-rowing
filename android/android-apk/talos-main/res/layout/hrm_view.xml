@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent">
-	<ImageView android:id="@+id/ImageView01" android:layout_width="wrap_content"
-		android:src="@drawable/heart"
-		android:layout_height="wrap_content"/>
-        <org.nargila.robostroke.android.common.AutofitTextView
-	    android:text="0" android:id="@+id/bpm"
-		android:textStyle="bold"
-		android:textColor="#ffffff"
-		android:textSize="@dimen/font_large_resize_max"
-		android:layout_weight="1" 
-		android:gravity="center"
-		android:typeface="monospace"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <ImageView
+        android:id="@+id/ImageView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/heart" />
+
+    <org.nargila.robostroke.android.common.AutoResizeTextView
+        android:id="@+id/bpm"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
+        android:layout_marginTop="@dimen/auto_resize_margin_top"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="#ffffff"
+        android:textSize="@dimen/font_x_large_resize_max"
+        android:textStyle="bold"
+        android:typeface="monospace" />
+
 </LinearLayout>

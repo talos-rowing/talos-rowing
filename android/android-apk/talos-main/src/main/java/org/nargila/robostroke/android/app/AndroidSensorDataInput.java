@@ -63,7 +63,7 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		sensorThread = new SensorDataThread(owner);
 		gpsThread = new GPSDataThread(owner);		
 		
-		sensorDelay = getSensorDelay(owner);
+		sensorDelay = getSensorDelay(owner);		
 	}
 
 	private int getSensorDelay(RoboStrokeActivity owner) {
@@ -200,13 +200,13 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 	 * GPS sensor data handling thread 
 	 */
 	private class GPSDataThread extends CompatHandlerThread implements LocationListener {
-		private final Activity owner;
+		private final RoboStrokeActivity owner;
 		private LocationManager locationManager;
 		private Looper looper;
 		private final float gpsMinDistance = 0;
 		public float gpsMinTime = 1000;
 		
-		public GPSDataThread(Activity owner) {
+		public GPSDataThread(RoboStrokeActivity owner) {
 			super("GPSDataThread");
 			this.owner = owner;
 			setDaemon(true);
@@ -222,7 +222,11 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 
 		private void resetListener() {
 			locationManager.removeUpdates(this);		
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) gpsMinTime, gpsMinDistance, this, looper);
+			try {
+				locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) gpsMinTime, gpsMinDistance, this, looper);
+			} catch (IllegalArgumentException e) {
+				owner.reportError(e, "GPS update registration failed");
+			}
 		}
 
 		@Override
