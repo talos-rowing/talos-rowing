@@ -54,7 +54,7 @@ public class AutoResizeTextView extends TextView {
     private float mTextSize;
 
     // Temporary upper bounds on the starting text size
-    private float mMaxTextSize = 0;
+    private float mMaxTextSize;
 
     // Lower bounds for text size
     private float mMinTextSize = MIN_TEXT_SIZE;
@@ -67,6 +67,8 @@ public class AutoResizeTextView extends TextView {
 
     // Add ellipsis to text that overflows at the smallest text size
     private boolean mAddEllipsis = true;
+
+	private float mResizeStep = 0.5f;
 
     // Default constructor override
     public AutoResizeTextView(Context context) {
@@ -81,7 +83,8 @@ public class AutoResizeTextView extends TextView {
     // Default constructor override
     public AutoResizeTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        mTextSize = getTextSize();
+        mTextSize = mMaxTextSize = getTextSize();
+        setIncludeFontPadding(false);
     }
 
     /**
@@ -196,6 +199,9 @@ public class AutoResizeTextView extends TextView {
      * Reset the text to the original size
      */
     public void resetTextSize() {
+    	
+    	mTextSize = mMaxTextSize;
+    	
         if (mTextSize > 0) {
             super.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
             mMaxTextSize = mTextSize;
@@ -208,9 +214,7 @@ public class AutoResizeTextView extends TextView {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed || mNeedsResize) {
-            int widthLimit = (right - left) - getCompoundPaddingLeft() - getCompoundPaddingRight();
-            int heightLimit = (bottom - top) - getCompoundPaddingBottom() - getCompoundPaddingTop();
-            resizeText(widthLimit, heightLimit);
+        	resizeText();
         }
         super.onLayout(changed, left, top, right, bottom);
     }
@@ -218,11 +222,11 @@ public class AutoResizeTextView extends TextView {
     /**
      * Resize the text size with default width and height
      */
-    public void resizeText() {
+    private void resizeText() {
 
-        int heightLimit = getHeight() - getPaddingBottom() - getPaddingTop();
-        int widthLimit = getWidth() - getPaddingLeft() - getPaddingRight();
-        resizeText(widthLimit, heightLimit);
+        int heightLimit = getHeight();// - getPaddingBottom() - getPaddingTop();
+        int widthLimit = getWidth();// - getPaddingLeft() - getPaddingRight();
+        resizeTextImpl(widthLimit, heightLimit);
     }
 
     /**
@@ -230,7 +234,7 @@ public class AutoResizeTextView extends TextView {
      * @param width
      * @param height
      */
-    public void resizeText(int width, int height) {
+    private void resizeTextImpl(int width, int height) {
         CharSequence text = getText();
         // Do not resize if the view does not have dimensions or there is no text
         if (text == null || text.length() == 0 || height <= 0 || width <= 0 || mTextSize == 0) {
@@ -247,14 +251,14 @@ public class AutoResizeTextView extends TextView {
         // Store the current text size
         float oldTextSize = textPaint.getTextSize();
         // If there is a max text size set, use the lesser of that and the default text size
-        float targetTextSize = mMaxTextSize > 0 ? Math.min(mTextSize, mMaxTextSize) : mTextSize;
+        float targetTextSize = mMaxTextSize;
 
         // Get the required text height
         int textHeight = getTextHeight(text, textPaint, width, targetTextSize);
 
         // Until we either fit within our text view or we had reached our min text size, incrementally try smaller sizes
         while (textHeight > height && targetTextSize > mMinTextSize) {
-            targetTextSize = Math.max(targetTextSize - 2, mMinTextSize);
+            targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
             textHeight = getTextHeight(text, textPaint, width, targetTextSize);
         }
 
