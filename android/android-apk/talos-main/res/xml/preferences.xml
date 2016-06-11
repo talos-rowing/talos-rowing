@@ -144,8 +144,8 @@
 		<CheckBoxPreference
 			android:title="Enable Heart Monitor"
 			android:persistent="true" 
-			android:defaultValue="false"
-			android:summary="For using low-energy bluetooth heart monitors (requires 'Talos Heart' from this application's home page)" 
+			android:defaultValue="true"
+			android:summary="For using low-energy bluetooth heart monitors (requires 'BLE HRV demo' from store to run)" 
 			android:key="org.nargila.talos.rowing.android.hrm.enable"/>
 	</PreferenceCategory>
 	<PreferenceCategory android:title="Advanced">
