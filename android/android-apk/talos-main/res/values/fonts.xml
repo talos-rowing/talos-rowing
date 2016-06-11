@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<dimen name="font_large_resize_max">72sp</dimen>
-	<dimen name="font_x_large_resize_max">82sp</dimen>
+	<dimen name="font_x_large_resize_max">100sp</dimen>
+	<dimen name="auto_resize_margin_top">-15dp</dimen>
+	<dimen name="auto_resize_margin_bottom">-15dp</dimen>
 </resources>
