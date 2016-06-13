@@ -68,7 +68,7 @@ public class AutoResizeTextView extends TextView {
     // Add ellipsis to text that overflows at the smallest text size
     private boolean mAddEllipsis = true;
 
-	private float mResizeStep = 0.5f;
+	private float mResizeStep = 8f;
 
     // Default constructor override
     public AutoResizeTextView(Context context) {
@@ -224,8 +224,8 @@ public class AutoResizeTextView extends TextView {
      */
     private void resizeText() {
 
-        int heightLimit = getHeight();// - getPaddingBottom() - getPaddingTop();
-        int widthLimit = getWidth();// - getPaddingLeft() - getPaddingRight();
+        int heightLimit = getHeight() - getPaddingBottom() - getPaddingTop();
+        int widthLimit = getWidth() - getPaddingLeft() - getPaddingRight();
         resizeTextImpl(widthLimit, heightLimit);
     }
 
