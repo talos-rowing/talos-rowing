@@ -68,7 +68,7 @@ public class AutoResizeTextView extends TextView {
     // Add ellipsis to text that overflows at the smallest text size
     private boolean mAddEllipsis = true;
 
-	private float mResizeStep = 8f;
+	private float mResizeStep = 4f;
 
     // Default constructor override
     public AutoResizeTextView(Context context) {
@@ -200,7 +200,7 @@ public class AutoResizeTextView extends TextView {
      */
     public void resetTextSize() {
     	
-    	mTextSize = mMaxTextSize;
+    	mTextSize = Math.max(mTextSize, mMinTextSize);
     	
         if (mTextSize > 0) {
             super.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
@@ -251,16 +251,25 @@ public class AutoResizeTextView extends TextView {
         // Store the current text size
         float oldTextSize = textPaint.getTextSize();
         // If there is a max text size set, use the lesser of that and the default text size
-        float targetTextSize = mMaxTextSize;
+        float targetTextSize = mTextSize;
 
         // Get the required text height
         int textHeight = getTextHeight(text, textPaint, width, targetTextSize);
 
-        // Until we either fit within our text view or we had reached our min text size, incrementally try smaller sizes
-        while (textHeight > height && targetTextSize > mMinTextSize) {
-            targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
-            textHeight = getTextHeight(text, textPaint, width, targetTextSize);
+
+        if (textHeight > height && targetTextSize > mMinTextSize) {
+        	// Until we either fit within our text view or we had reached our min text size, incrementally try smaller sizes
+        	while (textHeight > height && targetTextSize > mMinTextSize) {
+        		targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
+        		textHeight = getTextHeight(text, textPaint, width, targetTextSize);
+        	} 
+        } else if (textHeight < height && targetTextSize < mMaxTextSize) {
+        	while (textHeight < height && targetTextSize < mMaxTextSize) {
+        		targetTextSize = Math.min(targetTextSize + mResizeStep, mMaxTextSize);
+        		textHeight = getTextHeight(text, textPaint, width, targetTextSize);
+        	}         	
         }
+
 
         // If we had reached our minimum text size and still don't fit, append an ellipsis
         if (mAddEllipsis && targetTextSize == mMinTextSize && textHeight > height) {
