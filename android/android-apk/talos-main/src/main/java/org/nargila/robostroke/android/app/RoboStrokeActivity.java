@@ -713,15 +713,24 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		super.onPostCreate(savedInstanceState);
 	}
 	
-		
-	void reportError(Throwable throwable, String msg) {
-		logger.error(msg, throwable);
+	void reportError(String msg) {
+		logger.error(msg);
 
-		notificationHelper.notifyError(ROBOSTROKE_ERROR, msg + ": " + throwable.getMessage(),
+		showNotification(msg);
+	}
+
+	void showNotification(String msg) {
+		notificationHelper.notifyError(ROBOSTROKE_ERROR, msg,
 				"robostroke error", "robostroke error");
 
 		notificationHelper
 				.toast(msg + ". See error notification");
+	}
+	
+	void reportError(Throwable throwable, String msg) {
+		logger.error(msg, throwable);
+
+		showNotification(msg + ": " + throwable.getMessage());
 	}
 
 
@@ -756,7 +765,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 			list.removeAllViews();
 
-			ReplayFileList replayList = new ReplayFileList();
+			ReplayFileList replayList = new ReplayFileList(this);
 			
 			final LinearLayout.LayoutParams rowLayout = 
 				new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, 

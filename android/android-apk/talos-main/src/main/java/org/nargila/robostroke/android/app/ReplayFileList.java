@@ -32,33 +32,47 @@ import android.os.Environment;
 class ReplayFileList {
 	
 	List<Pair<File,Date>> files;
-	
-	ReplayFileList() {
+		
+	ReplayFileList(RoboStrokeActivity owner) {
+		
 		File dir = new File(Environment.getExternalStorageDirectory(), "RoboStroke");
 	
 		File[] fileList = dir.listFiles();
 		
 		ArrayList<Pair<File, Date>> sortedList = new ArrayList<Pair<File,Date>>(fileList.length);
 		
+		boolean fileNameErrors = false;
+		
 		for (final File f: dir.listFiles()) {
 			String name = f.getName();
 			int idx = name.indexOf("-dataInput.txt");
 
 			if (idx != -1) {
-				Date date = new Date(new Long(name.substring(0, idx)));
+				Date date;
+				try {
+					date = new Date(new Long(name.substring(0, idx)));
+				} catch (NumberFormatException e) {
+					fileNameErrors = true;
+					continue;
+				}
 
 				sortedList.add(Pair.create(f, date));
 			}
 			
-			Collections.sort(sortedList, new Comparator<Pair<File,Date>>() {
-				@Override
-				public int compare(Pair<File, Date> p1,
-						Pair<File, Date> p2) {
-
-					return p1.second.compareTo(p2.second);
-				};
-			});
 		}
+
+		if (fileNameErrors) {
+			owner.reportError("malformed file names found under Talos Rowing replay directory");
+		}
+		
+		Collections.sort(sortedList, new Comparator<Pair<File,Date>>() {
+			@Override
+			public int compare(Pair<File, Date> p1,
+					Pair<File, Date> p2) {
+				
+				return p1.second.compareTo(p2.second);
+			};
+		});
 		
 		files = sortedList;
 	}
