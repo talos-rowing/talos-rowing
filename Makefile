@@ -1,6 +1,8 @@
 REPOS = github nargila origin
 MVN_ARGS = 
 
+REVNO = $(shell git rev-list --count HEAD)
+
 ifeq ($(TEST),0)
 MVN_ARGS += -Dmaven.test.skip=true
 endif

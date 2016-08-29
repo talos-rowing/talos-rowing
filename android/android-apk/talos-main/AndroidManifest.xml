@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.nargila.robostroke.android.app" android:versionCode="326"
+          package="org.nargila.robostroke.android.app" android:versionCode="332"
           android:sharedUserId="talos.rowing" android:sharedUserLabel="@string/sharedUserLabel" 
-          android:versionName="0.9.7.326">
+          android:versionName="0.9.7.332">
   
   <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="9"/>
   
