@@ -73,7 +73,9 @@ public class DatagramDataSender extends DatagramData implements DataSender {
 		
 		String data = getNextItem();
 		
+		
 		if (data != null) {
+			logger.info("sending {}", data);
 			dsh.sendData(data);
 		} else {
 			Thread.yield();

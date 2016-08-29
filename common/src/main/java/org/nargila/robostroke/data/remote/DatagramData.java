@@ -47,6 +47,8 @@ public abstract class DatagramData {
 	private final DatagramSocketType type;
 	
 	protected DatagramData(DatagramSocketType type, String address, int port) throws DataRemoteError {
+		logger.debug("initializing {} UDP {}:{}", type, address, port);
+		
 		this.type = type;
 		this.address = address;
 		this.port = port;
@@ -81,6 +83,7 @@ public abstract class DatagramData {
 
 	public synchronized void start() {
 		
+		logger.debug("starting {} UDP {}:{}", this.type, this.address, this.port);
 
 		final String name = getClass().getSimpleName();
 		final Object startSync = this;

@@ -108,6 +108,8 @@ class DatagramSocketHelper {
 	
 	static void sendData(DatagramSocket socket, InetSocketAddress socketAddress, String s) throws IOException {
 		
+		logger.debug("sending {} to {}", s, socketAddress);
+		
 		byte[] buf = s.getBytes("UTF-8");		
 
 		DatagramPacket packet = new DatagramPacket(buf, buf.length, socketAddress);
