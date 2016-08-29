@@ -19,24 +19,25 @@
 
 package org.nargila.robostroke.android.remote;
 
-import org.nargila.robostroke.data.SessionRecorderConstants;
+import org.nargila.robostroke.android.app.RoboStrokeActivity;
 import org.nargila.robostroke.data.remote.DataSender;
+import org.nargila.robostroke.data.remote.RemoteDataHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import android.content.Context;
 import android.content.Intent;
 
 public class TalosBroadcastServiceConnector  implements DataSender {
 
-	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosBroadcastService";	
-		
-	private final Context owner;
+	private static final Logger logger = LoggerFactory.getLogger(TalosBroadcastServiceConnector.class);
+	
+	private final RoboStrokeActivity owner;
 	private Intent service;
 	private boolean started;
-	private int port = SessionRecorderConstants.BROADCAST_PORT; 
-	private String host = SessionRecorderConstants.BROADCAST_HOST; 
+	private TalosRemoteServiceHelper helper;
 			
-	public TalosBroadcastServiceConnector(Context owner) {
-		this.owner = owner;		
+	public TalosBroadcastServiceConnector(RoboStrokeActivity owner) {
+		this.owner = owner;				
 	}
 
 	@Override
@@ -44,14 +45,20 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 
 		TalosRemoteServiceHelper helper;
 		
+		
 		try {
-			helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
+			this.helper = helper = new TalosRemoteServiceHelper(owner, TalosRemoteServiceHelper.BROADCAST_SERVICE_ID);
 		} catch (ServiceNotExist e) {
 			throw new DataRemoteError(e);
 		}
 		
 		service = helper.service;
 
+		int port = RemoteDataHelper.getPort(owner.getRoboStroke());
+		String host = RemoteDataHelper.getAddr(owner.getRoboStroke());
+		
+		logger.info("starting boardcast service to endpoint {}:{}", host, port);
+		
 		service.putExtra("port", port);
 		service.putExtra("host", host);
 		
@@ -75,7 +82,7 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 	public void write(String data) {
 		
 		if (started) {
-			Intent intent = new Intent(SERVICE_ID);
+			Intent intent = helper.getServiceIntent();
 			intent.putExtra("data", data);
 			owner.sendBroadcast(intent);
 		}
@@ -83,13 +90,11 @@ public class TalosBroadcastServiceConnector  implements DataSender {
 
 	@Override
 	public void setAddress(String address) {		
-		this.host = address;
 		restart();
 	}
 	
 	@Override
 	public synchronized void setPort(int port) {		
-		this.port = port;		
 		restart();
 	}
 

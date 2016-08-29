@@ -35,9 +35,7 @@ import android.os.Bundle;
 public class TalosReceiverServiceConnector extends RecordDataInput {
 
 	private static final Logger logger = LoggerFactory.getLogger(TalosReceiverServiceConnector.class);
-	
-	private final static String SERVICE_ID = "org.nargila.robostroke.android.remote.TalosReceiverService";
-		
+			
 	private final Context owner;
 
 	private final Intent service;
@@ -56,7 +54,7 @@ public class TalosReceiverServiceConnector extends RecordDataInput {
 		
 		super(roboStroke);
 		
-		TalosRemoteServiceHelper helper = new TalosRemoteServiceHelper(owner, SERVICE_ID);
+		TalosRemoteServiceHelper helper = new TalosRemoteServiceHelper(owner, TalosRemoteServiceHelper.RECEIVER_SERVICE_ID);
 		
 		this.owner = owner;
 		
@@ -69,7 +67,7 @@ public class TalosReceiverServiceConnector extends RecordDataInput {
 			
 			@Override
 			protected void handleItem(String o) {
-				playRecord(o, SessionRecorderConstants.END_OF_RECORD);
+				playRecord(o);
 			}
 		};
 		
@@ -104,7 +102,7 @@ public class TalosReceiverServiceConnector extends RecordDataInput {
 		if (!started) {
 			super.start();
 			recordQueue.setEnabled(true);
-			owner.registerReceiver(receiver, new IntentFilter(SERVICE_ID));
+			owner.registerReceiver(receiver, new IntentFilter(TalosRemoteServiceHelper.RECEIVER_SERVICE_ID));
 			owner.startService(service);
 			started = true;
 		}

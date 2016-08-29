@@ -161,8 +161,8 @@ public enum ParamKeys implements ParameterInfo {
                                          ParameterLevel.BASIC, 
                                          SessionRecorderConstants.BROADCAST_PORT),
                 
-            PARAM_SESSION_BROADCAST_HOST("org.nargila.talos.rowing.android.session.remote.host",
-                                         "session broadcast host", 
+            PARAM_SESSION_BROADCAST_HOST("org.nargila.talos.rowing.session.broadcast.host",
+                                         "session broadcast destination host", 
                                          "Remote device to receive real-time session data from", 
                                          "Session", 
                                          ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_HOST);

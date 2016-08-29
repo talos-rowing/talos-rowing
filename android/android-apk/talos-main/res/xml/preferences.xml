@@ -108,7 +108,7 @@
 			android:persistent="true" 
 			android:defaultValue="192.168.43.1"
 			android:summary="Remote device to receive real-time session data from" 
-			android:key="org.nargila.talos.rowing.android.session.remote.host"/>		
+			android:key="org.nargila.talos.rowing.session.broadcast.host"/>		
 		<EditTextPreference
 			android:title="Port"
 			android:persistent="true" 
