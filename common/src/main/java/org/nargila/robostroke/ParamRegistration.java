@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import org.nargila.robostroke.param.Parameter;
+import org.nargila.robostroke.param.ParameterInfoAlias;
 import org.nargila.robostroke.param.ParameterService;
 
 public class ParamRegistration {
@@ -36,6 +37,9 @@ public class ParamRegistration {
 	private ParamRegistration() {
 		for (ParamKeys info: ParamKeys.values()) {
 			params.add(new Parameter(info));
+			for (String alias: info.getAliases()) {
+				params.add(new Parameter(new ParameterInfoAlias(info, alias)));
+			}
 		}
 	}
 	

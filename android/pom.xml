@@ -15,7 +15,7 @@
   <name>android-parent</name>
 
   <properties>
-    <platform.version>2.3.3</platform.version>
+    <target.api.level>33</target.api.level>
   </properties>
 
   <modules>
@@ -27,8 +27,15 @@
     <dependency>
       <groupId>com.google.android</groupId>
       <artifactId>android</artifactId>
-      <version>${platform.version}</version>
-      <scope>provided</scope>
+      <version>${target.api.level}</version>
+      <scope>system</scope>
+      <systemPath>${android.sdk.path}/platforms/android-${target.api.level}/android.jar</systemPath>
     </dependency>
+    <!-- <dependency> -->
+    <!--   <groupId>com.google.android</groupId> -->
+    <!--   <artifactId>android</artifactId> -->
+    <!--   <version>${platform.version}</version> -->
+    <!--   <scope>provided</scope> -->
+    <!-- </dependency> -->
   </dependencies>
 </project>

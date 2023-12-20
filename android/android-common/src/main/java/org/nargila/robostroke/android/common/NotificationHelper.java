@@ -49,23 +49,30 @@ public class NotificationHelper {
 	
 	public void notifyError(int errorId, String msg, String contentTitle, String tickerText) {
 		long when = System.currentTimeMillis();
-
-		Notification notification = new Notification(icon, tickerText, when);	
-		
-		
-		Context context = this.owner.getApplicationContext();
-		CharSequence contentText = msg;
 		Intent notificationIntent = new Intent(this.owner, this.owner.getClass());
-		PendingIntent contentIntent = PendingIntent.getActivity(this.owner, 0, notificationIntent, 0);
+		PendingIntent contentIntent = PendingIntent.getActivity(
+				this.owner,
+				0,
+				notificationIntent,
+				PendingIntent.FLAG_MUTABLE
+		);
+		Context context = this.owner.getApplicationContext();
+		Notification notification = new Notification.Builder(context)
+				.setContentTitle(contentTitle)
+				.setSmallIcon(icon)
+				.setTicker(tickerText)
+				.setWhen(when)
+				.setContentText(msg)
+				.setContentIntent(contentIntent)
+				.build();
 
-		notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);	
+
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
-		
-		mNotificationManager.notify(errorId, notification);			
+
+		mNotificationManager.notify(errorId, notification);
 	}
 
 	public void cancel(int id) {
 		mNotificationManager.cancel(id);
-		
 	}
 }

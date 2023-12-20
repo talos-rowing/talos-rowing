@@ -14,11 +14,14 @@
   <name>android-apk</name>
 
   <properties>
-    <target.api.level>10</target.api.level>
+    <javasigner.keystore/>
+    <javasigner.alias/>
+    <javasigner.storepass/>
+    <javasigner.keypass/>
   </properties>
 
   <modules>
-    <module>talos-remote</module>
+    <!-- <module>talos-remote</module> -->
     <module>talos-main</module>
   </modules>
 
@@ -37,7 +40,7 @@
       <plugin>
         <groupId>com.simpligility.maven.plugins</groupId>
         <artifactId>android-maven-plugin</artifactId>
-        <version>4.4.3</version>
+        <version>4.6.0</version>
         <extensions>true</extensions>
         <configuration>
           <sdk>
@@ -65,7 +68,7 @@
               <executions>
                 <execution>
                   <id>alignApk</id>
-                  <phase>install</phase>
+                  <phase>package</phase>
                   <goals>
                     <goal>zipalign</goal>
                   </goals>
@@ -85,36 +88,56 @@
         
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <version>1.2</version>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.1</version>
             <executions>
               <execution>
                 <id>signing</id>
                 <goals>
-                  <goal>sign</goal>
+                  <goal>exec</goal>
                 </goals>
                 <phase>package</phase>
                 <inherited>true</inherited>
-                <configuration>
-                  <archiveDirectory></archiveDirectory>
-                  <includes>
-                    <include>target/*.apk</include>
-                  </includes>
-                  <keystore>${javasigner.keystore}</keystore>
-                  <storepass>${javasigner.storepass}</storepass>
-                  <keypass>${javasigner.keypass}</keypass>
-                  <alias>${javasigner.alias}</alias>
-                  <arguments>
-                    <argument>-sigalg</argument><argument>${javasigner.sigalg}</argument>
-                    <argument>-digestalg</argument><argument>SHA1</argument>
-                    <argument>-sigfile</argument><argument>cert</argument>
-                  </arguments>
-                </configuration>
               </execution>
             </executions>
+            <configuration>
+              <executable>bash</executable>
+              <inheritIo>true</inheritIo>
+              <arguments>
+                <argument>-c</argument>
+                <argument>ls target/*.apk &gt;&amp; /dev/null || exit 0; test -z '${javasigner.keystore}' -o -z '${javasigner.alias}' -o -z '${javasigner.storepass}' -o -z '${javasigner.keypass}' &amp;&amp; echo one or more of properties javasigner.{keystore,alias,storepass,keypass} is empty - specify on command line e.g. -Djavasigner.alias=nazgul or put in your maven settings.xml &amp;&amp; exit 1; for i in target/*-aligned.apk; do apksigner sign --ks ${javasigner.keystore} --ks-key-alias ${javasigner.alias} --ks-pass pass:${javasigner.storepass} --key-pass pass:${javasigner.keypass} --out target/$(basename $i .apk)-signed.apk $i; done</argument>
+              </arguments>
+              <environmentVariables>
+                <LANG>en_US</LANG>
+              </environmentVariables>
+            </configuration>
           </plugin>
         </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>re-add-jaxb-api</id>
+      <activation>
+        <!-- <activeByDefault>true</activeByDefault> -->
+        <jdk>[9,)</jdk>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>com.simpligility.maven.plugins</groupId>
+              <artifactId>android-maven-plugin</artifactId>
+              <dependencies>
+                <dependency>
+                  <groupId>javax.xml.bind</groupId>
+                  <artifactId>jaxb-api</artifactId>
+                  <version>2.3.1</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+          </plugins>
+        </pluginManagement>
       </build>
     </profile>
   </profiles>

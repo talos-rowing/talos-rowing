@@ -62,7 +62,7 @@ class ReplayFileList {
 		}
 
 		if (fileNameErrors) {
-			owner.reportError("malformed file names found under Talos Rowing replay directory");
+			owner.reportError("malformed file names found under Talos Rowing replay directory", null);
 		}
 		
 		Collections.sort(sortedList, new Comparator<Pair<File,Date>>() {

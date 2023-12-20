@@ -60,33 +60,33 @@
       <version>3.7.0</version>
     </dependency> 
   </dependencies>
-  <build>    
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>webstart-maven-plugin</artifactId>
-	<version>1.0-beta-3</version>
-	<executions>
-	  <execution>
-            <phase>package</phase>
-	    <goals>
-	      <goal>jnlp</goal>
-	    </goals>
-	    <id>jnlp</id>
-	  </execution>
-	</executions>
-	<configuration>
-	  <jnlp>
-	    <inputTemplate>${jnlp.template}</inputTemplate>
-	    <outputFile>${jnlp.outfile}</outputFile>
-	    <mainClass>${jnlp.main.class}</mainClass>
-	  </jnlp>
-	  <sign>
-	    <alias>${javasigner.alias}</alias>
-	    <storepass>${javasigner.storepass}</storepass>
-	  </sign>
-	</configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <!-- <build>     -->
+  <!--   <plugins> -->
+  <!--     <plugin> -->
+  <!--       <groupId>org.codehaus.mojo</groupId> -->
+  <!--       <artifactId>webstart-maven-plugin</artifactId> -->
+  <!--       <version>1.0-beta-7</version> -->
+  <!--       <executions> -->
+  <!--         <execution> -->
+  <!--           <phase>package</phase> -->
+  <!--           <goals> -->
+  <!--             <goal>jnlp</goal> -->
+  <!--           </goals> -->
+  <!--           <id>jnlp</id> -->
+  <!--         </execution> -->
+  <!--       </executions> -->
+  <!--       <configuration> -->
+  <!--         <jnlp> -->
+  <!--           <inputTemplate>${jnlp.template}</inputTemplate> -->
+  <!--           <outputFile>${jnlp.outfile}</outputFile> -->
+  <!--           <mainClass>${jnlp.main.class}</mainClass> -->
+  <!--         </jnlp> -->
+  <!--         <sign> -->
+  <!--           <alias>${javasigner.alias}</alias> -->
+  <!--           <storepass>${javasigner.storepass}</storepass> -->
+  <!--         </sign> -->
+  <!--       </configuration> -->
+  <!--     </plugin> -->
+  <!--   </plugins> -->
+  <!-- </build> -->
 </project>

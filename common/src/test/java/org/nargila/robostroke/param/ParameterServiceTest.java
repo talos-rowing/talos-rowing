@@ -75,7 +75,12 @@ public class ParameterServiceTest {
 		public Object convertFromString(String val) {
 			return new Boolean(val);
 		}
-	}; 
+
+		@Override
+		public String[] getAliases() {
+			return new String[0];
+		}
+	};
 
 	private static final ParameterInfo INTEGER_PARAM = new ParameterInfo() {
 		
@@ -123,7 +128,12 @@ public class ParameterServiceTest {
 		public Object convertFromString(String val) {
 			return new Integer(val);
 		}
-	}; 
+
+		@Override
+		public String[] getAliases() {
+			return new String[0];
+		}
+	};
 
 	private static final ParameterInfo FLOAT_PARAM = new ParameterInfo() {
 		
@@ -171,7 +181,12 @@ public class ParameterServiceTest {
 		public Object convertFromString(String val) {
 			return new Float(val);
 		}
-	}; 
+
+		@Override
+		public String[] getAliases() {
+			return new String[0];
+		}
+	};
 
 	
 	Parameter f = new Parameter(FLOAT_PARAM);

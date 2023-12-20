@@ -224,8 +224,8 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			locationManager.removeUpdates(this);		
 			try {
 				locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, (long) gpsMinTime, gpsMinDistance, this, looper);
-			} catch (IllegalArgumentException e) {
-				owner.reportError(e, "GPS update registration failed");
+			} catch (IllegalArgumentException|SecurityException e) {
+				owner.reportError("GPS update registration failed", e);
 			}
 		}
 
