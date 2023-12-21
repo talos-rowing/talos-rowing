@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import android.content.Context;
 import org.acra.ACRA;
 import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
@@ -176,7 +177,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					sessionTimestamp = new Date();
 					
-					File logFile = recordingOn ? FileHelper.getFile(ROBOSTROKE_DATA_DIR, System.currentTimeMillis() + "-dataInput.txt") : null;
+					File logFile = recordingOn ? FileHelper.getFile(getApplicationContext(), ROBOSTROKE_DATA_DIR, System.currentTimeMillis() + "-dataInput.txt") : null;
 							
 					roboStroke.setDataLogger(logFile);
 					
@@ -254,13 +255,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 				if (toShare != null) {
 
+					Context context = getApplicationContext();
 
 					if (toShare.length() > 30000000) {
 						if (m_AlertDlg != null) {
 							m_AlertDlg.cancel();
 						}
 
-						m_AlertDlg = new AlertDialog.Builder(RoboStrokeActivity.this).setMessage(
+						m_AlertDlg = new AlertDialog.Builder(context).setMessage(
 								getString(
 										R.string.session_record_upload_size_too_large,
 										90)).setTitle(
@@ -269,12 +271,11 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					} else {
 
 						try {
-							File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
+							File tmpdir = FileHelper.getFile(context, ROBOSTROKE_DATA_DIR, "tmp");
 
-							if (tmpdir == null) {
+							if (tmpdir == null || (!tmpdir.exists() && !tmpdir.mkdir())) {
 								throw new Exception("Could not create temporary file");
 							}
-							tmpdir.mkdir();
 
 							String name = toShare.getName().replaceFirst("txt$", "trsd");
 
@@ -520,7 +521,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		 * @throws Exception if the temp directory cannot be created or accessed
 		 */
 		private File createTmpSessionOutputFile(String suffix) throws Exception {
-			File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
+			File tmpdir = FileHelper.getFile(getApplicationContext(), ROBOSTROKE_DATA_DIR, "tmp");
 
 			if (tmpdir == null) {
 				throw new Exception("could not get tempdir");
@@ -686,7 +687,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 			@Override
 			public void onClick(View arg0) {
-				if (!isReplaying() && FileHelper.hasExternalStorage()) {
+				if (!isReplaying() && FileHelper.hasExternalStorage(getApplicationContext())) {
 					roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), !recording);
 					recording = !recording;
 				}
@@ -830,7 +831,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
 
 	private boolean recheckExternalStorage() {
-		if (!FileHelper.hasExternalStorage() || FileHelper.getDir(ROBOSTROKE_DATA_DIR) == null) {
+		Context context = getApplicationContext();
+		if (!FileHelper.hasExternalStorage(context) || FileHelper.getDir(context, ROBOSTROKE_DATA_DIR) == null) {
 			menu.findItem(R.id.menu_replay_start).setEnabled(false);
 			menu.findItem(R.id.menu_record_start).setEnabled(false);
 			
@@ -1124,7 +1126,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		final boolean replay = isReplaying();
 		
-		boolean hasExternalStorage = FileHelper.hasExternalStorage();
+		boolean hasExternalStorage = FileHelper.hasExternalStorage(getApplicationContext());
 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
@@ -1326,9 +1328,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
  
 	private void cleanTmpDir() {
-		if (FileHelper.hasExternalStorage()) {
+		Context context = getApplicationContext();
+		if (FileHelper.hasExternalStorage(context)) {
 			
-			File tmpDir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
+			File tmpDir = FileHelper.getFile(context, ROBOSTROKE_DATA_DIR, "tmp");
 
 			if (tmpDir != null) {
 				tmpDir.mkdir();

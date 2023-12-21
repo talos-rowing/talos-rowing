@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.nargila.robostroke.android.common.FileHelper;
 import org.nargila.robostroke.common.Pair;
 
 import android.os.Environment;
@@ -34,12 +35,11 @@ class ReplayFileList {
 	List<Pair<File,Date>> files;
 		
 	ReplayFileList(RoboStrokeActivity owner) {
+		File dir = 	FileHelper.getDir(owner, "RoboStroke");
+
+		File[] fileList = dir == null ? new File[0] : dir.listFiles();
 		
-		File dir = new File(Environment.getExternalStorageDirectory(), "RoboStroke");
-	
-		File[] fileList = dir.listFiles();
-		
-		ArrayList<Pair<File, Date>> sortedList = new ArrayList<Pair<File,Date>>(fileList.length);
+		ArrayList<Pair<File, Date>> sortedList = new ArrayList<>(fileList.length);
 		
 		boolean fileNameErrors = false;
 		
