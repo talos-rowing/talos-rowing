@@ -21,7 +21,10 @@ push-%:
 	git push --tags $*
 
 dist:
-	mvn $(_MVN_ARGS) -Psign clean install
+	mvn $(_MVN_ARGS) -Psign install
+
+deploy-apk:
+	adb install -g android/android-apk/talos-main/target/talos-main-aligned-signed.apk
 
 %:
 	mvn $(_MVN_ARGS) $@

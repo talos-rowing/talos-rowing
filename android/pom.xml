@@ -14,10 +14,6 @@
   <packaging>pom</packaging>
   <name>android-parent</name>
 
-  <properties>
-    <target.api.level>33</target.api.level>
-  </properties>
-
   <modules>
     <module>android-common</module>
     <module>android-apk</module>
@@ -25,17 +21,10 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.google.android</groupId>
+      <groupId>org.nargila.android</groupId>
       <artifactId>android</artifactId>
-      <version>${target.api.level}</version>
-      <scope>system</scope>
-      <systemPath>${android.sdk.path}/platforms/android-${target.api.level}/android.jar</systemPath>
+      <version>1.0.${target.api.level}</version>
+      <scope>provided</scope>
     </dependency>
-    <!-- <dependency> -->
-    <!--   <groupId>com.google.android</groupId> -->
-    <!--   <artifactId>android</artifactId> -->
-    <!--   <version>${platform.version}</version> -->
-    <!--   <scope>provided</scope> -->
-    <!-- </dependency> -->
   </dependencies>
 </project>

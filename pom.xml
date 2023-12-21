@@ -15,6 +15,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.21</slf4j.version>
+    <target.api.level>34</target.api.level>
   </properties>
 
   <modules>
@@ -43,9 +44,47 @@
           <configuration>
             <encoding>UTF-8</encoding>
           </configuration>
-        </plugin>     
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.1.1</version>
+          <configuration>
+            <environmentVariables>
+              <LANG>en_US</LANG>
+            </environmentVariables>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>install-android-jar</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>mvn</executable>
+          <inheritIo>true</inheritIo>
+          <arguments>
+            <argument>install:install-file</argument>
+            <argument>-Dfile=${android.sdk.path}/platforms/android-${target.api.level}/android.jar</argument>
+            <argument>-DgroupId=org.nargila.android</argument>
+            <argument>-DartifactId=android</argument>
+            <argument>-Dversion=1.0.${target.api.level}</argument>
+            <argument>-Dpackaging=jar</argument>
+            <argument>-DgeneratePom=true</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <dependencies>

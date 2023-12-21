@@ -90,7 +90,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
-            <version>3.1.1</version>
             <executions>
               <execution>
                 <id>signing</id>
@@ -108,9 +107,6 @@
                 <argument>-c</argument>
                 <argument>ls target/*.apk &gt;&amp; /dev/null || exit 0; test -z '${javasigner.keystore}' -o -z '${javasigner.alias}' -o -z '${javasigner.storepass}' -o -z '${javasigner.keypass}' &amp;&amp; echo one or more of properties javasigner.{keystore,alias,storepass,keypass} is empty - specify on command line e.g. -Djavasigner.alias=nazgul or put in your maven settings.xml &amp;&amp; exit 1; for i in target/*-aligned.apk; do apksigner sign --ks ${javasigner.keystore} --ks-key-alias ${javasigner.alias} --ks-pass pass:${javasigner.storepass} --key-pass pass:${javasigner.keypass} --out target/$(basename $i .apk)-signed.apk $i; done</argument>
               </arguments>
-              <environmentVariables>
-                <LANG>en_US</LANG>
-              </environmentVariables>
             </configuration>
           </plugin>
         </plugins>
