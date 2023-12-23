@@ -4,7 +4,7 @@
           android:sharedUserId="talos.rowing" android:sharedUserLabel="@string/sharedUserLabel" 
           android:versionName="0.9.7.332">
   
-  <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="34"/>
+  <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="34"/>
   
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
                    android:maxSdkVersion="32"/>
@@ -18,7 +18,8 @@
               android:configChanges="orientation"
               android:screenOrientation="nosensor"
               android:launchMode="singleInstance"
-              android:exported="true">
+              android:exported="true"
+              android:debuggable="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
