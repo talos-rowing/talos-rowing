@@ -14,13 +14,6 @@
   <packaging>pom</packaging>
   <name>android-parent</name>
 
-  <repositories>
-    <repository>
-      <id>google</id>
-      <url>https://maven.google.com</url>
-    </repository>
-  </repositories>
-
   <modules>
     <module>android-common</module>
     <module>android-apk</module>
@@ -32,12 +25,6 @@
       <artifactId>android</artifactId>
       <version>1.0.${target.api.level}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>androidx.core</groupId>
-      <artifactId>core</artifactId>
-      <version>1.12.0</version>
-      <type>aar</type>
     </dependency>
   </dependencies>
 </project>

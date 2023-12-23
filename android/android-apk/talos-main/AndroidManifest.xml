@@ -41,6 +41,10 @@
               android:launchMode="singleInstance"
               android:excludeFromRecents="true"
               android:finishOnTaskLaunch="true" />
+
+    <provider android:name=".SessionContentProvider"
+              android:authorities="org.nargila.robostroke.android.app.SessionFileProvider"
+              android:exported="true" />
   </application>
 
 </manifest>

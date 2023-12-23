@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import android.content.Context;
+import android.content.*;
 import org.acra.ACRA;
 import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
@@ -71,9 +71,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -103,7 +100,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private static final String MIME_TYPE_ROBOSTROKE_SESSION = "application/vnd.robostroke.session";
 
-	private static final String ROBOSTROKE_DATA_DIR = "RoboStroke";
+	static final String ROBOSTROKE_DATA_DIR = "RoboStroke";
 
 	private static final int RECORDING_ON_COLOUR = Color.argb(255, 255, 0, 0);
 
@@ -277,9 +274,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 								throw new Exception("Could not create temporary file");
 							}
 
-							String name = toShare.getName().replaceFirst("txt$", "trsd");
+							final String name = toShare.getName().replaceFirst("txt$", "trsd");
 
-							final File trsd = new File(tmpdir, name);
+							File trsd = new File(tmpdir, name);
 
 							Runnable runnable = new Runnable() {
 
@@ -289,12 +286,15 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 									Intent intent = new Intent(Intent.ACTION_SEND);
 
 									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
-									intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(trsd));
+
+									intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(
+											"content://" + SessionContentProvider.AUTHORITY + "/" + name
+									));
 									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
 									intent.putExtra(Intent.EXTRA_EMAIL,new String[] { getString(R.string.default_session_record_dispatch_address) });
 									intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Talos Rowing Session: %s", preferencesHelper.getUUID()));
 									intent.putExtra(Intent.EXTRA_TEXT, "Description:\n");
-									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);									
+									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
 
 									startActivityForResult(Intent.createChooser(intent, "Email:"), 42);
 								}
@@ -647,7 +647,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 		
 		if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_PREFERENCES_LOG, false)) {
