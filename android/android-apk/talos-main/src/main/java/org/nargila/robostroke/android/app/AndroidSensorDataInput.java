@@ -49,7 +49,7 @@ import android.os.SystemClock;
  */
 public class AndroidSensorDataInput extends SensorDataInputBase {
 
-	private static Logger logger = LoggerFactory.getLogger(AndroidSensorDataInput.class);
+	private static final Logger logger = LoggerFactory.getLogger(AndroidSensorDataInput.class);
 	
 	private static final int SENSOR_DELAY = 50; // SensorManager.SENSOR_DELAY_GAME;
 
