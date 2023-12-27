@@ -123,10 +123,10 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		private Handler handler;
 		private SensorManager sensorManager;
 		private Sensor accelSensor;
-		private Sensor orientSensor;
+		private Sensor magneticSensor;
 		private final Activity owner;
-		private boolean firstAccelEvent;
-		private boolean firstOrientEvent;
+		private float[] gravityValues;
+		private float[] magneticValues;
 
 		public SensorDataThread(Activity owner) {
 			super("SensorDataThread");
@@ -138,7 +138,7 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 		public boolean onStop() {
 			if (sensorManager != null) {
 				sensorManager.unregisterListener(this, accelSensor);
-				sensorManager.unregisterListener(this, orientSensor);
+				sensorManager.unregisterListener(this, magneticSensor);
 			}
 		
 			return super.onStop();
@@ -150,15 +150,15 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			handler = new Handler(getLooper());
 			sensorManager = (SensorManager) this.owner.getSystemService(Context.SENSOR_SERVICE);
 			accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-			orientSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+			magneticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 			logger.debug("attaching accelSensor listener at notification delay of {}", sensorDelay);
 			
 			sensorManager.registerListener(this, accelSensor, sensorDelay, handler);
 			
-			logger.debug("attaching orientSensor listener at notification delay of {}", sensorDelay);
+			logger.debug("attaching magneticSensor listener at notification delay of {}", sensorDelay);
 			
-			sensorManager.registerListener(this, orientSensor, sensorDelay, handler);
+			sensorManager.registerListener(this, magneticSensor, sensorDelay, handler);
 		}
 
 		@Override
@@ -171,28 +171,37 @@ public class AndroidSensorDataInput extends SensorDataInputBase {
 			final long timestamp = SystemClock.uptimeMillis() * 1000000;
 			final float[] values = event.values;
 			SensorDataSource dataSource;
-						
+
 			switch (event.sensor.getType()) {
-			case Sensor.TYPE_ACCELEROMETER:
-				
-				if (firstAccelEvent) {
-					logger.debug("received first TYPE_ACCELEROMETER data ({})", values);
-					firstAccelEvent = false;
-				}
-				dataSource = accelerometerDataSource;
-				break;
-			case Sensor.TYPE_ORIENTATION:
-				if (firstOrientEvent) {
-					logger.debug("received first TYPE_ORIENTATION data ({})", values);
-					firstOrientEvent = false;
-				}
-				dataSource = orientationDataSource;
-				break;
+				case Sensor.TYPE_ACCELEROMETER:
+					if (event.values.length != 3) {
+						logger.warn("Invalid sensor data received: {}", event.values);
+						return;
+					}
+					if (gravityValues == null) {
+						logger.debug("received first TYPE_ACCELEROMETER data ({})", values);
+					}
+					this.gravityValues = values;
+					accelerometerDataSource.pushData(timestamp, values);
+					break;
+				case Sensor.TYPE_MAGNETIC_FIELD:
+					if (magneticValues == null) {
+						logger.debug("received first TYPE_ORIENTATION data ({})", values);
+					}
+
+					magneticValues = values;
+					break;
 				default:
 					throw new RuntimeException("HDIGH!");
 			}
-			
-			dataSource.pushData(timestamp, values);
+
+			if (magneticValues != null && gravityValues != null) {
+				float[] rotationMatrix = new float[9];
+				float[] orientationValues = new float[3];
+				SensorManager.getRotationMatrix(rotationMatrix, null, gravityValues, magneticValues);
+				SensorManager.getOrientation(rotationMatrix, orientationValues);
+				orientationDataSource.pushData(timestamp, orientationValues);
+			}
 		}
 	}
 	
