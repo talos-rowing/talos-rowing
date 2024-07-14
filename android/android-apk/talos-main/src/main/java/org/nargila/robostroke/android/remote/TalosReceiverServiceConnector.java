@@ -102,7 +102,7 @@ public class TalosReceiverServiceConnector extends RecordDataInput {
 		if (!started) {
 			super.start();
 			recordQueue.setEnabled(true);
-			owner.registerReceiver(receiver, new IntentFilter(TalosRemoteServiceHelper.RECEIVER_SERVICE_ID));
+			owner.registerReceiver(receiver, new IntentFilter(TalosRemoteServiceHelper.RECEIVER_SERVICE_ID), Context.RECEIVER_NOT_EXPORTED);
 			owner.startService(service);
 			started = true;
 		}

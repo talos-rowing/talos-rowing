@@ -150,7 +150,7 @@ public abstract class TalosService extends Service {
 
 		int icon = error ? R.drawable.icon : android.R.drawable.ic_dialog_alert;
 		Intent notificationIntent = new Intent(getClass().getName());
-		PendingIntent contentIntent = PendingIntent.getService(this, 0, notificationIntent, 0);
+		PendingIntent contentIntent = PendingIntent.getService(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
 		Notification notification = new Notification.Builder(this)
 				.setContentTitle(contentTitle)
