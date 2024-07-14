@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import android.content.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,24 +40,21 @@ public class FileHelper {
 	
 	/**
 	 * return 1st level directory on root of external storage directory - creating it if necessary
-	 */
-    public static File getDir(String dirName) {
-    	File root = Environment.getExternalStorageDirectory();
-    	if (root.canWrite()){
-    		
-    		File outdir = new File(root, dirName);
-    		    		
-    		outdir.mkdir();
-    		
-    		touchNoMedia(outdir);
-    		
-    		return outdir;
-    	}
-    	
-    	logger.warn("external storage not available");
-    	
-    	return null;
-    	
+         */
+    public static File getDir(Context owner, String dirName) {
+        File root = owner.getExternalFilesDir(null);
+        if (root != null && root.canWrite()) {
+            File outdir = new File(root, dirName);
+
+            if (outdir.exists() || outdir.mkdir()) {
+                touchNoMedia(outdir);
+                return outdir;
+            }
+        }
+
+        logger.warn("external storage not available");
+
+        return null;
     }
 
 	private static void touchNoMedia(File outdir) {
@@ -79,8 +77,8 @@ public class FileHelper {
 	 * @param fileName name of file
 	 * @return file object
 	 */
-    public static File getFile(String dirName, String fileName) {
-    	File outdir = getDir(dirName);
+    public static File getFile(Context owner, String dirName, String fileName) {
+    	File outdir = getDir(owner, dirName);
     	
     	if (outdir != null) {    		
     		return new File(outdir, fileName);
@@ -90,10 +88,9 @@ public class FileHelper {
     	
     }
     
-    public static boolean hasExternalStorage() {
-    	String state = Environment.getExternalStorageState();
-
-    	return Environment.MEDIA_MOUNTED.equals(state);
+    public static boolean hasExternalStorage(Context owner) {
+		File root = owner.getExternalFilesDir(null);
+		return root != null && root.canWrite();
     }
 
 	public static void cleanDir(File dir, long olderThen) {

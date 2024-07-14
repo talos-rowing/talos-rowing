@@ -27,13 +27,13 @@
         <item>30</item>
         <item>20</item>
         <item>10</item>
-        <item>0</item>
+        <item>5</item>
     </string-array>
     <string-array name="sensor_update_delay_display">
         <item>50ms</item>
         <item>30ms</item>
         <item>20ms</item>
         <item>10ms</item>
-        <item>0ms (Fastest)</item>
+        <item>5ms (Fastest)</item>
     </string-array>
 </resources>

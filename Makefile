@@ -1,10 +1,12 @@
 REPOS = github nargila origin
 MVN_ARGS = 
 
+_MVN_ARGS = -e $(MVN_ARGS)
+
 REVNO = $(shell git rev-list --count HEAD)
 
-ifeq ($(TEST),0)
-MVN_ARGS += -Dmaven.test.skip=true
+ifdef SKIPTEST
+_MVN_ARGS += -Dmaven.test.skip=true
 endif
 
 all:
@@ -19,4 +21,10 @@ push-%:
 	git push --tags $*
 
 dist:
-	mvn $(MVN_ARGS) -Psign clean install
+	mvn $(_MVN_ARGS) -Psign install
+
+deploy-apk:
+	adb install android/android-apk/talos-main/target/talos-main-aligned-signed.apk
+
+%:
+	mvn $(_MVN_ARGS) $@

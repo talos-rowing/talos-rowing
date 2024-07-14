@@ -30,5 +30,5 @@ public interface ParameterInfo {
 	public Object[] makeChoices();
 	public Object convertFromString(String val);
 	public String convertToString(Object val);
-	
+	String[] getAliases();
 }

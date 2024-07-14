@@ -40,6 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import android.Manifest;
+import android.content.*;
+import android.content.pm.PackageManager;
 import org.acra.ACRA;
 import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
@@ -70,9 +73,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -102,7 +102,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	private static final String MIME_TYPE_ROBOSTROKE_SESSION = "application/vnd.robostroke.session";
 
-	private static final String ROBOSTROKE_DATA_DIR = "RoboStroke";
+	static final String ROBOSTROKE_DATA_DIR = "RoboStroke";
 
 	private static final int RECORDING_ON_COLOUR = Color.argb(255, 255, 0, 0);
 
@@ -111,13 +111,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	private static final int HIGHLIGHT_PADDING_SIZE = 5;
 	
 	private static final Logger logger = LoggerFactory.getLogger(RoboStrokeActivity.class);
-	
+	public static final int LOCATION_PERMISSION_REQUEST_CODE = 42;
+
 	private final ParameterListenerRegistration[] listenerRegistrations = {
 			new ParameterListenerRegistration(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), new ParameterChangeListener() {
 				
 				@Override
 				public void onParameterChanged(Parameter param) {
-					final boolean recording = (Boolean)param.getValue();
+					final boolean recording = param.getValue();
 					
 					setRecordingOn(recording);
 					
@@ -154,7 +155,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	MetersDisplayManager metersDisplayManager;
 
-	public RecordSyncLeaderDialog recordLeaderDialog;
+	private RecordSyncLeaderDialog recordLeaderDialog;
 
 	static AlertDialog m_AlertDlg;
 	
@@ -176,7 +177,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					sessionTimestamp = new Date();
 					
-					File logFile = recordingOn ? FileHelper.getFile(ROBOSTROKE_DATA_DIR, "" + System.currentTimeMillis() + "-dataInput.txt") : null;
+					File logFile = recordingOn ? FileHelper.getFile(getApplicationContext(), ROBOSTROKE_DATA_DIR, System.currentTimeMillis() + "-dataInput.txt") : null;
 							
 					roboStroke.setDataLogger(logFile);
 					
@@ -209,7 +210,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 								roboStroke.setDataLogger(null);
 							} catch (IOException e) {
 								error.set(e);
-							} finally {
 							}
 						}
 					};
@@ -255,13 +255,14 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 				if (toShare != null) {
 
+					Context context = getApplicationContext();
 
 					if (toShare.length() > 30000000) {
 						if (m_AlertDlg != null) {
 							m_AlertDlg.cancel();
 						}
 
-						m_AlertDlg = new AlertDialog.Builder(RoboStrokeActivity.this).setMessage(
+						m_AlertDlg = new AlertDialog.Builder(context).setMessage(
 								getString(
 										R.string.session_record_upload_size_too_large,
 										90)).setTitle(
@@ -269,17 +270,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 												.show();
 					} else {
 
-						File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
-
-						tmpdir.mkdir();
-
-						String name = toShare.getName().replaceFirst("txt$", "trsd");
-
-						final File trsd = new File(tmpdir, name);			
-
-
 						try {
+							File tmpdir = FileHelper.getFile(context, ROBOSTROKE_DATA_DIR, "tmp");
 
+							if (tmpdir == null || (!tmpdir.exists() && !tmpdir.mkdir())) {
+								throw new Exception("Could not create temporary file");
+							}
+
+							final String name = toShare.getName().replaceFirst("txt$", "trsd");
+
+							File trsd = new File(tmpdir, name);
 
 							Runnable runnable = new Runnable() {
 
@@ -289,12 +289,15 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 									Intent intent = new Intent(Intent.ACTION_SEND);
 
 									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
-									intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(trsd));
+
+									intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(
+											"content://" + SessionContentProvider.AUTHORITY + "/" + name
+									));
 									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
 									intent.putExtra(Intent.EXTRA_EMAIL,new String[] { getString(R.string.default_session_record_dispatch_address) });
 									intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Talos Rowing Session: %s", preferencesHelper.getUUID()));
 									intent.putExtra(Intent.EXTRA_TEXT, "Description:\n");
-									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);									
+									intent.setType(MIME_TYPE_ROBOSTROKE_SESSION);
 
 									startActivityForResult(Intent.createChooser(intent, "Email:"), 42);
 								}
@@ -303,7 +306,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 							prepareData(Uri.fromFile(toShare), trsd, 1, runnable);
 
 						} catch (Exception e) {
-							reportError(e, "error preparing session data for sharing");
+							reportError("error preparing session data for sharing", e);
 
 						}
 					}
@@ -314,7 +317,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		/**
 		 * check either intent contains session data to replay
 		 * @param intent
-		 * @return
+		 * @return true if preview intent was started
 		 */
 		private boolean startPreviewIntent(final Intent intent) {
 				
@@ -345,8 +348,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					
 					outFile = createTmpSessionOutputFile(".txt");
 					
-				} catch (IOException e) {
-					reportError(e, "preview error: failed to create preview file");
+				} catch (Exception e) {
+					reportError("preview error: failed to create preview file", e);
 					
 					return false;
 				}
@@ -378,7 +381,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			progress.setMessage("Preparing...");
 			
-			final AtomicReference<Future<?>> job = new AtomicReference<Future<?>>();
+			final AtomicReference<Future<?>> job = new AtomicReference<>();
 						
 			progress.setMax(100);
 		
@@ -486,7 +489,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 								}
 							}
 						} catch (MyError e) {
-							reportError(e.getCause(), "session data preparation failed: " + e.getMessage());
+							reportError("session data preparation failed: " + e.getMessage(), e.getCause());
 						} finally {
 							progress.dismiss();
 		
@@ -505,14 +508,29 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					try {
 						res.wait();
 					} catch (InterruptedException e) {
+						// ignore exception
 					}
 				}
 			}
 		}
 
-		private File createTmpSessionOutputFile(String suffix) throws IOException {
-			File tmpdir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
-			
+		/**
+		 * Creates a temporary session output file with the given suffix.
+		 * The file is created under the tmp directory in ROBOSTROKE_DATA_DIR.
+		 * The file will be automatically deleted when the JVM exits.
+		 *
+		 * @param suffix the suffix of the file
+		 * @return a File object representing the temporary session output file
+		 * @throws Exception if the temp directory cannot be created or accessed
+		 */
+		private File createTmpSessionOutputFile(String suffix) throws Exception {
+			File tmpdir = FileHelper.getFile(getApplicationContext(), ROBOSTROKE_DATA_DIR, "tmp");
+
+			if (tmpdir == null) {
+				throw new Exception("could not get tempdir");
+			}
+
+			//noinspection ResultOfMethodCallIgnored
 			tmpdir.mkdir();
 			
 			File tmp =  File.createTempFile("dataInput-", suffix, tmpdir);
@@ -543,7 +561,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		
 	}
 
-	@SuppressWarnings("serial")
 	private static class MyError extends Throwable {
 		
 		public MyError(String detailMessage, Throwable throwable) {
@@ -633,7 +650,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 		
 		if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_PREFERENCES_LOG, false)) {
@@ -673,7 +690,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			
 			@Override
 			public void onClick(View arg0) {
-				if (!isReplaying() && FileHelper.hasExternalStorage()) {
+				if (!isReplaying() && FileHelper.hasExternalStorage(getApplicationContext())) {
 					roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), !recording);
 					recording = !recording;
 				}
@@ -693,8 +710,22 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(), 
 				getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
 
-		start(new DataInputInfo());
+		checkLocationPermissionAndStart();
+	}
 
+	private void checkLocationPermissionAndStart() {
+		if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+			start(new DataInputInfo());
+		} else {
+			requestPermissions(new String[] { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION }, LOCATION_PERMISSION_REQUEST_CODE);
+		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+			checkLocationPermissionAndStart();
+		}
 	}
 
 	@Override
@@ -712,12 +743,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		sessionFileHandler.startPreviewIntent(getIntent());		
 		super.onPostCreate(savedInstanceState);
 	}
-	
-	void reportError(String msg) {
-		logger.error(msg);
-
-		showNotification(msg);
-	}
 
 	void showNotification(String msg) {
 		notificationHelper.notifyError(ROBOSTROKE_ERROR, msg,
@@ -726,11 +751,11 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		notificationHelper
 				.toast(msg + ". See error notification");
 	}
-	
-	void reportError(Throwable throwable, String msg) {
+
+	void reportError(String msg, Throwable throwable) {
 		logger.error(msg, throwable);
 
-		showNotification(msg + ": " + throwable.getMessage());
+		showNotification(msg + (throwable == null ? "" : ": " + throwable.getMessage()));
 	}
 
 
@@ -740,7 +765,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 		for (String intentSpec: HRM_SERVICE_ACTIONS) {
 			IntentFilter filter = new IntentFilter(intentSpec);
-			registerReceiver(hxmDataReceiver, filter);
+			registerReceiver(hxmDataReceiver, filter, android.content.Context.RECEIVER_EXPORTED);
 		}
 
 	}
@@ -754,62 +779,60 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 	@Override
 	protected void onPrepareDialog(int id, final Dialog dialog) {
-		switch (id) {
-		case R.layout.tilt_freeze_dialog:
-			TextView status = (TextView) dialog.findViewById(R.id.tilt_status);
+		if (id == R.layout.tilt_freeze_dialog) {
+			TextView status = (TextView)dialog.findViewById(R.id.tilt_status);
 			status.setText("");
-			break;
-		case R.layout.replay_file_select:
-	
+		} else if (id == R.layout.replay_file_select) {
+
 			final LinearLayout list = (LinearLayout) dialog.findViewById(R.id.replay_list_view);
 
 			list.removeAllViews();
 
 			ReplayFileList replayList = new ReplayFileList(this);
-			
-			final LinearLayout.LayoutParams rowLayout = 
-				new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT);
-			final LinearLayout.LayoutParams openButtonLayout = 
-				new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-			final LinearLayout.LayoutParams deleteButtonLayout = 
-				new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT, 0f);
-			
+
+			final LinearLayout.LayoutParams rowLayout =
+					new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,
+							LinearLayout.LayoutParams.WRAP_CONTENT);
+			final LinearLayout.LayoutParams openButtonLayout =
+					new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,
+							LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+			final LinearLayout.LayoutParams deleteButtonLayout =
+					new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+							LinearLayout.LayoutParams.WRAP_CONTENT, 0f);
+
 			openButtonLayout.gravity = Gravity.CENTER_VERTICAL;
 			deleteButtonLayout.gravity = Gravity.CENTER_VERTICAL;
-			
+
 			for (Pair<File, Date> p : replayList.files) {
 				final LinearLayout row = new LinearLayout(this);
 				row.setLayoutParams(new LayoutParams(rowLayout));
 				row.setOrientation(LinearLayout.HORIZONTAL);
-				
+
 				final File f = p.first;
 				Date date = p.second;
 				Button button = new Button(this);
 				button.setLayoutParams(new LayoutParams(openButtonLayout));
 				CharSequence datePart = DateFormat.format("yyyy-MM-dd h:mmaa", date);
 				String sizePart = makeFileSizeLabel(f.length());
-				
+
 				button.setText(String.format("%s %s", datePart, sizePart));
 				button.setOnClickListener(new View.OnClickListener() {
 
-					
+
 					@Override
 					public void onClick(View v) {
 						restart(new DataInputInfo(f, false));
 						dialog.dismiss();
 					}
 				});
-				
+
 				row.addView(button, openButtonLayout);
-				
-				ImageButton deleteButton  = new ImageButton(this);
+
+				ImageButton deleteButton = new ImageButton(this);
 				deleteButton.setLayoutParams(new LayoutParams(deleteButtonLayout));
 				deleteButton.setImageResource(android.R.drawable.ic_delete);
 				deleteButton.setOnClickListener(new View.OnClickListener() {
-					
+
 					@Override
 					public void onClick(View v) {
 						f.delete();
@@ -817,17 +840,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						list.postInvalidate();
 					}
 				});
-				
-				row.addView(deleteButton,deleteButtonLayout);
+
+				row.addView(deleteButton, deleteButtonLayout);
 				list.addView(row, rowLayout);
 			}
-
-			break;
 		}
 	}
 
 	private boolean recheckExternalStorage() {
-		if (!FileHelper.hasExternalStorage() || FileHelper.getDir(ROBOSTROKE_DATA_DIR) == null) {
+		Context context = getApplicationContext();
+		if (!FileHelper.hasExternalStorage(context) || FileHelper.getDir(context, ROBOSTROKE_DATA_DIR) == null) {
 			menu.findItem(R.id.menu_replay_start).setEnabled(false);
 			menu.findItem(R.id.menu_record_start).setEnabled(false);
 			
@@ -862,14 +884,11 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 
 		String dialogTitle;
 
-		switch (id) {
-		case R.layout.replay_file_select:
+		if (id == R.layout.replay_file_select) {
 			dialogTitle = "Select File";
-			break;
-		case R.layout.tilt_freeze_dialog:
+		} else if (id == R.layout.tilt_freeze_dialog) {
 			dialogTitle = "Tilt Freeze";
-			break;
-		default:
+		} else {
 			return super.onCreateDialog(id);
 		}
 
@@ -993,7 +1012,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 				}
 			}
 		} catch (DataVersionConverter.ConverterError e) {
-			reportError(e, "error getting data file converter");
+			reportError("error getting data file converter", e);
 		}
 		
 		realStart(replayFile);
@@ -1056,7 +1075,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					}
 					
 				} catch (Exception e) {
-					reportError(e, "error getting data file converter");
+					reportError("error getting data file converter", e);
 				} finally {
 					progress.dismiss();
 					realStart(newInfo);
@@ -1124,7 +1143,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		final boolean replay = isReplaying();
 		
-		boolean hasExternalStorage = FileHelper.hasExternalStorage();
+		boolean hasExternalStorage = FileHelper.hasExternalStorage(getApplicationContext());
 
 		boolean enableStart = hasExternalStorage && !replay && !recordingOn;
 		
@@ -1229,18 +1248,18 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 		.setIcon(R.drawable.icon)
 		.setCancelable(true)
 		.setNegativeButton(R.string.changelog, new DialogInterface.OnClickListener() {
-			
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				
+
 				String[] v = getVersion().split("\\.");
-				
+
 				String page = "AndroidRelease";
-				
+
 				for (int i = 0; i < v.length - 1; ++i) {
 					page += "_" + v[i];
 				}
-								
+
 				String url = "http://nargila.org/trac/robostroke/wiki/" + page;
 				Intent i = new Intent(Intent.ACTION_VIEW);
 				i.setData(Uri.parse(url));
@@ -1248,7 +1267,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			}
 		})
 		.setPositiveButton(R.string.open_guide, new DialogInterface.OnClickListener() {
-			
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				String url = getString(R.string.about_dialog_guide_url);
@@ -1258,13 +1277,13 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 			}
 		})
 		.setNeutralButton(R.string.license, new DialogInterface.OnClickListener() {
-			
+
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				
-				StringBuffer bf = new StringBuffer();				
+
+				StringBuffer bf = new StringBuffer();
 				BufferedReader reader = null;
-				
+
 				try {
 					reader = new BufferedReader(new InputStreamReader(
 							getAssets().open("gpl-3.0.txt"),
@@ -1279,7 +1298,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 					.setTitle(R.string.license)
 					.setCancelable(true)
 					.show();
-					
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -1287,6 +1306,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 						try {
 							reader.close();
 						} catch (IOException e) {
+							// ignore exception
 						}
 					}
 				}
@@ -1325,13 +1345,16 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants 
 	}
  
 	private void cleanTmpDir() {
-		if (FileHelper.hasExternalStorage()) {
+		Context context = getApplicationContext();
+		if (FileHelper.hasExternalStorage(context)) {
 			
-			File tmpDir = FileHelper.getFile(ROBOSTROKE_DATA_DIR, "tmp");
+			File tmpDir = FileHelper.getFile(context, ROBOSTROKE_DATA_DIR, "tmp");
 
-			tmpDir.mkdir();
-			
-			FileHelper.cleanDir(tmpDir, TimeUnit.SECONDS.toMillis(30));
+			if (tmpDir != null) {
+				tmpDir.mkdir();
+
+				FileHelper.cleanDir(tmpDir, TimeUnit.SECONDS.toMillis(30));
+			}
 		}
 	}	
 
