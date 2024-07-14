@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.nargila.robostroke.android.app" android:versionCode="332"
+          xmlns:tools="http://schemas.android.com/tools" android:versionCode="332"
           android:sharedUserId="talos.rowing" android:sharedUserLabel="@string/sharedUserLabel" 
           android:versionName="0.9.7.332">
   
@@ -24,7 +24,7 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
-      <intent-filter>
+      <intent-filter  tools:ignore="AppLinkUrlError">
         <category android:name="android.intent.category.DEFAULT" />
         <action android:name="android.intent.action.VIEW" />
         <data android:mimeType="application/vnd.robostroke.session" />
