@@ -9,7 +9,7 @@ dependencies {
     implementation("com.google.zxing:javase:2.2")
     implementation("net.java.dev.jna:jna:3.5.2")
     implementation("uk.co.caprica:vlcj:3.7.0")
-    testImplementation("junit:junit:4.13.1")
+    testImplementation(libs.junit)
 }
 
 application {
