@@ -136,7 +136,7 @@ public class Talos2Kate {
 			usage();
 		}
 		
-		Talos2Kate t2k = new Talos2Kate(new File(args[0]), new File(args[1]), new Integer(args[2]), new Long(args[3]));
+		Talos2Kate t2k = new Talos2Kate(new File(args[0]), new File(args[1]), Integer.parseInt(args[2]), Long.parseLong(args[3]));
 		
 		t2k.process();
 	}

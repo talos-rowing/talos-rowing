@@ -26,7 +26,7 @@ public abstract class DataRecordSerializer {
 	
 		@Override
 		public Object doParse(String s) {
-			return new Boolean(s);
+			return Boolean.valueOf(s);
 		}
 	}
 
@@ -34,7 +34,7 @@ public abstract class DataRecordSerializer {
 	
 		@Override
 		public Object doParse(String s) {
-			return new Long(s);
+			return Long.valueOf(s);
 		}
 	}
 
@@ -42,7 +42,7 @@ public abstract class DataRecordSerializer {
 	
 		@Override
 		public Object doParse(String s) {
-			return new Integer(s);
+			return Integer.valueOf(s);
 		}
 	}
 
@@ -50,7 +50,7 @@ public abstract class DataRecordSerializer {
 	
 		@Override
 		public Object doParse(String s) {
-			return new Float(s);
+			return Float.valueOf(s);
 		}
 	}
 
@@ -58,7 +58,7 @@ public abstract class DataRecordSerializer {
 		
 		@Override
 		public Object doParse(String s) {
-			return new Double(s);
+			return Double.valueOf(s);
 		}
 	}
 
@@ -80,7 +80,7 @@ public abstract class DataRecordSerializer {
 			float[] res = new float[sarr.length];
 	
 			for (int i = 0; i < sarr.length; ++i) {
-				res[i] = new Float(sarr[i]);
+				res[i] = Float.parseFloat(sarr[i]);
 			}
 			return res;
 		}
@@ -120,7 +120,7 @@ public abstract class DataRecordSerializer {
 			double[] res = new double[sarr.length];
 	
 			for (int i = 0; i < sarr.length; ++i) {
-				res[i] = new Double(sarr[i]);
+				res[i] = Double.parseDouble(sarr[i]);
 			}
 			return res;
 		}

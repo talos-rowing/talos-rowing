@@ -147,8 +147,8 @@ public class FileDataInput extends RecordDataInput implements Runnable {
                             throw new IllegalArgumentException("LOGFILE_VERSION must appear in the first line of the data file");
                         }
                         
-                        version = new Integer(vals[3]);
-                        firstTimestamp = new Long(vals[0]);
+                        version = Integer.parseInt(vals[3]);
+                        firstTimestamp = Long.parseLong(vals[0]);
                         if (version == SessionRecorderConstants.LOGFILE_VERSION) {
                             validVersion = true;
                         }
@@ -189,7 +189,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     				continue;
     			}
     				
-    			long ts = new Long(vals[0]);
+    			long ts = Long.parseLong(vals[0]);
     			
     			long curTime = ts - firstTimestamp;
     			
@@ -289,7 +289,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
         if (vals != null) {
 
-            Long logTimestamp = new Long(vals[0]);
+            Long logTimestamp = Long.valueOf(vals[0]);
 
             DataRecord.Type type = DataRecord.Type.valueOf(vals[1]);
 
