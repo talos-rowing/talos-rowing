@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tal Shalif
+ * Copyright (c) 2024 Tal Shalif
  *
  * This file is part of Talos-Rowing.
  *
