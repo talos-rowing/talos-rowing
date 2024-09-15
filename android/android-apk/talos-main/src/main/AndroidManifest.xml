@@ -18,6 +18,7 @@
     <activity android:name=".RoboStrokeActivity"
               android:configChanges="orientation"
               android:screenOrientation="nosensor"
+              android:theme="@style/AppTheme"
               android:launchMode="singleInstance"
               android:exported="true">
       <intent-filter>
