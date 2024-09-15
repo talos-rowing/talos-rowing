@@ -424,7 +424,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
             runThread.interrupt();
             try {
                 runThread.join();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
 
             runThread = null;
