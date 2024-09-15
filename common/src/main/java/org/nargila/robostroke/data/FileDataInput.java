@@ -349,9 +349,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
         String s = line.substring(0, eorIdx);
 
-        String[] vals = s.split(" +");
-
-        return vals;
+        return s.split(" +");
     }
 
 
