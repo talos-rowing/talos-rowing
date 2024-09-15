@@ -19,26 +19,26 @@
 
 package org.nargila.robostroke.ui.graph.swing;
 
-import java.util.concurrent.TimeUnit;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.AccellGraph;
 import org.nargila.robostroke.ui.swing.SwingUILiaison;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
 public class AccellGraphView extends SwingGraphViewBase<AccellGraph> {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
+    private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
 
-  public AccellGraphView(RoboStroke roboStroke) {
-    this(XRANGE, roboStroke);
-  }
+    public AccellGraphView(RoboStroke roboStroke) {
+        this(XRANGE, roboStroke);
+    }
 
-  public AccellGraphView(float xRange, RoboStroke roboStroke) {
-    setGraph(new AccellGraph(new SwingUILiaison(this), xRange, roboStroke));
-  }
+    public AccellGraphView(float xRange, RoboStroke roboStroke) {
+        setGraph(new AccellGraph(new SwingUILiaison(this), xRange, roboStroke));
+    }
 }

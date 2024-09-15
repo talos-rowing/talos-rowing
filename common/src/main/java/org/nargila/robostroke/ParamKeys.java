@@ -166,7 +166,7 @@ public enum ParamKeys implements ParameterInfo {
             "Session",
             ParameterLevel.BASIC, SessionRecorderConstants.BROADCAST_HOST,
             "org.nargila.talos.rowing.android.session.remote.host"
-            );
+    );
 
 
     private final String id;
@@ -231,7 +231,9 @@ public enum ParamKeys implements ParameterInfo {
     }
 
     @Override
-    public String[] getAliases() { return this.aliases; }
+    public String[] getAliases() {
+        return this.aliases;
+    }
 
     @Override
     public Object[] makeChoices() {

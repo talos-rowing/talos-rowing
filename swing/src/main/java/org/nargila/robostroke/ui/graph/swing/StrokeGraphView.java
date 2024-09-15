@@ -19,26 +19,26 @@
 
 package org.nargila.robostroke.ui.graph.swing;
 
-import java.util.concurrent.TimeUnit;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.StrokeGraph;
 import org.nargila.robostroke.ui.swing.SwingUILiaison;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
 public class StrokeGraphView extends SwingGraphViewBase<StrokeGraph> {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
+    private final static float XRANGE = TimeUnit.SECONDS.toNanos(8);
 
-  public StrokeGraphView(RoboStroke roboStroke) {
-    this(XRANGE, roboStroke);
-  }
+    public StrokeGraphView(RoboStroke roboStroke) {
+        this(XRANGE, roboStroke);
+    }
 
-  public StrokeGraphView(float xRange, RoboStroke roboStroke) {
-    setGraph(new StrokeGraph(new SwingUILiaison(this), XRANGE, roboStroke));
-  }
+    public StrokeGraphView(float xRange, RoboStroke roboStroke) {
+        setGraph(new StrokeGraph(new SwingUILiaison(this), XRANGE, roboStroke));
+    }
 }

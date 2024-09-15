@@ -19,219 +19,222 @@
 
 package org.nargila.robostroke.data;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.RoboStrokeEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 public abstract class RecordDataInput extends SensorDataInputBase {
 
     // TODO extend ThreadedQueue instead of Thread
-  private static class SensorQueueProcessor extends Thread {
+    private static class SensorQueueProcessor extends Thread {
 
-    private final String name;
+        private final String name;
 
-    private final SensorDataSource sensorDataSource;
+        private final SensorDataSource sensorDataSource;
 
-    private final LinkedBlockingQueue<DataRecord> queue = new LinkedBlockingQueue<DataRecord>();
+        private final LinkedBlockingQueue<DataRecord> queue = new LinkedBlockingQueue<DataRecord>();
 
-    private final int queueSize;
+        private final int queueSize;
 
-    private boolean acceptData = true;
+        private boolean acceptData = true;
 
-    private boolean stop;
+        private boolean stop;
 
-    public SensorQueueProcessor(String name, SensorDataSource sensorDataSource, int queueSize) {
-      super(name + " Queue Processor");
+        public SensorQueueProcessor(String name, SensorDataSource sensorDataSource, int queueSize) {
+            super(name + " Queue Processor");
 
-      this.name = name;
-      this.sensorDataSource = sensorDataSource;
-      this.queueSize = queueSize;
-    }
-
-    @Override
-    public void run() {
-
-      while (!stop) {
-        try {
-          DataRecord record = queue.take();
-          sensorDataSource.pushData(record.timestamp, record.data);
-        } catch (InterruptedException e) {
+            this.name = name;
+            this.sensorDataSource = sensorDataSource;
+            this.queueSize = queueSize;
         }
-      }
-    }
-
-    void setAcceptData(boolean acceptData) {
-
-      synchronized (queue) {
-        this.acceptData = acceptData;
-        if (!acceptData) {
-          queue.clear();
-        }
-      }
-    }
-
-    void add(DataRecord rec) {
-
-      synchronized (queue) {
-
-        if (acceptData) {
-          if (queue.size() > queueSize) {
-            logger.warn("{} size overflow: {}", name + " queue processor", queueSize);
-            queue.poll();
-          }
-          queue.offer(rec);
-        }
-      }
-    }
-
-    void abort() {
-
-      setAcceptData(false);
-
-      stop = true;
-    }
-  }
-
-  private static final Logger logger = LoggerFactory.getLogger(RecordDataInput.class);
-
-
-  private long currenSeekId;
-  private boolean seakable;
-
-  protected final RoboStroke roboStroke;
-  protected final RoboStrokeEventBus bus;
-
-  private final SensorQueueProcessor orientQueueProcessor = new SensorQueueProcessor("Orientation", orientationDataSource, 20);
-
-  private final SensorQueueProcessor accelQueueProcessor = new SensorQueueProcessor("Accelleration", accelerometerDataSource, 20);
-
-  public RecordDataInput(RoboStroke roboStroke) {
-    this.roboStroke = roboStroke;
-    this.bus = roboStroke.getBus();
-  }
-
-  public void setSeakable(boolean seakable) {
-    this.seakable = seakable;
-  }
-
-  public boolean isSeakable() {
-    return seakable;
-  }
-
-  /**
-   * set play pos
-   * @param pos
-   */
-  public final void setPos(final double pos) {
-
-    if (pos < 0 || pos > 1.0) {
-      throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
-    }
-
-    if (seakable) {
-
-      orientQueueProcessor.setAcceptData(false);
-      accelQueueProcessor.setAcceptData(false);
-
-      onSetPosPending(pos);
-
-      new Thread("deffered seek job") {
-
-        long seekId = ++currenSeekId;
 
         @Override
         public void run() {
 
-          try {
-            sleep(200);
-
-            if (seekId == currenSeekId) {
-              bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
-              onSetPosFinish(pos);
-              orientQueueProcessor.setAcceptData(true);
-              accelQueueProcessor.setAcceptData(true);
+            while (!stop) {
+                try {
+                    DataRecord record = queue.take();
+                    sensorDataSource.pushData(record.timestamp, record.data);
+                } catch (InterruptedException e) {
+                }
             }
-          } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-        }
-      }.start();
-    }
-  }
-
-  protected void onSetPosPending(double pos) {}
-  protected abstract void onSetPosFinish(double pos);
-
-  public void playRecord(DataRecord record) {
-      switch (record.type) {
-      case GPS:
-        gpsDataSource.pushData(record.timestamp, record.data);
-        break;
-      case ACCEL:
-        accelQueueProcessor.add(record);
-        break;
-      case ORIENT:
-        orientQueueProcessor.add(record);
-        break;
-      default:
-        if (record.type.isReplayableEvent) {
-          if (record.type.isBusEvent && bus != null) {
-            bus.fireEvent(record);
-          }
         }
 
-        break;
-      }
-  }
+        void setAcceptData(boolean acceptData) {
 
-  @Override
-  public void start() {
-    orientQueueProcessor.start();
-    accelQueueProcessor.start();
-  }
+            synchronized (queue) {
+                this.acceptData = acceptData;
+                if (!acceptData) {
+                    queue.clear();
+                }
+            }
+        }
 
-  @Override
-  public void stop() {
-    orientQueueProcessor.abort();
-    accelQueueProcessor.abort();
-  }
+        void add(DataRecord rec) {
 
-  public void playRecord(String line) {
-    playRecord(line, null);
-  }
+            synchronized (queue) {
 
-  public void playRecord(String line, String endOfRecMark) {
+                if (acceptData) {
+                    if (queue.size() > queueSize) {
+                        logger.warn("{} size overflow: {}", name + " queue processor", queueSize);
+                        queue.poll();
+                    }
+                    queue.offer(rec);
+                }
+            }
+        }
 
-    if (endOfRecMark != null) {
-      line = line.substring(0, line.length() - endOfRecMark.length());
+        void abort() {
+
+            setAcceptData(false);
+
+            stop = true;
+        }
     }
 
-    String[] vals = line.split(" +");
+    private static final Logger logger = LoggerFactory.getLogger(RecordDataInput.class);
 
-    if (vals.length < 3) {
-      logger.warn("corrupt record line [" + line + "]");
-      return;
+
+    private long currenSeekId;
+    private boolean seakable;
+
+    protected final RoboStroke roboStroke;
+    protected final RoboStrokeEventBus bus;
+
+    private final SensorQueueProcessor orientQueueProcessor = new SensorQueueProcessor("Orientation", orientationDataSource, 20);
+
+    private final SensorQueueProcessor accelQueueProcessor = new SensorQueueProcessor("Accelleration", accelerometerDataSource, 20);
+
+    public RecordDataInput(RoboStroke roboStroke) {
+        this.roboStroke = roboStroke;
+        this.bus = roboStroke.getBus();
     }
 
-    DataRecord.Type type;
-
-    try {
-      type = DataRecord.Type.valueOf(vals[0]);
-    } catch (IllegalArgumentException e) {
-      logger.warn("unknown record type [" + vals[0] + "]", e);
-      return;
+    public void setSeakable(boolean seakable) {
+        this.seakable = seakable;
     }
 
-    if (type.isParsableEvent) {
-
-      DataRecord record = DataRecord.create(type, Long.parseLong(vals[1]), vals[2]);
-
-      playRecord(record);
+    public boolean isSeakable() {
+        return seakable;
     }
-  }
+
+    /**
+     * set play pos
+     *
+     * @param pos
+     */
+    public final void setPos(final double pos) {
+
+        if (pos < 0 || pos > 1.0) {
+            throw new IllegalArgumentException("pos must be a float between 0 and 1.0");
+        }
+
+        if (seakable) {
+
+            orientQueueProcessor.setAcceptData(false);
+            accelQueueProcessor.setAcceptData(false);
+
+            onSetPosPending(pos);
+
+            new Thread("deffered seek job") {
+
+                long seekId = ++currenSeekId;
+
+                @Override
+                public void run() {
+
+                    try {
+                        sleep(200);
+
+                        if (seekId == currenSeekId) {
+                            bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
+                            onSetPosFinish(pos);
+                            orientQueueProcessor.setAcceptData(true);
+                            accelQueueProcessor.setAcceptData(true);
+                        }
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }
+    }
+
+    protected void onSetPosPending(double pos) {
+    }
+
+    protected abstract void onSetPosFinish(double pos);
+
+    public void playRecord(DataRecord record) {
+        switch (record.type) {
+            case GPS:
+                gpsDataSource.pushData(record.timestamp, record.data);
+                break;
+            case ACCEL:
+                accelQueueProcessor.add(record);
+                break;
+            case ORIENT:
+                orientQueueProcessor.add(record);
+                break;
+            default:
+                if (record.type.isReplayableEvent) {
+                    if (record.type.isBusEvent && bus != null) {
+                        bus.fireEvent(record);
+                    }
+                }
+
+                break;
+        }
+    }
+
+    @Override
+    public void start() {
+        orientQueueProcessor.start();
+        accelQueueProcessor.start();
+    }
+
+    @Override
+    public void stop() {
+        orientQueueProcessor.abort();
+        accelQueueProcessor.abort();
+    }
+
+    public void playRecord(String line) {
+        playRecord(line, null);
+    }
+
+    public void playRecord(String line, String endOfRecMark) {
+
+        if (endOfRecMark != null) {
+            line = line.substring(0, line.length() - endOfRecMark.length());
+        }
+
+        String[] vals = line.split(" +");
+
+        if (vals.length < 3) {
+            logger.warn("corrupt record line [" + line + "]");
+            return;
+        }
+
+        DataRecord.Type type;
+
+        try {
+            type = DataRecord.Type.valueOf(vals[0]);
+        } catch (IllegalArgumentException e) {
+            logger.warn("unknown record type [" + vals[0] + "]", e);
+            return;
+        }
+
+        if (type.isParsableEvent) {
+
+            DataRecord record = DataRecord.create(type, Long.parseLong(vals[1]), vals[2]);
+
+            playRecord(record);
+        }
+    }
 
 }

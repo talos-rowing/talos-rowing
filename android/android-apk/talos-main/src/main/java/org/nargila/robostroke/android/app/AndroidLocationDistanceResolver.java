@@ -19,25 +19,24 @@
 
 package org.nargila.robostroke.android.app;
 
+import android.location.Location;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.way.DistanceResolver;
 
-import android.location.Location;
-
 /**
  * resolves GPS location distance diffs
- * @author tshalif
  *
+ * @author tshalif
  */
 public class AndroidLocationDistanceResolver implements DistanceResolver {
 
-  @Override
-  public float calcDistance(double[] loc1, double[] loc2) {
-    float[] result = {0};
-    Location.distanceBetween(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG],
+    @Override
+    public float calcDistance(double[] loc1, double[] loc2) {
+        float[] result = {0};
+        Location.distanceBetween(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG],
                 loc2[DataIdx.GPS_LAT], loc2[DataIdx.GPS_LONG],
                 result);
-    return result[0];
-  }
+        return result[0];
+    }
 
 }

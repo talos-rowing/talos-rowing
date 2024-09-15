@@ -18,97 +18,96 @@
  */
 package org.nargila.robostroke.android.common;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-
-import org.nargila.robostroke.common.SimpleLock;
-
 import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import org.nargila.robostroke.common.SimpleLock;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class PreviewFrameLayout extends FrameLayout {
 
-	private final Handler mainHanlder = new Handler();
-	
-	private final View preview;
-	private final int previewTime;
-	boolean previewOn;
-	
-	private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+    private final Handler mainHanlder = new Handler();
 
-		private final SimpleLock lock = new SimpleLock();
-		private int counter;
+    private final View preview;
+    private final int previewTime;
+    boolean previewOn;
 
-		@Override
-		public Thread newThread(Runnable r) {
-			synchronized (lock) {
-				Thread th = new Thread(r, "RoboStrokeActivity scheduler thread " + (++counter));
-				th.setDaemon(true);
-				return th;
-			}						
-		}
-	});
-	
-	
-	Runnable removePreview = new Runnable() {
-		
-		@Override
-		public void run() {
-			try {
-				Thread.sleep(previewTime);
-			} catch (InterruptedException e) {
-			}
-			
-			mainHanlder.post(new Runnable() {
-				
-				@Override
-				public void run() {
-					showPreview(false);
-				}
-			});
-		}
-	};
-	
-	private final View content;
-	
-	public PreviewFrameLayout(Context context, final int drawable, View content) {
-		super(context);
-		
-		setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		
-		ImageView img = new ImageView(context);
-		img.setImageResource(drawable);
-		this.preview = img;
-		this.previewTime = 2000;
-		this.content = content;		
-	}
-	
-	@Override
-	protected void onAttachedToWindow() {
-		showPreview(true);
-		super.onAttachedToWindow();
-	}
-	
-	private synchronized void showPreview(boolean show) {
-				
-		if (show) {
-			if (previewOn) { // already previewing
-				return;
-			}
-			removeAllViews();
-			addView(preview);
-			postInvalidate();
-			EXECUTOR.execute(removePreview);
-		} else {
-			removeView(preview);
-			addView(content, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-			postInvalidate();
-		}		
-		
-		previewOn = show;
-	}
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+
+        private final SimpleLock lock = new SimpleLock();
+        private int counter;
+
+        @Override
+        public Thread newThread(Runnable r) {
+            synchronized (lock) {
+                Thread th = new Thread(r, "RoboStrokeActivity scheduler thread " + (++counter));
+                th.setDaemon(true);
+                return th;
+            }
+        }
+    });
+
+
+    Runnable removePreview = new Runnable() {
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(previewTime);
+            } catch (InterruptedException e) {
+            }
+
+            mainHanlder.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    showPreview(false);
+                }
+            });
+        }
+    };
+
+    private final View content;
+
+    public PreviewFrameLayout(Context context, final int drawable, View content) {
+        super(context);
+
+        setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+
+        ImageView img = new ImageView(context);
+        img.setImageResource(drawable);
+        this.preview = img;
+        this.previewTime = 2000;
+        this.content = content;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        showPreview(true);
+        super.onAttachedToWindow();
+    }
+
+    private synchronized void showPreview(boolean show) {
+
+        if (show) {
+            if (previewOn) { // already previewing
+                return;
+            }
+            removeAllViews();
+            addView(preview);
+            postInvalidate();
+            EXECUTOR.execute(removePreview);
+        } else {
+            removeView(preview);
+            addView(content, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+            postInvalidate();
+        }
+
+        previewOn = show;
+    }
 }

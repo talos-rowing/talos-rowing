@@ -19,21 +19,20 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import android.content.Context;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.StrokePowerGraph;
-
-import android.content.Context;
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
 public class StrokePowerGraphView extends AndroidGraphViewBase<StrokePowerGraph> {
 
-  public StrokePowerGraphView(Context context, RoboStroke roboStroke) {
-    super(context);
+    public StrokePowerGraphView(Context context, RoboStroke roboStroke) {
+        super(context);
 
-    setGraph(new StrokePowerGraph(new AndroidUILiaison(this), roboStroke));
+        setGraph(new StrokePowerGraph(new AndroidUILiaison(this), roboStroke));
 
-  }
+    }
 }

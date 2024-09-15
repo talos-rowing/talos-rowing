@@ -22,91 +22,91 @@ package org.nargila.robostroke.ui.graph;
 
 abstract class XSeriesProxy implements XYSeries {
 
-  protected final XYSeries impl;
+    protected final XYSeries impl;
 
-  XSeriesProxy(XYSeries series) {
-    impl = series;
-  }
+    XSeriesProxy(XYSeries series) {
+        impl = series;
+    }
 
-  public double getyAxisSize() {
-    return impl.getyAxisSize();
-  }
+    public double getyAxisSize() {
+        return impl.getyAxisSize();
+    }
 
-  public void setyAxisSize(double yAxisSize) {
-    impl.setyAxisSize(yAxisSize);
-  }
+    public void setyAxisSize(double yAxisSize) {
+        impl.setyAxisSize(yAxisSize);
+    }
 
-  public boolean isIndependantYAxis() {
-    return impl.isIndependantYAxis();
-  }
+    public boolean isIndependantYAxis() {
+        return impl.isIndependantYAxis();
+    }
 
-  public void setIndependantYAxis(boolean independantYAxis) {
-    impl.setIndependantYAxis(independantYAxis);
-  }
+    public void setIndependantYAxis(boolean independantYAxis) {
+        impl.setIndependantYAxis(independantYAxis);
+    }
 
-  public double getxRange() {
-    return impl.getxRange();
-  }
+    public double getxRange() {
+        return impl.getxRange();
+    }
 
-  public void setxRange(double xRange) {
-    impl.setxRange(xRange);
-  }
+    public void setxRange(double xRange) {
+        impl.setxRange(xRange);
+    }
 
-  @Override
-  public void setXMode(XMode mode) {
-    impl.setXMode(mode);
-  }
+    @Override
+    public void setXMode(XMode mode) {
+        impl.setXMode(mode);
+    }
 
-  @Override
-  public XMode getXMode() {
-    return impl.getXMode();
-  }
+    @Override
+    public XMode getXMode() {
+        return impl.getXMode();
+    }
 
-  public Renderer getRenderer() {
-    return impl.getRenderer();
-  }
+    public Renderer getRenderer() {
+        return impl.getRenderer();
+    }
 
-  public void setRenderer(Renderer renderer) {
-    impl.setRenderer(renderer);
-  }
+    public void setRenderer(Renderer renderer) {
+        impl.setRenderer(renderer);
+    }
 
-  public void add(double x, double y) {
-    impl.add(x, y);
-  }
+    public void add(double x, double y) {
+        impl.add(x, y);
+    }
 
-  public void clear() {
-    impl.clear();
-  }
+    public void clear() {
+        impl.clear();
+    }
 
-  public int getItemCount() {
-    return impl.getItemCount();
-  }
+    public int getItemCount() {
+        return impl.getItemCount();
+    }
 
-  public double getMaxX() {
-    return impl.getMaxX();
-  }
+    public double getMaxX() {
+        return impl.getMaxX();
+    }
 
-  public double getMaxY() {
-    return impl.getMaxY();
-  }
+    public double getMaxY() {
+        return impl.getMaxY();
+    }
 
-  public double getMinX() {
-    return impl.getMinX();
-  }
+    public double getMinX() {
+        return impl.getMinX();
+    }
 
-  public double getMinY() {
-    return impl.getMinY();
-  }
+    public double getMinY() {
+        return impl.getMinY();
+    }
 
-  public double getX(int index) {
-    return impl.getX(index);
-  }
+    public double getX(int index) {
+        return impl.getX(index);
+    }
 
-  public double getY(int index) {
-    return impl.getY(index);
-  }
+    public double getY(int index) {
+        return impl.getY(index);
+    }
 
-  public void remove(int index) {
-    impl.remove(index);
-  }
+    public void remove(int index) {
+        impl.remove(index);
+    }
 }

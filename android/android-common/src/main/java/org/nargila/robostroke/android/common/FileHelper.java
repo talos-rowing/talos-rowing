@@ -19,28 +19,26 @@
 
 package org.nargila.robostroke.android.common;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import android.content.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.os.Environment;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * file maker helper class.
  * Creates a file under a given directory in Aandroid's external storage
- * @author tshalif
  *
+ * @author tshalif
  */
 public class FileHelper {
-  private final static Logger logger =  LoggerFactory.getLogger(FileHelper.class);
+    private final static Logger logger = LoggerFactory.getLogger(FileHelper.class);
 
-  /**
-   * return 1st level directory on root of external storage directory - creating it if necessary
-         */
+    /**
+     * return 1st level directory on root of external storage directory - creating it if necessary
+     */
     public static File getDir(Context owner, String dirName) {
         File root = owner.getExternalFilesDir(null);
         if (root != null && root.canWrite()) {
@@ -57,53 +55,54 @@ public class FileHelper {
         return null;
     }
 
-  private static void touchNoMedia(File outdir) {
-    File noMedia = new File(outdir, ".nomedia");
+    private static void touchNoMedia(File outdir) {
+        File noMedia = new File(outdir, ".nomedia");
 
-    if (!noMedia.exists()) {
-      try {
-        FileOutputStream fileOutputStream = new FileOutputStream(noMedia);
-        fileOutputStream.write(32);
-        fileOutputStream.close();
-      } catch (IOException e) {
-        logger.error("can't touch .nomedia file", e);
-      }
+        if (!noMedia.exists()) {
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(noMedia);
+                fileOutputStream.write(32);
+                fileOutputStream.close();
+            } catch (IOException e) {
+                logger.error("can't touch .nomedia file", e);
+            }
+        }
     }
-  }
 
-  /**
-   * Creates a file under a given directory in Aandroid's external storage
-   * @param dirName directory in which to create file
-   * @param fileName name of file
-   * @return file object
-   */
+    /**
+     * Creates a file under a given directory in Aandroid's external storage
+     *
+     * @param dirName  directory in which to create file
+     * @param fileName name of file
+     * @return file object
+     */
     public static File getFile(Context owner, String dirName, String fileName) {
-      File outdir = getDir(owner, dirName);
+        File outdir = getDir(owner, dirName);
 
-      if (outdir != null) {
-        return new File(outdir, fileName);
-      }
+        if (outdir != null) {
+            return new File(outdir, fileName);
+        }
 
-      return null;
+        return null;
 
     }
 
     public static boolean hasExternalStorage(Context owner) {
-    File root = owner.getExternalFilesDir(null);
-    return root != null && root.canWrite();
+        File root = owner.getExternalFilesDir(null);
+        return root != null && root.canWrite();
     }
 
-  public static void cleanDir(File dir, long olderThen) {
-    if (dir.isDirectory()) {
-      File[] list = dir.listFiles();
+    public static void cleanDir(File dir, long olderThen) {
+        if (dir.isDirectory()) {
+            File[] list = dir.listFiles();
 
-      if (list != null) {
-        for (File f: list) {
-          if (olderThen > 0 && olderThen < System.currentTimeMillis() - f.lastModified()) {
-            f.delete();
-          }
+            if (list != null) {
+                for (File f : list) {
+                    if (olderThen > 0 && olderThen < System.currentTimeMillis() - f.lastModified()) {
+                        f.delete();
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

@@ -19,7 +19,9 @@
 package org.nargila.robostroke.ui.graph;
 
 public interface DataUpdatable {
-  public boolean isDisabled();
-  public void disableUpdate(boolean disable);
-  public void reset();
+    public boolean isDisabled();
+
+    public void disableUpdate(boolean disable);
+
+    public void reset();
 }

@@ -18,16 +18,15 @@
  */
 package org.nargila.robostroke.ui.android;
 
+import android.graphics.Paint;
 import org.nargila.robostroke.ui.PaintStyle;
 import org.nargila.robostroke.ui.RSPaint;
 
-import android.graphics.Paint;
-
 public class AndroidPaint extends Paint implements RSPaint {
 
-  @Override
-  public void setStyle(PaintStyle style) {
-    Style s = Style.valueOf(style.name());
-    super.setStyle(s);
-  }
+    @Override
+    public void setStyle(PaintStyle style) {
+        Style s = Style.valueOf(style.name());
+        super.setStyle(s);
+    }
 }

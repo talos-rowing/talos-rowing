@@ -26,88 +26,88 @@ import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
 
 public class SessionBroadcaster extends SensorBinder {
 
-  private final DataSender dataSender;
+    private final DataSender dataSender;
 
-  private boolean broadcast;
+    private boolean broadcast;
 
-  public SessionBroadcaster(RoboStroke roboStroke) throws DataRemoteError {
-    this(roboStroke, null);
-  }
-
-  public SessionBroadcaster(RoboStroke roboStroke, DataSender dataTransport) throws DataRemoteError {
-
-    super(roboStroke);
-
-    if (dataTransport == null) {
-      dataTransport = new DatagramDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+    public SessionBroadcaster(RoboStroke roboStroke) throws DataRemoteError {
+        this(roboStroke, null);
     }
 
-    this.dataSender = dataTransport;
-  }
+    public SessionBroadcaster(RoboStroke roboStroke, DataSender dataTransport) throws DataRemoteError {
 
-  public void setPort(int port) {
-    dataSender.setPort(port);
-  }
+        super(roboStroke);
 
-  public void setAddress(String address) {
-    dataSender.setAddress(address);
-  }
+        if (dataTransport == null) {
+            dataTransport = new DatagramDataSender(RemoteDataHelper.getAddr(roboStroke), RemoteDataHelper.getPort(roboStroke));
+        }
 
-  public void enable(boolean broadcast) {
-
-    if (this.broadcast != broadcast) {
-      if (broadcast) {
-        connect();
-      } else {
-        disconnect();
-      }
-      this.broadcast = broadcast;
+        this.dataSender = dataTransport;
     }
-  }
 
-  public boolean isEnabled() {
-    return this.broadcast;
-  }
-
-  @Override
-  protected synchronized void connect() {
-
-    super.connect();
-
-    try {
-      dataSender.start();
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    public void setPort(int port) {
+        dataSender.setPort(port);
     }
-  }
 
-  @Override
-  protected synchronized void disconnect() {
-
-    super.disconnect();
-
-    dataSender.stop();
-  }
-
-  @Override
-  protected void onSensorData(DataRecord record) {
-    write(record);
-  }
-
-
-  @Override
-  public void onBusEvent(DataRecord record) {
-
-    if (record.type.isExportableEvent) {
-      write(record);
+    public void setAddress(String address) {
+        dataSender.setAddress(address);
     }
-  }
 
-  public void write(DataRecord record) {
+    public void enable(boolean broadcast) {
 
-    if (dataSender != null) {
-      dataSender.write(record.toString());
+        if (this.broadcast != broadcast) {
+            if (broadcast) {
+                connect();
+            } else {
+                disconnect();
+            }
+            this.broadcast = broadcast;
+        }
     }
-  }
+
+    public boolean isEnabled() {
+        return this.broadcast;
+    }
+
+    @Override
+    protected synchronized void connect() {
+
+        super.connect();
+
+        try {
+            dataSender.start();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected synchronized void disconnect() {
+
+        super.disconnect();
+
+        dataSender.stop();
+    }
+
+    @Override
+    protected void onSensorData(DataRecord record) {
+        write(record);
+    }
+
+
+    @Override
+    public void onBusEvent(DataRecord record) {
+
+        if (record.type.isExportableEvent) {
+            write(record);
+        }
+    }
+
+    public void write(DataRecord record) {
+
+        if (dataSender != null) {
+            dataSender.write(record.toString());
+        }
+    }
 }

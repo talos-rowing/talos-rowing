@@ -20,6 +20,6 @@
 package org.nargila.robostroke.ui;
 
 public enum LayoutMode {
-  COMPACT,
-  EXPANDED
+    COMPACT,
+    EXPANDED
 }

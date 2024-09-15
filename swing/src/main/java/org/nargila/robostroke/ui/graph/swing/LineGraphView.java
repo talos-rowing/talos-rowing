@@ -29,53 +29,47 @@ import org.nargila.robostroke.ui.swing.SwingUILiaison;
  * Simple line graph plot view.
  *
  * @author tshalif
- *
  */
 public class LineGraphView extends SwingGraphViewBase<LineGraph> {
 
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
 
-  public LineGraphView(double xRange, XYSeries.XMode xMode, double yScale,
-      double yGridInterval) {
-    setGraph(new LineGraph(new SwingUILiaison(this), xRange, xMode, yScale, yGridInterval));
-  }
+    public LineGraphView(double xRange, XYSeries.XMode xMode, double yScale,
+                         double yGridInterval) {
+        setGraph(new LineGraph(new SwingUILiaison(this), xRange, xMode, yScale, yGridInterval));
+    }
 
-  /**
-   * constructor with standard View context, attributes, data window size, y
-   * scale and y data tic mark gap
-   *
-   * @param context
-   *            the Android Activity
-   * @param attrs
-   *            layout and other common View attributes
-   * @param windowSize
-   *            size of data array to plot
-   * @param yScale
-   *            y value to pixel scale
-   * @param incr
-   *            y data tic mark gap
-   */
-  public LineGraphView(double yRange,
-      double yGridInterval, MultiXYSeries multiSeries) {
-    setGraph(new LineGraph(new SwingUILiaison(this), yRange, yGridInterval, multiSeries));
-  }
+    /**
+     * constructor with standard View context, attributes, data window size, y
+     * scale and y data tic mark gap
+     *
+     * @param context    the Android Activity
+     * @param attrs      layout and other common View attributes
+     * @param windowSize size of data array to plot
+     * @param yScale     y value to pixel scale
+     * @param incr       y data tic mark gap
+     */
+    public LineGraphView(double yRange,
+                         double yGridInterval, MultiXYSeries multiSeries) {
+        setGraph(new LineGraph(new SwingUILiaison(this), yRange, yGridInterval, multiSeries));
+    }
 
 
-  public XYSeries addSeries(XYSeries series) {
-    return graph.getSeries().addSeries(series);
-  }
+    public XYSeries addSeries(XYSeries series) {
+        return graph.getSeries().addSeries(series);
+    }
 
-  public void setyRangeMax(double yRangeMax) {
-    graph.setyRangeMax(yRangeMax);
-  }
+    public void setyRangeMax(double yRangeMax) {
+        graph.setyRangeMax(yRangeMax);
+    }
 
-  public void setyRangeMin(double yRangeMin) {
-    graph.setyRangeMin(yRangeMin);
-  }
+    public void setyRangeMin(double yRangeMin) {
+        graph.setyRangeMin(yRangeMin);
+    }
 
-  public void setXRange(double val) {
-    graph.setXRange(val);
-  }
+    public void setXRange(double val) {
+        graph.setXRange(val);
+    }
 }

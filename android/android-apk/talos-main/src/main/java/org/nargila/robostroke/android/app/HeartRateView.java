@@ -18,104 +18,103 @@
  */
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.BusEventListener;
-import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.data.DataRecord;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
-
 import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 public class HeartRateView extends FrameLayout implements DataUpdatable {
 
-  private final Handler handler = new Handler();
+    private final Handler handler = new Handler();
 
-  private TextView bpm_text;
+    private TextView bpm_text;
 
-  private boolean addDot = true;
+    private boolean addDot = true;
 
-  private final RoboStroke roboStroke;
+    private final RoboStroke roboStroke;
 
-  private final BusEventListener busListener = new BusEventListener() {
+    private final BusEventListener busListener = new BusEventListener() {
+        @Override
+        public void onBusEvent(final DataRecord event) {
+            switch (event.type) {
+                case HEART_BPM:
+                    final int bpm = (Integer) event.data;
+
+                    updateDisplay(bpm);
+            }
+        }
+
+    };
+
+    private boolean disabled = true;
+
+    public HeartRateView(Context context, RoboStroke roboStroke) {
+        super(context);
+
+        this.roboStroke = roboStroke;
+
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        setup(inflater);
+    }
+
+    private void updateDisplay(final int bpm) {
+        handler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                bpm_text.setText(String.format("%s%3s", (addDot ? "." : " "), bpm + ""));
+                addDot = !addDot;
+            }
+        });
+    }
+
+    private void setup(LayoutInflater inflater) {
+        View layout = inflater.inflate(R.layout.hrm_view, null);
+        addView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+        this.bpm_text = (TextView) layout.findViewById(R.id.bpm);
+    }
+
+
     @Override
-    public void onBusEvent(final DataRecord event) {
-      switch (event.type) {
-      case HEART_BPM:
-        final int bpm = (Integer)event.data;
-
-        updateDisplay(bpm);
-      }
+    protected void onAttachedToWindow() {
+        disableUpdate(false);
+        super.onAttachedToWindow();
     }
 
-  };
-
-  private boolean disabled = true;
-
-  public HeartRateView(Context context, RoboStroke roboStroke) {
-    super(context);
-
-    this.roboStroke = roboStroke;
-
-    LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-    setup(inflater);
-  }
-
-  private void updateDisplay(final int bpm) {
-    handler.post(new Runnable() {
-
-      @Override
-      public void run() {
-        bpm_text.setText(String.format("%s%3s", (addDot ? "." : " "), bpm + ""));
-        addDot = !addDot;
-      }
-    });
-  }
-
-  private void setup(LayoutInflater inflater) {
-    View layout = inflater.inflate(R.layout.hrm_view, null);
-    addView(layout, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-    this.bpm_text = (TextView) layout.findViewById(R.id.bpm);
-  }
-
-
-  @Override
-  protected void onAttachedToWindow() {
-    disableUpdate(false);
-    super.onAttachedToWindow();
-  }
-
-  @Override
-  protected void onDetachedFromWindow() {
-    disableUpdate(true);
-    super.onDetachedFromWindow();
-  }
-
-  @Override
-  public boolean isDisabled() {
-    return disabled;
-  }
-
-  @Override
-  public void disableUpdate(boolean disable) {
-    if (this.disabled != disable) {
-      if (!disable) {
-        roboStroke.getBus().addBusListener(busListener);
-      } else {
-        roboStroke.getBus().removeBusListener(busListener);
-      }
-
-      this.disabled = disable;
+    @Override
+    protected void onDetachedFromWindow() {
+        disableUpdate(true);
+        super.onDetachedFromWindow();
     }
-  }
 
-  @Override
-  public void reset() {
-    addDot = false;
-    updateDisplay(0);
-  }
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void disableUpdate(boolean disable) {
+        if (this.disabled != disable) {
+            if (!disable) {
+                roboStroke.getBus().addBusListener(busListener);
+            } else {
+                roboStroke.getBus().removeBusListener(busListener);
+            }
+
+            this.disabled = disable;
+        }
+    }
+
+    @Override
+    public void reset() {
+        addDot = false;
+        updateDisplay(0);
+    }
 }

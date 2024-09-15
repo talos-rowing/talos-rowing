@@ -21,25 +21,25 @@ package org.nargila.robostroke.data;
 
 /**
  * Exception tag to wrap exceptions originated from sensor data input implementations
- * @author tshalif
  *
+ * @author tshalif
  */
 public class InputException extends Exception {
 
-  private static final long serialVersionUID = 6925513526728045138L;
+    private static final long serialVersionUID = 6925513526728045138L;
 
-  public InputException() {
-  }
+    public InputException() {
+    }
 
-  public InputException(String detailMessage) {
-    super(detailMessage);
-  }
+    public InputException(String detailMessage) {
+        super(detailMessage);
+    }
 
-  public InputException(Throwable throwable) {
-    super(throwable);
-  }
+    public InputException(Throwable throwable) {
+        super(throwable);
+    }
 
-  public InputException(String detailMessage, Throwable throwable) {
-    super(detailMessage, throwable);
-  }
+    public InputException(String detailMessage, Throwable throwable) {
+        super(detailMessage, throwable);
+    }
 }

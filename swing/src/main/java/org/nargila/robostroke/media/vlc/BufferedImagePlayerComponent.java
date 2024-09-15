@@ -1,15 +1,9 @@
 package org.nargila.robostroke.media.vlc;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 public class BufferedImagePlayerComponent extends BufferedImageMediaPlayer {
 
@@ -35,7 +29,7 @@ public class BufferedImagePlayerComponent extends BufferedImageMediaPlayer {
                     float width = w;
                     float height = h;
                     float xyScaleCanvas = width / height;
-                    float xyScaleImage = (float)image.getWidth() / image.getHeight();
+                    float xyScaleImage = (float) image.getWidth() / image.getHeight();
                     float renderWidth;
                     float renderHeight;
 
@@ -50,7 +44,7 @@ public class BufferedImagePlayerComponent extends BufferedImageMediaPlayer {
                     float x = (width - renderWidth) / 2;
                     float y = (height - renderHeight) / 2;
 
-                    Graphics2D g2 = (Graphics2D)g;
+                    Graphics2D g2 = (Graphics2D) g;
 
                     g2.drawImage(image, new AffineTransform(renderWidth / image.getWidth(), 0f, 0f, renderHeight / image.getHeight(), x, y), null);
                     // g2.setColor(Color.white);

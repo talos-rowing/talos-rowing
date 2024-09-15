@@ -18,45 +18,45 @@
  */
 package org.nargila.robostroke.android.app;
 
+import org.acra.ACRA;
+import org.nargila.robostroke.data.DataRecord.Type;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 
-import org.acra.ACRA;
-import org.nargila.robostroke.data.DataRecord.Type;
-
 public class ErrorHandler implements UncaughtExceptionHandler {
 
-  private final RoboStrokeActivity owner;
+    private final RoboStrokeActivity owner;
 
 
-  public ErrorHandler(RoboStrokeActivity owner) {
-    this.owner = owner;
-  }
-
-
-  @Override
-  public void uncaughtException(Thread t, Throwable e) {
-
-    reportOnBus(e);
-
-    ACRA.getErrorReporter().uncaughtException(t, e);
-
-  }
-
-
-  private void reportOnBus(Throwable e) {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-
-    e.printStackTrace(pw);
-
-    owner.getRoboStroke().getBus().fireEvent(Type.CRASH_STACK, sw.toString().replace("\n", "\\n"));
-
-    try {
-      Thread.sleep(500); // time enough for logger - if active - to flush to sdcard?
-    } catch (InterruptedException e1) {
-      // tough luck - have no idea what to do or why should get here
+    public ErrorHandler(RoboStrokeActivity owner) {
+        this.owner = owner;
     }
-  }
+
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+
+        reportOnBus(e);
+
+        ACRA.getErrorReporter().uncaughtException(t, e);
+
+    }
+
+
+    private void reportOnBus(Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        e.printStackTrace(pw);
+
+        owner.getRoboStroke().getBus().fireEvent(Type.CRASH_STACK, sw.toString().replace("\n", "\\n"));
+
+        try {
+            Thread.sleep(500); // time enough for logger - if active - to flush to sdcard?
+        } catch (InterruptedException e1) {
+            // tough luck - have no idea what to do or why should get here
+        }
+    }
 }

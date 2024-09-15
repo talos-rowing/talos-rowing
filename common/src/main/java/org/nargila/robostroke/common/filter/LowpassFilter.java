@@ -28,52 +28,53 @@ import java.io.FileReader;
  * Low pass filter allows filtered data amplitude to grow by as
  * much as <code>filteringFactor</code> between each call. It is
  * used as data damper/smoother.
- * @author tshalif
  *
+ * @author tshalif
  */
 public class LowpassFilter extends PassFilterBase {
 
-  /**
-   * construct with initial filtering factor
-   * @param kFilteringFactor
-   */
-  public LowpassFilter(float kFilteringFactor) {
-    super(kFilteringFactor);
-  }
-
-  public LowpassFilter() {
-  }
-
-  @Override
-  protected float[] doFilter(float[] values) {
-    for (int i = 0; i < values.length; ++i) {
-
-      float f = (values[i] * filteringFactor) + (filteredValues[i] * (1.0f - filteringFactor));
-
-      if (!Float.isNaN(f)) {
-        filteredValues[i] = f;
-      }
+    /**
+     * construct with initial filtering factor
+     *
+     * @param kFilteringFactor
+     */
+    public LowpassFilter(float kFilteringFactor) {
+        super(kFilteringFactor);
     }
 
-    return filteredValues;
-  }
-
-  public static void main(String[] args) throws Exception {
-    final File file = new File(args[0]);
-
-    BufferedReader in = new BufferedReader(new FileReader(file));
-
-    PassFilterBase filter = new LowpassFilter();
-
-    String l;
-
-    while ((l = in.readLine()) != null && !l.equals("")) {
-      String[] vals = l.split(" +");
-      int x = new Integer(vals[0]);
-      float[] yy = {new Float(vals[1])};
-
-      float y = filter.filter(yy)[0];
-      System.out.println("" + x + " " + y);
+    public LowpassFilter() {
     }
-  }
+
+    @Override
+    protected float[] doFilter(float[] values) {
+        for (int i = 0; i < values.length; ++i) {
+
+            float f = (values[i] * filteringFactor) + (filteredValues[i] * (1.0f - filteringFactor));
+
+            if (!Float.isNaN(f)) {
+                filteredValues[i] = f;
+            }
+        }
+
+        return filteredValues;
+    }
+
+    public static void main(String[] args) throws Exception {
+        final File file = new File(args[0]);
+
+        BufferedReader in = new BufferedReader(new FileReader(file));
+
+        PassFilterBase filter = new LowpassFilter();
+
+        String l;
+
+        while ((l = in.readLine()) != null && !l.equals("")) {
+            String[] vals = l.split(" +");
+            int x = new Integer(vals[0]);
+            float[] yy = {new Float(vals[1])};
+
+            float y = filter.filter(yy)[0];
+            System.out.println("" + x + " " + y);
+        }
+    }
 }

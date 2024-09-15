@@ -28,249 +28,236 @@ import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.DataRecord;
 import org.nargila.robostroke.data.DataRecord.Type;
 import org.nargila.robostroke.data.SensorDataSink;
-import org.nargila.robostroke.param.Parameter;
-import org.nargila.robostroke.param.ParameterChangeListener;
-import org.nargila.robostroke.param.ParameterListenerOwner;
-import org.nargila.robostroke.param.ParameterListenerRegistration;
-import org.nargila.robostroke.param.ParameterService;
+import org.nargila.robostroke.param.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class GPSDataFilter implements SensorDataSink, ParameterListenerOwner {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
-  private double accumulatedDistance = 0;
+    private double accumulatedDistance = 0;
 
-  private static class LocationData {
-    long timestamp;
-    double[] values;
+    private static class LocationData {
+        long timestamp;
+        double[] values;
 
-    LocationData(long timestamp, double[] values) {
-      this.timestamp = timestamp;
-      this.values = values;
+        LocationData(long timestamp, double[] values) {
+            this.timestamp = timestamp;
+            this.values = values;
+        }
     }
-  }
 
-  private final LowpassFilter speedChangeDamperFilter;
+    private final LowpassFilter speedChangeDamperFilter;
 
-  private float minDistance;
-  private float maxSpeed;
+    private float minDistance;
+    private float maxSpeed;
 
-  private LocationData lastLocation;
-  private final DistanceResolver distanceResolver;
+    private LocationData lastLocation;
+    private final DistanceResolver distanceResolver;
 
-  private final RoboStrokeEventBus bus;
+    private final RoboStrokeEventBus bus;
 
-  /**
-   * force calculation of distance/speed on next Location, even if distance diff smaller than preferences
-   */
-  private boolean immediateDistanceRequested;
+    /**
+     * force calculation of distance/speed on next Location, even if distance diff smaller than preferences
+     */
+    private boolean immediateDistanceRequested;
 
-  private boolean splitRowingOn;
+    private boolean splitRowingOn;
 
-  private LocationData bookMarkedLocation;
+    private LocationData bookMarkedLocation;
 
-  private LocationData lastSensorDataLocation;
+    private LocationData lastSensorDataLocation;
 
-  private RoboStroke owner;
+    private RoboStroke owner;
 
-  private final ParameterService params;
+    private final ParameterService params;
 
-  private boolean straightLineModeOn;
+    private boolean straightLineModeOn;
 
-  protected float travelDistance;
+    protected float travelDistance;
 
-  protected LocationData lastStrokeLocation;
+    protected LocationData lastStrokeLocation;
 
-  public GPSDataFilter(RoboStroke owner, final DistanceResolver distanceResolver) {
-    this.owner = owner;
-    this.params = owner.getParameters();
-    this.bus = owner.getBus();
+    public GPSDataFilter(RoboStroke owner, final DistanceResolver distanceResolver) {
+        this.owner = owner;
+        this.params = owner.getParameters();
+        this.bus = owner.getBus();
 
-    this.distanceResolver = distanceResolver;
+        this.distanceResolver = distanceResolver;
 
-    speedChangeDamperFilter = new LowpassFilter((Float)params.getValue(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId()));
+        speedChangeDamperFilter = new LowpassFilter((Float) params.getValue(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId()));
 
-    straightLineModeOn = (Boolean)params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId());
+        straightLineModeOn = (Boolean) params.getValue(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId());
 
-    minDistance = (Integer)params.getValue(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId());
+        minDistance = (Integer) params.getValue(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId());
 
-    maxSpeed = (Float)params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId());
+        maxSpeed = (Float) params.getValue(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId());
 
-    params.addListeners(this);
+        params.addListeners(this);
 
-    bus.addBusListener(new BusEventListener() {
+        bus.addBusListener(new BusEventListener() {
+            @Override
+            public void onBusEvent(DataRecord event) {
+                switch (event.type) {
+                    case ROWING_COUNT: // means DROP_BELOW_ZERO with a valid stroke amplitude - see RowingDetector
+                        if (splitRowingOn && bookMarkedLocation != null) {
+                            if (straightLineModeOn) {
+                                travelDistance = distanceResolver.calcDistance(bookMarkedLocation.values, lastSensorDataLocation.values);
+                            } else {
+                                travelDistance += distanceResolver.calcDistance(lastStrokeLocation.values, lastSensorDataLocation.values);
 
-      @Override
-      public void onBusEvent(DataRecord event) {
-        switch (event.type) {
-        case ROWING_COUNT: // means DROP_BELOW_ZERO with a valid stroke amplitude - see RowingDetector
-          if (splitRowingOn && bookMarkedLocation != null) {
-            if (straightLineModeOn) {
-              travelDistance = distanceResolver.calcDistance(bookMarkedLocation.values, lastSensorDataLocation.values);
-            } else {
-              travelDistance += distanceResolver.calcDistance(lastStrokeLocation.values, lastSensorDataLocation.values);
+                                lastStrokeLocation = lastSensorDataLocation;
+                            }
 
-              lastStrokeLocation = lastSensorDataLocation;
+                            long travelTime = lastSensorDataLocation.timestamp - bookMarkedLocation.timestamp;
+
+                            bus.fireEvent(Type.BOOKMARKED_DISTANCE, event.timestamp, travelTime, travelDistance);
+                        }
+                        break;
+                    case ROWING_START:
+                        immediateDistanceRequested = true;
+                        splitRowingOn = true;
+                        travelDistance = 0;
+                        bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation;
+                        break;
+                    case ROWING_STOP:
+                        splitRowingOn = false;
+                        bookMarkedLocation = null;
+                        break;
+                }
+            }
+        });
+    }
+
+    public static int calcMilisecondsPer500m(float speed) {
+
+        double seconds = 0;
+
+        if (speed > 0) {
+            seconds = 500 / speed;
+
+            if (seconds > 1000) {
+                seconds = 0;
+            }
+        }
+
+        return (int) seconds * 1000;
+    }
+
+    private int calcSpeed(float speed) {
+
+        if (speed > maxSpeed) {
+            return -1;
+        }
+
+        float[] values = {speed};
+        speed = speedChangeDamperFilter.filter(values)[0];
+
+        return calcMilisecondsPer500m(speed);
+    }
+
+    private int calcSpeed(float distance, long timeDiff) {
+        float speed = distance / timeDiff * 1000; // meters/second
+        return calcSpeed(speed);
+    }
+
+    @Override
+    public synchronized void onSensorData(long timestamp, Object value) {
+        double[] values = (double[]) value;
+
+
+        bus.fireEvent(DataRecord.Type.GPS, timestamp, value);
+
+        if (lastSensorDataLocation == null) {
+            lastSensorDataLocation = lastLocation = new LocationData(timestamp, values);
+        } else {
+
+            lastSensorDataLocation = new LocationData(timestamp, values);
+
+            if (splitRowingOn && bookMarkedLocation == null) {
+                bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation;
             }
 
-            long travelTime = lastSensorDataLocation.timestamp - bookMarkedLocation.timestamp;
+            final float distance = distanceResolver.calcDistance(lastLocation.values, values);
 
-            bus.fireEvent(Type.BOOKMARKED_DISTANCE, event.timestamp, travelTime, travelDistance);
-          }
-          break;
-        case ROWING_START:
-          immediateDistanceRequested = true;
-          splitRowingOn = true;
-          travelDistance = 0;
-          bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation;
+            if (distance > minDistance || immediateDistanceRequested) {
+                final int finalSpeed = calcSpeed(distance, timestamp - lastLocation.timestamp);
 
-          break;
-        case ROWING_STOP:
-          splitRowingOn = false;
-          bookMarkedLocation = null;
-          break;
+                if (finalSpeed != -1) {
+                    accumulatedDistance += distance;
+
+                    double accuracy = values[DataIdx.GPS_ACCURACY];
+
+                    bus.fireEvent(DataRecord.Type.WAY, timestamp, new double[]{distance, finalSpeed, accuracy});
+
+                    lastLocation = new LocationData(timestamp, values);
+
+                    immediateDistanceRequested = false;
+                }
+            }
         }
 
-      }
-    });
-  }
-
-  public static int calcMilisecondsPer500m(float speed) {
-
-    double seconds = 0;
-
-    if (speed > 0) {
-      seconds = 500 / speed;
-
-      if (seconds > 1000) {
-        seconds = 0;
-      }
+        if (!owner.isSeekableDataInput()) { // ACCUM_DISTANCE is replayed when read from recorded file
+            bus.fireEvent(DataRecord.Type.ACCUM_DISTANCE, accumulatedDistance);
+        }
     }
 
-    return (int)seconds * 1000;
-  }
+    private final ParameterListenerRegistration[] listenerRegistrations = {
+        new ParameterListenerRegistration(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId(), new ParameterChangeListener() {
 
-  private int calcSpeed(float speed) {
+            @Override
+            public void onParameterChanged(Parameter param) {
+                float value = (Float) param.getValue();
+                logger.info("setting speedChangeDamperFilter to {}", value);
+                speedChangeDamperFilter.setFilteringFactor(value);
+            }
+        }),
+        new ParameterListenerRegistration(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId(), new ParameterChangeListener() {
 
-    if (speed > maxSpeed) {
-      return -1;
+            @Override
+            public void onParameterChanged(Parameter param) {
+                float value = (Integer) param.getValue();
+                logger.info("setting minDistance to {}", value);
+                minDistance = value;
+            }
+        }),
+        new ParameterListenerRegistration(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId(), new ParameterChangeListener() {
+
+            @Override
+            public void onParameterChanged(Parameter param) {
+                float value = (Float) param.getValue();
+                logger.info("setting maxSpeed to {}", value);
+                maxSpeed = value;
+            }
+        }),
+        new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId(), new ParameterChangeListener() {
+
+            @Override
+            public void onParameterChanged(Parameter param) {
+                straightLineModeOn = (Boolean) param.getValue();
+            }
+        })
+    };
+
+    @Override
+    public ParameterListenerRegistration[] getListenerRegistrations() {
+        return listenerRegistrations;
     }
 
-    float[] values = {speed};
-    speed = speedChangeDamperFilter.filter(values)[0];
-
-    return calcMilisecondsPer500m(speed);
-  }
-
-  private int calcSpeed(float distance, long timeDiff) {
-    float speed = distance / timeDiff * 1000; // meters/second
-    return calcSpeed(speed);
-  }
-
-  @Override
-  public synchronized void onSensorData(long timestamp, Object value) {
-    double[] values = (double[]) value;
-
-
-    bus.fireEvent(DataRecord.Type.GPS, timestamp, value);
-
-    if (lastSensorDataLocation == null) {
-      lastSensorDataLocation = lastLocation = new LocationData(timestamp, values);
-    } else {
-
-      lastSensorDataLocation = new LocationData(timestamp, values);
-
-      if (splitRowingOn && bookMarkedLocation == null) {
-        bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation;
-      }
-
-      final float distance = distanceResolver.calcDistance(lastLocation.values, values);
-
-      if (distance > minDistance || immediateDistanceRequested) {
-        final int finalSpeed = calcSpeed(distance, timestamp - lastLocation.timestamp);
-
-
-        if (finalSpeed != -1) {
-
-          accumulatedDistance += distance;
-
-          double accuracy = values[DataIdx.GPS_ACCURACY];
-
-          bus.fireEvent(DataRecord.Type.WAY, timestamp, new double[]{distance, finalSpeed, accuracy});
-
-          lastLocation = new LocationData(timestamp, values);
-
-          immediateDistanceRequested = false;
-
-        }
-      }
-
-
+    @Override
+    protected void finalize() throws Throwable {
+        params.removeListeners(this);
+        super.finalize();
     }
 
-    if (!owner.isSeekableDataInput()) { // ACCUM_DISTANCE is replayed when read from recorded file
-      bus.fireEvent(DataRecord.Type.ACCUM_DISTANCE, accumulatedDistance);
+    public synchronized void reset() {
+        accumulatedDistance = 0;
+        immediateDistanceRequested = false;
+        splitRowingOn = false;
+        travelDistance = 0;
+        bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation = null;
+        speedChangeDamperFilter.reset();
     }
-
-  }
-
-  private final ParameterListenerRegistration[] listenerRegistrations = {
-      new ParameterListenerRegistration(ParamKeys.PARAM_GPS_SPEED_CHANGE_DAMPER.getId(), new ParameterChangeListener() {
-
-        @Override
-        public void onParameterChanged(Parameter param) {
-          float value = (Float)param.getValue();
-          logger.info("setting speedChangeDamperFilter to {}", value);
-          speedChangeDamperFilter.setFilteringFactor(value);
-        }
-      }),
-      new ParameterListenerRegistration(ParamKeys.PARAM_GPS_MIN_DISTANCE.getId(), new ParameterChangeListener() {
-
-        @Override
-        public void onParameterChanged(Parameter param) {
-          float value = (Integer)param.getValue();
-          logger.info("setting minDistance to {}", value);
-          minDistance = value;
-        }
-      }),
-      new ParameterListenerRegistration(ParamKeys.PARAM_GPS_DATA_FILTER_MAX_SPEED.getId(), new ParameterChangeListener() {
-
-        @Override
-        public void onParameterChanged(Parameter param) {
-          float value = (Float)param.getValue();
-          logger.info("setting maxSpeed to {}", value);
-          maxSpeed = value;
-        }
-      }),
-      new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STRAIGHT_LINE_MODE.getId(), new ParameterChangeListener() {
-
-        @Override
-        public void onParameterChanged(Parameter param) {
-          straightLineModeOn = (Boolean) param.getValue();
-        }
-      })
-  };
-
-  @Override
-  public ParameterListenerRegistration[] getListenerRegistrations() {
-    return listenerRegistrations;
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    params.removeListeners(this);
-    super.finalize();
-  }
-
-  public synchronized void reset() {
-    accumulatedDistance = 0;
-    immediateDistanceRequested = false;
-    splitRowingOn = false;
-    travelDistance = 0;
-    bookMarkedLocation = lastStrokeLocation = lastSensorDataLocation = null;
-    speedChangeDamperFilter.reset();
-  }
 }

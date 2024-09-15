@@ -19,70 +19,68 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
-import org.nargila.robostroke.ui.android.AndroidCanvas;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
-import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.view.View;
+import org.nargila.robostroke.ui.android.AndroidCanvas;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
+import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
 
 
 /**
  * Simple line graph plot view.
  *
  * @author tshalif
- *
  */
 public abstract class AndroidGraphViewBase<T extends UpdatableGraphBase> extends View implements DataUpdatable {
 
 
-  protected T graph;
+    protected T graph;
 
-  private final AndroidCanvas canvasAPI = new AndroidCanvas(null);
+    private final AndroidCanvas canvasAPI = new AndroidCanvas(null);
 
-  public AndroidGraphViewBase(Context context) {
+    public AndroidGraphViewBase(Context context) {
 
-    super(context);
-  }
+        super(context);
+    }
 
-  @Override
-  protected void onAttachedToWindow() {
+    @Override
+    protected void onAttachedToWindow() {
 
-    graph.disableUpdate(false);
+        graph.disableUpdate(false);
 
-    super.onAttachedToWindow();
-  }
+        super.onAttachedToWindow();
+    }
 
-  @Override
-  protected void onDetachedFromWindow() {
+    @Override
+    protected void onDetachedFromWindow() {
 
-    graph.disableUpdate(true);
+        graph.disableUpdate(true);
 
-    super.onDetachedFromWindow();
-  }
+        super.onDetachedFromWindow();
+    }
 
-  protected void setGraph(T _graph) {
+    protected void setGraph(T _graph) {
 
-    this.graph = _graph;
+        this.graph = _graph;
 
-  }
+    }
 
-  @Override
-  protected void onDraw(Canvas canvas) {
-    super.onDraw(canvas);
-    graph.draw(canvasAPI.setCanvas(canvas));
-  }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        graph.draw(canvasAPI.setCanvas(canvas));
+    }
 
-  public boolean isDisabled() {
-    return graph.isDisabled();
-  }
+    public boolean isDisabled() {
+        return graph.isDisabled();
+    }
 
-  public void disableUpdate(boolean disable) {
-    graph.disableUpdate(disable);
-  }
+    public void disableUpdate(boolean disable) {
+        graph.disableUpdate(disable);
+    }
 
-  public void reset() {
-    graph.reset();
-  }
+    public void reset() {
+        graph.reset();
+    }
 }

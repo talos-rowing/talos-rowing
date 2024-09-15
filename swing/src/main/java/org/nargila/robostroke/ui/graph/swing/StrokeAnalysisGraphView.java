@@ -19,69 +19,68 @@
 
 package org.nargila.robostroke.ui.graph.swing;
 
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-
-import javax.swing.OverlayLayout;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
 import org.nargila.robostroke.ui.swing.SwingUILiaison;
+
+import javax.swing.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class StrokeAnalysisGraphView extends SwingGraphViewBase<StrokeAnalysisGraph>  {
+public class StrokeAnalysisGraphView extends SwingGraphViewBase<StrokeAnalysisGraph> {
 
-  private static final long serialVersionUID = 1L;
-  private final StrokeAnalysisGraph graph;
+    private static final long serialVersionUID = 1L;
+    private final StrokeAnalysisGraph graph;
 
-  public StrokeAnalysisGraphView(RoboStroke roboStroke) {
+    public StrokeAnalysisGraphView(RoboStroke roboStroke) {
 
-    super(false);
+        super(false);
 
-    setLayout(new OverlayLayout(this));
+        setLayout(new OverlayLayout(this));
 
 
-    StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(roboStroke);
-    StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(roboStroke);
+        StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(roboStroke);
+        StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(roboStroke);
 
-    add(g1);
-    add(g2);
+        add(g1);
+        add(g2);
 
-    graph = new StrokeAnalysisGraph(new SwingUILiaison(this), roboStroke, g1.graph, g2.graph);
+        graph = new StrokeAnalysisGraph(new SwingUILiaison(this), roboStroke, g1.graph, g2.graph);
 
-    addComponentListener(new ComponentListener() {
+        addComponentListener(new ComponentListener() {
 
-      public void componentShown(ComponentEvent e) {
-        graph.disableUpdate(false);
-      }
+            public void componentShown(ComponentEvent e) {
+                graph.disableUpdate(false);
+            }
 
-      public void componentResized(ComponentEvent e) {
-      }
+            public void componentResized(ComponentEvent e) {
+            }
 
-      public void componentMoved(ComponentEvent e) {
-      }
+            public void componentMoved(ComponentEvent e) {
+            }
 
-      public void componentHidden(ComponentEvent e) {
-        graph.disableUpdate(true);
-      }
-    });
-  }
+            public void componentHidden(ComponentEvent e) {
+                graph.disableUpdate(true);
+            }
+        });
+    }
 
-  @Override
-  public boolean isDisabled() {
-    return graph.isDisabled();
-  }
+    @Override
+    public boolean isDisabled() {
+        return graph.isDisabled();
+    }
 
-  @Override
-  public void disableUpdate(boolean disable) {
-    graph.disableUpdate(disable);
-  }
+    @Override
+    public void disableUpdate(boolean disable) {
+        graph.disableUpdate(disable);
+    }
 
-  @Override
-  public void reset() {
-    graph.reset();
-  }
+    @Override
+    public void reset() {
+        graph.reset();
+    }
 }

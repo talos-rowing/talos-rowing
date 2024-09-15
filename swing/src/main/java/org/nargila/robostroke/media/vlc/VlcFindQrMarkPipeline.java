@@ -1,49 +1,43 @@
 package org.nargila.robostroke.media.vlc;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 import org.nargila.robostroke.common.ClockTime;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.media.FindQrMarkPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.co.caprica.vlcj.component.DirectMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
 
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.LuminanceSource;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.NotFoundException;
-import com.google.zxing.Result;
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
 
-  private static final Logger logger = LoggerFactory.getLogger(VlcFindQrMarkPipeline.class);
+    private static final Logger logger = LoggerFactory.getLogger(VlcFindQrMarkPipeline.class);
 
-  private final AtomicReference<Exception> finishSync = new AtomicReference<Exception>();
+    private final AtomicReference<Exception> finishSync = new AtomicReference<Exception>();
 
-  private String mark;
+    private String mark;
 
-  private ClockTime timestamp;
+    private ClockTime timestamp;
 
     private final DirectMediaPlayerComponent vlc;
 
-  private final File video;
+    private final File video;
 
-  private final MediaPlayer mp;
+    private final MediaPlayer mp;
 
-  public VlcFindQrMarkPipeline(File video) {
+    public VlcFindQrMarkPipeline(File video) {
 
         VlcSetup.setupCheckVlc(null);
 
         vlc = new BufferedImageMediaPlayer() {
             @Override
-            protected void onImageChanged(BufferedImage image, long timestamp)  {
+            protected void onImageChanged(BufferedImage image, long timestamp) {
 
                 if (findQrCode(image, timestamp)) {
 
@@ -55,29 +49,29 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
         };
 
         this.video = video;
-    mp = vlc.getMediaPlayer();
-  }
+        mp = vlc.getMediaPlayer();
+    }
 
-  void start() {
-    mp.playMedia(video.getAbsolutePath());
-  }
+    void start() {
+        mp.playMedia(video.getAbsolutePath());
+    }
 
 
-  @Override
+    @Override
     public void stop() {
 
-    synchronized (finishSync) {
-      finishSync.notifyAll();
+        synchronized (finishSync) {
+            finishSync.notifyAll();
+        }
     }
-  }
 
-  private void doStop() {
+    private void doStop() {
 //    mp.stop();
-    vlc.release();
-  }
+        vlc.release();
+    }
 
 
-  private boolean findQrCode(BufferedImage image, long time) {
+    private boolean findQrCode(BufferedImage image, long time) {
 
         if (mark == null) {
             LuminanceSource source = new BufferedImageLuminanceSource(image);
@@ -91,8 +85,8 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
                 timestamp = t;
 
                 logger.info("mark: {}, timestamp: {}, pipetime: {}",
-                        new Object[] { mark, timestamp.toMillis(),
-                                vlc.getMediaPlayer().getTime() });
+                        new Object[]{mark, timestamp.toMillis(),
+                                vlc.getMediaPlayer().getTime()});
 
             } catch (NotFoundException e) {
 
@@ -104,39 +98,39 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
         }
 
         return false;
-  }
-
-
-  @Override
-    public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
-
-    synchronized (finishSync) {
-      start();
-      finishSync.wait(timeoutSeconds * 1000);
     }
+
+
+    @Override
+    public Pair<Integer, Long> findMark(int timeoutSeconds) throws Exception {
+
+        synchronized (finishSync) {
+            start();
+            finishSync.wait(timeoutSeconds * 1000);
+        }
 
         logger.info("################ calling doStop()...");
 
-    doStop();
+        doStop();
 
         logger.info("################ done.");
 
-    if (mark == null) {
+        if (mark == null) {
 
-      if (finishSync.get() != null) {
-        throw finishSync.get();
-      }
+            if (finishSync.get() != null) {
+                throw finishSync.get();
+            }
 
-      throw new IllegalStateException("could not find QR sync mark in video within " + timeoutSeconds + " seconds");
+            throw new IllegalStateException("could not find QR sync mark in video within " + timeoutSeconds + " seconds");
+        }
+
+        return Pair.create(new Integer(mark.split(":")[1]), timestamp.toMillis());
     }
 
-    return Pair.create(new Integer(mark.split(":")[1]),timestamp.toMillis());
-  }
+    public static void main(String[] args) throws Exception {
 
-  public static void main(String[] args) throws Exception {
+        final VlcFindQrMarkPipeline qrFind = new VlcFindQrMarkPipeline(new File(args[0]));
 
-    final VlcFindQrMarkPipeline qrFind = new VlcFindQrMarkPipeline(new File(args[0]));
-
-    qrFind.findMark(160);
-  }
+        qrFind.findMark(160);
+    }
 }

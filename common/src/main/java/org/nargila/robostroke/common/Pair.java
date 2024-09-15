@@ -19,18 +19,19 @@
 package org.nargila.robostroke.common;
 
 public class Pair<T1, T2> {
-  public final T1 first;
-  public final T2 second;
+    public final T1 first;
+    public final T2 second;
 
-  public Pair(T1 first, T2 second) {
-    this.first = first;
-    this.second = second;
-  }
+    public Pair(T1 first, T2 second) {
+        this.first = first;
+        this.second = second;
+    }
 
-  public static <T1, T2> Pair<T1, T2> create(T1 first, T2 second) {
-    return new Pair<T1, T2>(first,second);
-  }
-  public static <T1, T2> Pair<T1, T2> make_pair(T1 first, T2 second) {
-    return create(first,second);
-  }
+    public static <T1, T2> Pair<T1, T2> create(T1 first, T2 second) {
+        return new Pair<T1, T2>(first, second);
+    }
+
+    public static <T1, T2> Pair<T1, T2> make_pair(T1 first, T2 second) {
+        return create(first, second);
+    }
 }

@@ -21,40 +21,43 @@ package org.nargila.robostroke.data;
 
 /**
  * sensor data filter/processing pipeline component base class.
- * @author tshalif
  *
+ * @author tshalif
  */
 public abstract class SensorDataFilter extends SensorDataSource implements SensorDataSink {
 
-  /**
-   * constructor without initial sink.
-   */
-  public SensorDataFilter() {}
-
-  /**
-   * constructor with initial sink
-   * @param sink
-   */
-  public SensorDataFilter(SensorDataSink sink) {
-    super(sink);
-  }
-
-  @Override
-  public void onSensorData(long timestamp, Object value) {
-    if (null != (value = filterData(timestamp, value))) {
-      pushData(timestamp, value);
+    /**
+     * constructor without initial sink.
+     */
+    public SensorDataFilter() {
     }
-  }
 
-  /**
-   * filter/process sensor event data.
-   * this method will scan/process the input data and return
-   * the processed values to be passed to registered sinks. If
-   * data is to be discarded (i.e. not delivered to sinks) it should
-   * return null
-   * @param timestamp event timestamp
-   * @param value sensor data
-   * @return filtered values or null when event data is not to be passed on to sinks
-   */
-  protected abstract Object filterData(long timestamp, Object value);
+    /**
+     * constructor with initial sink
+     *
+     * @param sink
+     */
+    public SensorDataFilter(SensorDataSink sink) {
+        super(sink);
+    }
+
+    @Override
+    public void onSensorData(long timestamp, Object value) {
+        if (null != (value = filterData(timestamp, value))) {
+            pushData(timestamp, value);
+        }
+    }
+
+    /**
+     * filter/process sensor event data.
+     * this method will scan/process the input data and return
+     * the processed values to be passed to registered sinks. If
+     * data is to be discarded (i.e. not delivered to sinks) it should
+     * return null
+     *
+     * @param timestamp event timestamp
+     * @param value     sensor data
+     * @return filtered values or null when event data is not to be passed on to sinks
+     */
+    protected abstract Object filterData(long timestamp, Object value);
 }

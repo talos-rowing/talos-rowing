@@ -20,48 +20,48 @@ package org.nargila.robostroke.data;
 
 /**
  * Base class to ease implementation of SensorDataInput
- * @author tshalif
  *
+ * @author tshalif
  */
 public abstract class SensorDataInputBase implements SensorDataInput {
 
-  protected ErrorListener errorListener;
-  protected SensorDataSource gpsDataSource = new SensorDataSource();
-  protected SensorDataSource accelerometerDataSource = new SensorDataSource();
-  protected SensorDataSource orientationDataSource = new SensorDataSource();
+    protected ErrorListener errorListener;
+    protected SensorDataSource gpsDataSource = new SensorDataSource();
+    protected SensorDataSource accelerometerDataSource = new SensorDataSource();
+    protected SensorDataSource orientationDataSource = new SensorDataSource();
 
-  public SensorDataInputBase() {
-    super();
-  }
+    public SensorDataInputBase() {
+        super();
+    }
 
-  @Override
-  public SensorDataSource getAccelerometerDataSource() {
-    return accelerometerDataSource;
-  }
+    @Override
+    public SensorDataSource getAccelerometerDataSource() {
+        return accelerometerDataSource;
+    }
 
-  @Override
-  public void setErrorListener(ErrorListener errorListener) {
-    this.errorListener = errorListener;
+    @Override
+    public void setErrorListener(ErrorListener errorListener) {
+        this.errorListener = errorListener;
 
-  }
+    }
 
-  @Override
-  public SensorDataSource getGPSDataSource() {
-    return gpsDataSource;
-  }
+    @Override
+    public SensorDataSource getGPSDataSource() {
+        return gpsDataSource;
+    }
 
-  @Override
-  public SensorDataSource getOrientationDataSource() {
-    return orientationDataSource;
-  }
+    @Override
+    public SensorDataSource getOrientationDataSource() {
+        return orientationDataSource;
+    }
 
-  @Override
-  public boolean isLocalSensorInput() {
-    return false;
-  }
+    @Override
+    public boolean isLocalSensorInput() {
+        return false;
+    }
 
-  @Override
-  public boolean isSeekable() {
-    return false;
-  }
+    @Override
+    public boolean isSeekable() {
+        return false;
+    }
 }

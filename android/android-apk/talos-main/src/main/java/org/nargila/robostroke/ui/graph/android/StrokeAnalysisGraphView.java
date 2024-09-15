@@ -19,13 +19,12 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import android.content.Context;
+import android.widget.FrameLayout;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.DataUpdatable;
 import org.nargila.robostroke.ui.graph.StrokeAnalysisGraph;
-
-import android.content.Context;
-import android.widget.FrameLayout;
 
 
 /**
@@ -33,48 +32,48 @@ import android.widget.FrameLayout;
  */
 public class StrokeAnalysisGraphView extends FrameLayout implements DataUpdatable {
 
-  private final StrokeAnalysisGraph graph;
+    private final StrokeAnalysisGraph graph;
 
-  public StrokeAnalysisGraphView(Context context, RoboStroke roboStroke) {
+    public StrokeAnalysisGraphView(Context context, RoboStroke roboStroke) {
 
-    super(context);
+        super(context);
 
-    StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(context, roboStroke);
-    StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(context, roboStroke);
+        StrokeAnalysisGraphSingleView g1 = new StrokeAnalysisGraphSingleView(context, roboStroke);
+        StrokeAnalysisGraphSingleView g2 = new StrokeAnalysisGraphSingleView(context, roboStroke);
 
-    LayoutParams layoutParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+        LayoutParams layoutParams = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 
-    addView(g1, layoutParams);
-    addView(g2, layoutParams);
+        addView(g1, layoutParams);
+        addView(g2, layoutParams);
 
-    graph = new StrokeAnalysisGraph(new AndroidUILiaison(this), roboStroke, g1.graph, g2.graph);
+        graph = new StrokeAnalysisGraph(new AndroidUILiaison(this), roboStroke, g1.graph, g2.graph);
 
-  }
+    }
 
-  @Override
-  public boolean isDisabled() {
-    return graph.isDisabled();
-  }
+    @Override
+    public boolean isDisabled() {
+        return graph.isDisabled();
+    }
 
-  @Override
-  public void disableUpdate(boolean disable) {
-    graph.disableUpdate(disable);
-  }
+    @Override
+    public void disableUpdate(boolean disable) {
+        graph.disableUpdate(disable);
+    }
 
-  @Override
-  public void reset() {
-    graph.reset();
-  }
+    @Override
+    public void reset() {
+        graph.reset();
+    }
 
-  @Override
-  protected void onAttachedToWindow() {
-    disableUpdate(false);
-    super.onAttachedToWindow();
-  }
+    @Override
+    protected void onAttachedToWindow() {
+        disableUpdate(false);
+        super.onAttachedToWindow();
+    }
 
-  @Override
-  protected void onDetachedFromWindow() {
-    disableUpdate(true);
-    super.onDetachedFromWindow();
-  }
+    @Override
+    protected void onDetachedFromWindow() {
+        disableUpdate(true);
+        super.onDetachedFromWindow();
+    }
 }

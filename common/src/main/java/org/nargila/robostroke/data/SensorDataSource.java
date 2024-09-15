@@ -27,134 +27,141 @@ import java.util.ListIterator;
  * a handy class to ease building of sensor data processing pipelines.
  * <code>SensorDataSource</code> makes itself useful by managing <code>SensorDataSink</code>
  * lists and providing an easy event-push mechanism with {@link #pushData(long, Object)}
- * @author tshalif
  *
+ * @author tshalif
  */
 public class SensorDataSource {
 
-  /**
-   * Holder of an event sink when there is only one
-   */
-  private SensorDataSink sink;
-  /**
-   * holder of event sinks when there are more then one
-   */
-  LinkedList<SensorDataSink> sinkList;
+    /**
+     * Holder of an event sink when there is only one
+     */
+    private SensorDataSink sink;
+    /**
+     * holder of event sinks when there are more then one
+     */
+    LinkedList<SensorDataSink> sinkList;
 
-  /**
-   * holder of event sinks when there are more then one
-   */
-  private final HashMap<SensorDataSink, Double> weightMap = new HashMap<SensorDataSink, Double>();
+    /**
+     * holder of event sinks when there are more then one
+     */
+    private final HashMap<SensorDataSink, Double> weightMap = new HashMap<SensorDataSink, Double>();
 
-  /**
-   * construct with no initial event sinks
-   */
-  public SensorDataSource() {}
+    /**
+     * construct with no initial event sinks
+     */
+    public SensorDataSource() {
+    }
 
-  /**
-   * construct with an initial event sink
-   * @param sink event sink
-   */
-  public SensorDataSource(SensorDataSink sink) {
-    addSensorDataSink(sink);
-  }
+    /**
+     * construct with an initial event sink
+     *
+     * @param sink event sink
+     */
+    public SensorDataSource(SensorDataSink sink) {
+        addSensorDataSink(sink);
+    }
 
-  /**
-   * add an event sink
-   * @param sink event sink
-   */
-  public void addSensorDataSink(SensorDataSink sink) {
-    addSensorDataSink(sink, 1.0);
-  }
-  /**
-   * add an event sink, optionally prepend to head of sink list (to ensure getting of unfiltered raw data)
-   * @param sink event sink
-   * @param weight position the new sink in weight order - e.g. 0.0 to prepend sink to head of sink queue, 1.0 to append
-   */
-  public synchronized void addSensorDataSink(SensorDataSink sink, double weight) {
-    if (this.sink == null) {
-      this.sink = sink;
-    } else {
-      if (this.sink == sink) {
-        throw new IllegalArgumentException("sink is already registered");
-      }
+    /**
+     * add an event sink
+     *
+     * @param sink event sink
+     */
+    public void addSensorDataSink(SensorDataSink sink) {
+        addSensorDataSink(sink, 1.0);
+    }
 
-      if (sinkList == null) {
-        sinkList = new LinkedList<SensorDataSink>();
-        sinkList.add(this.sink);
-      } else if (sinkList.contains(sink)) {
-        throw new IllegalArgumentException("sink is already registered");
-      }
+    /**
+     * add an event sink, optionally prepend to head of sink list (to ensure getting of unfiltered raw data)
+     *
+     * @param sink   event sink
+     * @param weight position the new sink in weight order - e.g. 0.0 to prepend sink to head of sink queue, 1.0 to append
+     */
+    public synchronized void addSensorDataSink(SensorDataSink sink, double weight) {
+        if (this.sink == null) {
+            this.sink = sink;
+        } else {
+            if (this.sink == sink) {
+                throw new IllegalArgumentException("sink is already registered");
+            }
 
-      ListIterator<SensorDataSink> it = sinkList.listIterator();
+            if (sinkList == null) {
+                sinkList = new LinkedList<SensorDataSink>();
+                sinkList.add(this.sink);
+            } else if (sinkList.contains(sink)) {
+                throw new IllegalArgumentException("sink is already registered");
+            }
 
-      int idx = 0;
-      while (it.hasNext()) {
+            ListIterator<SensorDataSink> it = sinkList.listIterator();
 
-        SensorDataSink s = it.next();
+            int idx = 0;
+            while (it.hasNext()) {
 
-        double w = weightMap.get(s);
+                SensorDataSink s = it.next();
 
-        if (weight < w) {
-          break;
+                double w = weightMap.get(s);
+
+                if (weight < w) {
+                    break;
+                }
+
+                idx++;
+            }
+
+            sinkList.add(idx, sink);
         }
 
-        idx++;
-      }
-
-      sinkList.add(idx, sink);
+        weightMap.put(sink, weight);
     }
 
-    weightMap.put(sink, weight);
-  }
+    /**
+     * remove event sink
+     *
+     * @param sink event sink
+     */
+    public synchronized void removeSensorDataSink(SensorDataSink sink) {
 
-  /**
-   * remove event sink
-   * @param sink event sink
-   */
-  public synchronized void removeSensorDataSink(SensorDataSink sink) {
+        boolean removed = false;
 
-    boolean removed = false;
+        if (sinkList != null) {
+            removed = sinkList.remove(sink);
+            this.sink = sinkList.getFirst();
 
-    if (sinkList != null) {
-      removed = sinkList.remove(sink);
-      this.sink = sinkList.getFirst();
+            if (sinkList.size() == 1) {
+                sinkList = null;
+            }
+        } else {
+            if (sink == this.sink) {
+                this.sink = null;
+                removed = true;
+            }
+        }
 
-      if (sinkList.size() == 1) {
+        if (!removed) {
+            throw new IllegalArgumentException("trying to remove non-existing sink");
+        }
+
+        weightMap.remove(sink);
+
+    }
+
+    /**
+     * push event data to all registered sinks
+     *
+     * @param timestamp event timestamp
+     * @param value     sensor data
+     */
+    public synchronized void pushData(long timestamp, Object value) {
+        if (sinkList != null) { // more then one sink inside sinkList
+            for (SensorDataSink sink : sinkList) {
+                sink.onSensorData(timestamp, value);
+            }
+        } else if (this.sink != null) { // only one sink in this.sink
+            this.sink.onSensorData(timestamp, value);
+        }
+    }
+
+    public synchronized void clearSensorDataSinks() {
         sinkList = null;
-      }
-    } else {
-      if (sink == this.sink) {
         this.sink = null;
-        removed = true;
-      }
     }
-
-    if (!removed) {
-      throw new IllegalArgumentException("trying to remove non-existing sink");
-    }
-
-    weightMap.remove(sink);
-
-  }
-
-  /**
-   * push event data to all registered sinks
-   * @param timestamp event timestamp
-   * @param value sensor data
-   */
-  public synchronized void pushData(long timestamp, Object value) {
-    if (sinkList != null) { // more then one sink inside sinkList
-      for (SensorDataSink sink: sinkList) {
-        sink.onSensorData(timestamp, value);
-      }
-    } else if (this.sink != null) { // only one sink in this.sink
-      this.sink.onSensorData(timestamp, value);
-    }
-  }
-
-  public synchronized void clearSensorDataSinks() {
-    sinkList = null;
-    this.sink = null;
-  }
 }

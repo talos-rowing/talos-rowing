@@ -20,8 +20,6 @@
 package org.nargila.robostroke.data;
 
 
-
-
 public class DataRecord {
 
     public enum Type {
@@ -40,7 +38,7 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* tag, countdown */
-                return new Object[] {tokens[0], new Integer(tokens[1])};
+                return new Object[]{tokens[0], new Integer(tokens[1])};
             }
         }),
         STROKE_DROP_BELOW_ZERO,
@@ -59,7 +57,7 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-                return new Object[] {new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
+                return new Object[]{new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
             }
         }),
         ROWING_START_TRIGGERED,
@@ -71,7 +69,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"power"};
+                return new String[]{"power"};
             }
 
             @Override
@@ -84,7 +82,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"stroke_rate"};
+                return new String[]{"stroke_rate"};
             }
 
             @Override
@@ -100,7 +98,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"x", "y", "z"};
+                return new String[]{"x", "y", "z"};
             }
 
             @Override
@@ -116,7 +114,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"azimuth", "pitch", "roll"};
+                return new String[]{"azimuth", "pitch", "roll"};
             }
 
             @Override
@@ -132,7 +130,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"lat", "long", "alt", "speed", "bearing", "accuracy"};
+                return new String[]{"lat", "long", "alt", "speed", "bearing", "accuracy"};
             }
 
             @Override
@@ -148,7 +146,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"distance", "speed", "accuracy"};
+                return new String[]{"distance", "speed", "accuracy"};
             }
 
             @Override
@@ -186,12 +184,13 @@ public class DataRecord {
             @Override
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
-                return new Object[] {new Long(tokens[0]), new Float(tokens[1])};
+                return new Object[]{new Long(tokens[0]), new Float(tokens[1])};
             }
         }
 
         public interface DataExporter {
             String[] getColumnNames();
+
             Object[] exportData(Object data);
         }
 
@@ -271,10 +270,10 @@ public class DataRecord {
             return create(type, timestamp, data);
         } else {
             throw new UnsupportedOperationException(
-                    String
-                    .format(
+                    String.format(
                             "StrokeEvent type %s does not have a serializer configured",
-                            type));
+                            type
+                    ));
         }
     }
 }

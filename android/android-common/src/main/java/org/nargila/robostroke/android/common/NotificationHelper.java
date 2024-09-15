@@ -28,51 +28,51 @@ import android.widget.Toast;
 
 /**
  * helper class to display error notifications
- * @author tshalif
  *
+ * @author tshalif
  */
 public class NotificationHelper {
-	private final Context owner;
-	private final int icon;
-	private final NotificationManager mNotificationManager;
-	
-	public NotificationHelper(Context owner, int icon) {
-		this.owner = owner;
-		this.icon = icon;
-		String ns = Context.NOTIFICATION_SERVICE;
-		mNotificationManager = (NotificationManager) this.owner.getSystemService(ns);
-	}
-	
-	public void toast(String msg) {
-		Toast.makeText( owner, msg, Toast.LENGTH_LONG).show();	          		
-	}
-	
-	public void notifyError(int errorId, String msg, String contentTitle, String tickerText) {
-		long when = System.currentTimeMillis();
-		Intent notificationIntent = new Intent(this.owner, this.owner.getClass());
-		PendingIntent contentIntent = PendingIntent.getActivity(
-				this.owner,
-				0,
-				notificationIntent,
-				PendingIntent.FLAG_MUTABLE
-		);
-		Context context = this.owner.getApplicationContext();
-		Notification notification = new Notification.Builder(context)
-				.setContentTitle(contentTitle)
-				.setSmallIcon(icon)
-				.setTicker(tickerText)
-				.setWhen(when)
-				.setContentText(msg)
-				.setContentIntent(contentIntent)
-				.build();
+    private final Context owner;
+    private final int icon;
+    private final NotificationManager mNotificationManager;
+
+    public NotificationHelper(Context owner, int icon) {
+        this.owner = owner;
+        this.icon = icon;
+        String ns = Context.NOTIFICATION_SERVICE;
+        mNotificationManager = (NotificationManager) this.owner.getSystemService(ns);
+    }
+
+    public void toast(String msg) {
+        Toast.makeText(owner, msg, Toast.LENGTH_LONG).show();
+    }
+
+    public void notifyError(int errorId, String msg, String contentTitle, String tickerText) {
+        long when = System.currentTimeMillis();
+        Intent notificationIntent = new Intent(this.owner, this.owner.getClass());
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                this.owner,
+                0,
+                notificationIntent,
+                PendingIntent.FLAG_MUTABLE
+        );
+        Context context = this.owner.getApplicationContext();
+        Notification notification = new Notification.Builder(context)
+                .setContentTitle(contentTitle)
+                .setSmallIcon(icon)
+                .setTicker(tickerText)
+                .setWhen(when)
+                .setContentText(msg)
+                .setContentIntent(contentIntent)
+                .build();
 
 
-		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
-		mNotificationManager.notify(errorId, notification);
-	}
+        mNotificationManager.notify(errorId, notification);
+    }
 
-	public void cancel(int id) {
-		mNotificationManager.cancel(id);
-	}
+    public void cancel(int id) {
+        mNotificationManager.cancel(id);
+    }
 }

@@ -21,9 +21,9 @@ package org.nargila.robostroke.data;
 
 /**
  * Generic error listener
- * @author tshalif
  *
+ * @author tshalif
  */
 public interface ErrorListener {
-  public void onError(Exception e);
+    public void onError(Exception e);
 }

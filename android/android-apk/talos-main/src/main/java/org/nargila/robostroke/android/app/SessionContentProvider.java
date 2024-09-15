@@ -1,15 +1,15 @@
 package org.nargila.robostroke.android.app;
 
 import android.content.ContentProvider;
-import java.io.File;
-import java.io.FileNotFoundException;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 import org.nargila.robostroke.android.common.FileHelper;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class SessionContentProvider extends ContentProvider {
     private static final int URI_MATCH = 42;

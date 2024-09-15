@@ -19,46 +19,39 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import android.content.Context;
 import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.LineGraph;
 import org.nargila.robostroke.ui.graph.MultiXYSeries;
 import org.nargila.robostroke.ui.graph.XYSeries;
 
-import android.content.Context;
-
 /**
  * Simple line graph plot view.
  *
  * @author tshalif
- *
  */
 public class LineGraphView extends AndroidGraphViewBase<LineGraph> {
 
-  public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
-      double yGridInterval) {
-    this(context, yScale, yGridInterval,  null);
-  }
+    public LineGraphView(Context context, double xRange, XYSeries.XMode xMode, double yScale,
+                         double yGridInterval) {
+        this(context, yScale, yGridInterval, null);
+    }
 
-  /**
-   * constructor with standard View context, attributes, data window size, y
-   * scale and y data tic mark gap
-   *
-   * @param context
-   *            the Android Activity
-   * @param attrs
-   *            layout and other common View attributes
-   * @param windowSize
-   *            size of data array to plot
-   * @param yScale
-   *            y value to pixel scale
-   * @param incr
-   *            y data tic mark gap
-   */
-  public LineGraphView(Context context, double yRange,
-      double yGridInterval, MultiXYSeries multiSeries) {
-    super(context);
+    /**
+     * constructor with standard View context, attributes, data window size, y
+     * scale and y data tic mark gap
+     *
+     * @param context    the Android Activity
+     * @param attrs      layout and other common View attributes
+     * @param windowSize size of data array to plot
+     * @param yScale     y value to pixel scale
+     * @param incr       y data tic mark gap
+     */
+    public LineGraphView(Context context, double yRange,
+                         double yGridInterval, MultiXYSeries multiSeries) {
+        super(context);
 
-    setGraph(new LineGraph(new AndroidUILiaison(this), yRange, yGridInterval, multiSeries));
+        setGraph(new LineGraph(new AndroidUILiaison(this), yRange, yGridInterval, multiSeries));
 
-  }
+    }
 }

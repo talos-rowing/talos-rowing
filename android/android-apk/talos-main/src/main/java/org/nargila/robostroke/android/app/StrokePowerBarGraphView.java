@@ -19,11 +19,6 @@
 
 package org.nargila.robostroke.android.app;
 
-import org.nargila.robostroke.BusEventListener;
-import org.nargila.robostroke.RoboStroke;
-import org.nargila.robostroke.data.DataRecord;
-import org.nargila.robostroke.ui.graph.DataUpdatable;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -31,186 +26,190 @@ import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.View;
+import org.nargila.robostroke.BusEventListener;
+import org.nargila.robostroke.RoboStroke;
+import org.nargila.robostroke.data.DataRecord;
+import org.nargila.robostroke.ui.graph.DataUpdatable;
 
 /**
  * Simple line graph plot view.
- * @author tshalif
  *
+ * @author tshalif
  */
 public class StrokePowerBarGraphView extends View implements DataUpdatable, RoboStrokeConstants {
-  private static final int HISTORY_SIZE = 40;
-  private final int windowSize;
-  private final float[] powerValues;
-  private int idx;
+    private static final int HISTORY_SIZE = 40;
+    private final int windowSize;
+    private final float[] powerValues;
+    private int idx;
 
-  private final Rect mRect = new Rect();
-  private final Rect rect = new Rect();
-  private boolean needRescale = false;
-  private float maxY = -Float.MAX_VALUE;
+    private final Rect mRect = new Rect();
+    private final Rect rect = new Rect();
+    private boolean needRescale = false;
+    private float maxY = -Float.MAX_VALUE;
 
-  private float scaleY;
-  private float barWidth;
-  private float barStrokeWidth;
-  private final RoboStroke roboStroke;
+    private float scaleY;
+    private float barWidth;
+    private float barStrokeWidth;
+    private final RoboStroke roboStroke;
 
-  private final BusEventListener privateBusListener = new BusEventListener() {
+    private final BusEventListener privateBusListener = new BusEventListener() {
+
+        @Override
+        public void onBusEvent(DataRecord event) {
+
+            switch (event.type) {
+                case STROKE_POWER_END:
+                    float power = (Float) event.data;
+                    if (power > 0) {
+                        addValue(power);
+                    }
+                    break;
+            }
+        }
+    };
+    private boolean disabled = true;
+
+    /**
+     * constructor with standard View context, attributes, data window size, y scale and y data tic mark gap
+     *
+     * @param context    the Android Activity
+     * @param roboStroke
+     * @param attrs      layout and other common View attributes
+     */
+    public StrokePowerBarGraphView(Context context, RoboStroke roboStroke) {
+        super(context);
+
+        this.roboStroke = roboStroke;
+        this.windowSize = HISTORY_SIZE;
+        powerValues = new float[windowSize];
+    }
+
+    public void reset() {
+        idx = 0;
+        maxY = 0;
+    }
 
     @Override
-    public void onBusEvent(DataRecord event) {
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
 
-      switch (event.type) {
-      case STROKE_POWER_END:
-        float power = (Float) event.data;
-        if (power > 0) {
-          addValue(power);
+        canvas.getClipBounds(rect);
+
+        if (!rect.equals(mRect)) {
+            mRect.set(rect);
+            needRescale = true;
         }
-        break;
-      }
-    }
-  };
-  private boolean disabled = true;
 
-  /**
-   * constructor with standard View context, attributes, data window size, y scale and y data tic mark gap
-   * @param context the Android Activity
-   * @param roboStroke
-   * @param attrs layout and other common View attributes
-   */
-  public StrokePowerBarGraphView(Context context, RoboStroke roboStroke)
-  {
-    super(context);
+        if (needRescale) {
+            rescalePoints();
+        }
 
-    this.roboStroke = roboStroke;
-    this.windowSize = HISTORY_SIZE;
-    powerValues = new float[windowSize];
-  }
 
-  public void reset() {
-    idx = 0;
-    maxY = 0;
-  }
-
-  @Override
-  protected void onDraw(Canvas canvas) {
-    super.onDraw(canvas);
-
-    canvas.getClipBounds(rect);
-
-    if (!rect.equals(mRect)) {
-      mRect.set(rect);
-      needRescale = true;
+        Paint paint = new Paint();
+        paint.setARGB(0xff, 0xff, 0xff, 0xff);
+        paint.setStyle(Style.STROKE);
+        paint.setAntiAlias(false);
+        paint.setStrokeWidth(barStrokeWidth);
+        drawPath(canvas, paint);
     }
 
-    if (needRescale) {
-      rescalePoints();
+    private void rescalePoints() {
+        maxY = -Float.MAX_VALUE;
+
+
+        barWidth = ((float) mRect.width() / windowSize);
+
+        barStrokeWidth = barWidth / 2;
+
+        final int len = Math.min(idx, windowSize);
+
+        int i = idx - len;
+
+        for (int j = 0; j < len; j++) {
+            final int k = (i + j) % windowSize;
+
+            float y = powerValues[k];
+
+            maxY = Math.max(y, maxY);
+        }
+
+        scaleY = mRect.height() / maxY;
+
+        needRescale = false;
     }
 
 
-    Paint paint = new Paint();
-    paint.setARGB(0xff, 0xff, 0xff, 0xff);
-    paint.setStyle(Style.STROKE);
-    paint.setAntiAlias(false);
-    paint.setStrokeWidth(barStrokeWidth);
-    drawPath(canvas, paint);
-  }
+    private void drawPath(Canvas canvas, Paint paint) {
+        final int len = Math.min(idx, windowSize);
+        final int bottom = mRect.bottom;
+        float x, y;
 
-  private void rescalePoints() {
-    maxY = -Float.MAX_VALUE;
+        final int i = idx - len;
 
+        float startY = powerValues[(i % windowSize)];
 
-    barWidth = ((float)mRect.width() / windowSize);
+        float startX = barWidth / 2;//(windowSize - len) * ticWidth;
 
-    barStrokeWidth = barWidth / 2;
+        y = bottom - (startY * scaleY);
 
-    final int len = Math.min(idx, windowSize);
+        Path path = new Path();
 
-    int i = idx - len;
+        for (int j = 0; j < len; j++) {
+            final int k = (i + j) % windowSize;
+            x = startX + j * barWidth;
+            y = bottom - (powerValues[k] * scaleY);
+            path.moveTo(x, y);
+            path.lineTo(x, bottom);
+        }
 
-    for (int j = 0; j < len; j++) {
-      final int k = (i + j) % windowSize;
+        canvas.drawPath(path, paint);
 
-      float y = powerValues[k];
-
-      maxY = Math.max(y, maxY);
     }
 
-    scaleY = mRect.height() / maxY;
 
-    needRescale = false;
-  }
+    private void addValue(float newY) {
+        final float popY = powerValues[Math.max(0, idx - windowSize) % windowSize];
 
+        powerValues[idx++ % windowSize] = newY;
 
-  private void drawPath(Canvas canvas, Paint paint) {
-    final int len = Math.min(idx, windowSize);
-    final int bottom = mRect.bottom;
-    float x, y;
+        if (newY > maxY || popY == maxY) {
+            needRescale = true;
+        }
 
-    final int i = idx - len;
-
-    float startY = powerValues[(i % windowSize)];
-
-    float startX = barWidth / 2;//(windowSize - len) * ticWidth;
-
-    y = bottom - (startY * scaleY);
-
-    Path path = new Path();
-
-    for (int j = 0; j < len; j++) {
-      final int k = (i + j) % windowSize;
-      x = startX + j * barWidth;
-      y = bottom - (powerValues[k] * scaleY);
-      path.moveTo(x, y);
-      path.lineTo(x , bottom);
+        repaint();
     }
 
-    canvas.drawPath(path, paint);
-
-  }
-
-
-  private void addValue(float newY) {
-    final float popY = powerValues[Math.max(0, idx - windowSize) % windowSize];
-
-    powerValues[idx++ % windowSize] = newY;
-
-    if (newY > maxY || popY == maxY) {
-      needRescale = true;
+    public void repaint() {
+        postInvalidate();
     }
 
-    repaint();
-  }
-
-  public void repaint() {
-    postInvalidate();
-  }
-
-  @Override
-  protected void onAttachedToWindow() {
-    disableUpdate(false);
-    super.onAttachedToWindow();
-  }
-
-  @Override
-  protected void onDetachedFromWindow() {
-    disableUpdate(true);
-    super.onDetachedFromWindow();
-  }
-
-  @Override
-  public boolean isDisabled() {
-    return disabled;
-  }
-
-  @Override
-  public void disableUpdate(boolean disable) {
-    if (this.disabled != disable) {
-      if (!disable) {
-        roboStroke.getBus().addBusListener(privateBusListener);
-      } else {
-        roboStroke.getBus().removeBusListener(privateBusListener);
-      }
-
-      this.disabled = disable;
+    @Override
+    protected void onAttachedToWindow() {
+        disableUpdate(false);
+        super.onAttachedToWindow();
     }
-  }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        disableUpdate(true);
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    @Override
+    public void disableUpdate(boolean disable) {
+        if (this.disabled != disable) {
+            if (!disable) {
+                roboStroke.getBus().addBusListener(privateBusListener);
+            } else {
+                roboStroke.getBus().removeBusListener(privateBusListener);
+            }
+
+            this.disabled = disable;
+        }
+    }
 }

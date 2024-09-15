@@ -19,14 +19,6 @@
 
 package org.nargila.robostroke.ui.graph.swing;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-
-import javax.swing.JPanel;
-
 import org.nargila.robostroke.ui.RSClickListener;
 import org.nargila.robostroke.ui.RSDoubleClickListener;
 import org.nargila.robostroke.ui.RSLongClickListener;
@@ -35,95 +27,99 @@ import org.nargila.robostroke.ui.graph.UpdatableGraphBase;
 import org.nargila.robostroke.ui.swing.SwingCanvas;
 import org.nargila.robostroke.ui.swing.SwingView;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+
 
 /**
  * Simple line graph plot view.
  *
  * @author tshalif
- *
  */
 public abstract class SwingGraphViewBase<T extends UpdatableGraphBase> extends JPanel implements DataUpdatable {
 
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  protected T graph;
+    protected T graph;
 
-  private final boolean selfPaint;
+    private final boolean selfPaint;
 
-  private final SwingView swingView;
+    private final SwingView swingView;
 
-  public SwingGraphViewBase() {
-    this(true);
-  }
+    public SwingGraphViewBase() {
+        this(true);
+    }
 
-  public SwingGraphViewBase(boolean selfPaint) {
+    public SwingGraphViewBase(boolean selfPaint) {
 
-    this.selfPaint = selfPaint;
+        this.selfPaint = selfPaint;
 
-    swingView = new SwingView(this);
+        swingView = new SwingView(this);
 
 //    setDoubleBuffered(false);
 
-  }
-
-  public void setOnLongClickListener(RSLongClickListener listener) {
-    swingView.setOnLongClickListener(listener);
-  }
-
-  public void setOnClickListener(RSClickListener listener) {
-    swingView.setOnClickListener(listener);
-  }
-
-  public void setOnDoubleClickListener(RSDoubleClickListener listener) {
-    swingView.setOnDoubleClickListener(listener);
-  }
-
-  protected void setGraph(T _graph) {
-
-    this.graph = _graph;
-
-    addComponentListener(new ComponentListener() {
-
-      public void componentShown(ComponentEvent e) {
-        graph.disableUpdate(false);
-      }
-
-      public void componentResized(ComponentEvent e) {
-      }
-
-      public void componentMoved(ComponentEvent e) {
-      }
-
-      public void componentHidden(ComponentEvent e) {
-        graph.disableUpdate(true);
-      }
-    });
-  }
-
-  @Override
-  public final void paint(Graphics g) {
-
-    if (selfPaint) {
-      Rectangle r = getBounds();
-      g.setColor(Color.BLACK);
-      g.fillRect(r.x, r.y, r.width, r.height);
-      graph.draw(new SwingCanvas(this, g));
-    } else {
-      super.paint(g);
     }
-  }
+
+    public void setOnLongClickListener(RSLongClickListener listener) {
+        swingView.setOnLongClickListener(listener);
+    }
+
+    public void setOnClickListener(RSClickListener listener) {
+        swingView.setOnClickListener(listener);
+    }
+
+    public void setOnDoubleClickListener(RSDoubleClickListener listener) {
+        swingView.setOnDoubleClickListener(listener);
+    }
+
+    protected void setGraph(T _graph) {
+
+        this.graph = _graph;
+
+        addComponentListener(new ComponentListener() {
+
+            public void componentShown(ComponentEvent e) {
+                graph.disableUpdate(false);
+            }
+
+            public void componentResized(ComponentEvent e) {
+            }
+
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            public void componentHidden(ComponentEvent e) {
+                graph.disableUpdate(true);
+            }
+        });
+    }
+
+    @Override
+    public final void paint(Graphics g) {
+
+        if (selfPaint) {
+            Rectangle r = getBounds();
+            g.setColor(Color.BLACK);
+            g.fillRect(r.x, r.y, r.width, r.height);
+            graph.draw(new SwingCanvas(this, g));
+        } else {
+            super.paint(g);
+        }
+    }
 
 
-  public boolean isDisabled() {
-    return graph.isDisabled();
-  }
+    public boolean isDisabled() {
+        return graph.isDisabled();
+    }
 
-  public void disableUpdate(boolean disable) {
-    graph.disableUpdate(disable);
-  }
+    public void disableUpdate(boolean disable) {
+        graph.disableUpdate(disable);
+    }
 
-  public void reset() {
-    graph.reset();
-  }
+    public void reset() {
+        graph.reset();
+    }
 }

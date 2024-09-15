@@ -9,10 +9,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- *
  * @author tshalif
  */
-public abstract class ListenerList<ListenerT,EventDataT> {
+public abstract class ListenerList<ListenerT, EventDataT> {
 
     private final Set<ListenerT> listeners = new LinkedHashSet<ListenerT>();
 
@@ -29,7 +28,7 @@ public abstract class ListenerList<ListenerT,EventDataT> {
     }
 
     public synchronized void dispatch(EventDataT eventObject) {
-        for (ListenerT l: listeners) {
+        for (ListenerT l : listeners) {
             dispatch(l, eventObject);
         }
     }

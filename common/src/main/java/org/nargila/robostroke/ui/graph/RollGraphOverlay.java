@@ -21,11 +21,7 @@ package org.nargila.robostroke.ui.graph;
 import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.data.DataIdx;
 import org.nargila.robostroke.data.SensorDataSink;
-import org.nargila.robostroke.ui.PaintStyle;
-import org.nargila.robostroke.ui.RSCanvas;
-import org.nargila.robostroke.ui.RSPaint;
-import org.nargila.robostroke.ui.RSRect;
-import org.nargila.robostroke.ui.UILiaison;
+import org.nargila.robostroke.ui.*;
 import org.nargila.robostroke.ui.graph.XYSeries.XMode;
 
 public class RollGraphOverlay implements SensorDataSink {
@@ -50,11 +46,11 @@ public class RollGraphOverlay implements SensorDataSink {
 
     private final CyclicArrayXYSeries rollSeriesImpl;
 
-  private final UILiaison uiFactory;
+    private final UILiaison uiFactory;
 
     public RollGraphOverlay(UILiaison uiFactory, MultiXYSeries multySeries) {
 
-      this.uiFactory = uiFactory;
+        this.uiFactory = uiFactory;
         rollPanelSeries = new CyclicArrayXYSeries(multySeries.xMode, new XYSeries.Renderer(uiFactory.createPaint()));
         rollPanelSeries.setxRange(multySeries.getxRange());
 
@@ -118,7 +114,7 @@ public class RollGraphOverlay implements SensorDataSink {
                 float left = (float) ((startX - minX) * scaleX);
                 float right = (float) (((stopX - minX) * scaleX));
 
-                canvas.drawRect((int)left, rect.top, (int)right, rect.bottom, rollBackgroundPaint);
+                canvas.drawRect((int) left, rect.top, (int) right, rect.bottom, rollBackgroundPaint);
             }
         }
     }
@@ -137,24 +133,24 @@ public class RollGraphOverlay implements SensorDataSink {
 
     @Override
     public void onSensorData(long timestamp, Object value) {
-      synchronized (multySeries) {
-        float[] values = (float[]) value;
+        synchronized (multySeries) {
+            float[] values = (float[]) value;
 
-        float y = filter
-        .filter(new float[] { values[DataIdx.ORIENT_ROLL] })[0];
+            float y = filter
+                    .filter(new float[]{values[DataIdx.ORIENT_ROLL]})[0];
 
-        rollAccum += y;
+            rollAccum += y;
 
-        if (rollAccumCount++ == 0) {
-          rollAccumTimestamp = timestamp;
+            if (rollAccumCount++ == 0) {
+                rollAccumTimestamp = timestamp;
+            }
+
+            if (rollAccumCount == rollAccumSize) {
+                rollPanelSeries.add(rollAccumTimestamp, rollAccum / rollAccumSize);
+                resetRollAccum();
+            }
+
+            rollSeries.add(timestamp, y);
         }
-
-        if (rollAccumCount == rollAccumSize) {
-          rollPanelSeries.add(rollAccumTimestamp, rollAccum / rollAccumSize);
-          resetRollAccum();
-        }
-
-        rollSeries.add(timestamp, y);
-      }
     }
 }

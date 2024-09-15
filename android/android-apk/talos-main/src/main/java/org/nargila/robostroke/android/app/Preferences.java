@@ -31,37 +31,37 @@ import android.widget.ListView;
 
 public class Preferences extends PreferenceActivity {
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      addPreferencesFromResource(R.xml.preferences);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.preferences);
 
-      ListView listView = getListView();
-      listView.setOnItemLongClickListener(new OnItemLongClickListener() {
-        @Override
-        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        ListView listView = getListView();
+        listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
-          ListView listView = (ListView) parent;
-          ListAdapter listAdapter = listView.getAdapter();
-          Object obj = listAdapter.getItem(position);
+                ListView listView = (ListView) parent;
+                ListAdapter listAdapter = listView.getAdapter();
+                Object obj = listAdapter.getItem(position);
 
-          if (obj != null && obj instanceof Preference) {
-            Preference p = (Preference) obj;
-            String key = p.getKey();
+                if (obj != null && obj instanceof Preference) {
+                    Preference p = (Preference) obj;
+                    String key = p.getKey();
 
-            if (key != null && key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
+                    if (key != null && key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
 
-              String url = "http://nargila.org/trac/robostroke/wiki/GuideParameters#" + key;
-              Intent i = new Intent(Intent.ACTION_VIEW);
-              i.setData(Uri.parse(url));
-              startActivity(i);
+                        String url = "http://nargila.org/trac/robostroke/wiki/GuideParameters#" + key;
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(url));
+                        startActivity(i);
+                    }
+
+                    return true;
+                }
+
+                return false;
             }
-
-            return true;
-          }
-
-          return false;
-        }
-      });
-  }
+        });
+    }
 }

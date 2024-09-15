@@ -25,30 +25,30 @@ import android.os.PowerManager;
 
 /**
  * Manages device wake lock
- * @author tshalif
  *
+ * @author tshalif
  */
 public class ScreenStayupLock {
-	private PowerManager.WakeLock wl;
-	private boolean inited;
-	private Activity owner;
-	private String tag;
-	
-	public ScreenStayupLock(Activity owner, String tag) {
-		this.owner = owner;
-		this.tag = tag;
-	}
-	
-	public void start() {
-		if (!inited) {
-			PowerManager pm = (PowerManager) owner.getSystemService(Context.POWER_SERVICE);
-			wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, tag);
-			inited = true;
-		}
-		wl.acquire();		
-	}
-	
-	public void stop() {
-		wl.release();		
-	}
+    private PowerManager.WakeLock wl;
+    private boolean inited;
+    private Activity owner;
+    private String tag;
+
+    public ScreenStayupLock(Activity owner, String tag) {
+        this.owner = owner;
+        this.tag = tag;
+    }
+
+    public void start() {
+        if (!inited) {
+            PowerManager pm = (PowerManager) owner.getSystemService(Context.POWER_SERVICE);
+            wl = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, tag);
+            inited = true;
+        }
+        wl.acquire();
+    }
+
+    public void stop() {
+        wl.release();
+    }
 }

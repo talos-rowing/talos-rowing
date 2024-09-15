@@ -19,20 +19,19 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import android.content.Context;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.AccellGraph;
 
-import android.content.Context;
-
 /**
  * subclass of LineGraphView for setting acceleration specific parameters
  */
-public class AccellGraphView extends AndroidGraphViewBase<AccellGraph>  {
+public class AccellGraphView extends AndroidGraphViewBase<AccellGraph> {
 
-  public AccellGraphView(Context context, float xRange, RoboStroke roboStroke) {
-    super(context);
+    public AccellGraphView(Context context, float xRange, RoboStroke roboStroke) {
+        super(context);
 
-    setGraph(new AccellGraph(new AndroidUILiaison(this), xRange, roboStroke));
-  }
+        setGraph(new AccellGraph(new AndroidUILiaison(this), xRange, roboStroke));
+    }
 }

@@ -24,94 +24,94 @@ import org.nargila.robostroke.common.filter.LowpassFilter;
 import org.nargila.robostroke.data.SensorDataFilter;
 import org.nargila.robostroke.stroke.HalfSinoidDetector.Dir;
 
-public abstract class StrokeScannerBase  extends SensorDataFilter {
+public abstract class StrokeScannerBase extends SensorDataFilter {
 
-  private final LowpassFilter amplitudeFilter;
-  private final HalfSinoidDetector decelerationAmplitudeDetector = new HalfSinoidDetector(Dir.DOWN);
+    private final LowpassFilter amplitudeFilter;
+    private final HalfSinoidDetector decelerationAmplitudeDetector = new HalfSinoidDetector(Dir.DOWN);
 
-  private final HalfSinoidDetector accelerationAmplitudeDetector = new HalfSinoidDetector(Dir.UP);
+    private final HalfSinoidDetector accelerationAmplitudeDetector = new HalfSinoidDetector(Dir.UP);
 
-  protected final RoboStrokeEventBus bus;
-
-
-  public StrokeScannerBase(RoboStrokeEventBus bus, float amplitudeFilterFactor) {
-    this.bus = bus;
-    amplitudeFilter = new LowpassFilter(amplitudeFilterFactor);
-  }
+    protected final RoboStrokeEventBus bus;
 
 
-  @Override
-  protected Object filterData(long timestamp, Object value) {
-
-    float[] values = (float[]) value;
-
-    float[] res = amplitudeFilter.filter(values);
-
-    float filteredAmplitude = res[0];
-
-    switch (accelerationAmplitudeDetector.add(filteredAmplitude)) {
-    case VALID_EXIT:
-      onDropBelow(timestamp, accelerationAmplitudeDetector.maxVal);
-      break;
-    case TESHOLD_PASS:
-      onAccelerationTreshold(timestamp, filteredAmplitude);
-      break;
+    public StrokeScannerBase(RoboStrokeEventBus bus, float amplitudeFilterFactor) {
+        this.bus = bus;
+        amplitudeFilter = new LowpassFilter(amplitudeFilterFactor);
     }
 
 
-    switch (decelerationAmplitudeDetector.add(filteredAmplitude)) {
-    case VALID_EXIT:
-      onRiseAbove(timestamp, decelerationAmplitudeDetector.maxVal);
-      break;
-    case TESHOLD_PASS:
-      onDecelerationTreshold(timestamp, filteredAmplitude);
-      break;
+    @Override
+    protected Object filterData(long timestamp, Object value) {
+
+        float[] values = (float[]) value;
+
+        float[] res = amplitudeFilter.filter(values);
+
+        float filteredAmplitude = res[0];
+
+        switch (accelerationAmplitudeDetector.add(filteredAmplitude)) {
+            case VALID_EXIT:
+                onDropBelow(timestamp, accelerationAmplitudeDetector.maxVal);
+                break;
+            case TESHOLD_PASS:
+                onAccelerationTreshold(timestamp, filteredAmplitude);
+                break;
+        }
+
+
+        switch (decelerationAmplitudeDetector.add(filteredAmplitude)) {
+            case VALID_EXIT:
+                onRiseAbove(timestamp, decelerationAmplitudeDetector.maxVal);
+                break;
+            case TESHOLD_PASS:
+                onDecelerationTreshold(timestamp, filteredAmplitude);
+                break;
+        }
+
+
+        return res;
     }
 
 
-    return res;
-  }
+    protected abstract void onDecelerationTreshold(long timestamp, float amplitude);
+
+    protected abstract void onAccelerationTreshold(long timestamp, float amplitude);
+
+    protected abstract void onDropBelow(long timestamp, float maxVal);
+
+    protected abstract void onRiseAbove(long timestamp, float minVal);
+
+    public float getAmplitudeFiltering() {
+        return amplitudeFilter.getFilteringFactor();
+    }
+
+    public void setAmplitudeFiltering(float factor) {
+        amplitudeFilter.setFilteringFactor(factor);
+    }
+
+    public float getAmplitudeChangeAcceptFactor() {
+        return decelerationAmplitudeDetector.getAmplitudeChangeAcceptFactor();
+    }
+
+    public void setAmplitudeChangeAcceptFactor(float factor) {
+        decelerationAmplitudeDetector.setAmplitudeChangeAcceptFactor(factor);
+    }
 
 
-  protected abstract void onDecelerationTreshold(long timestamp, float amplitude);
+    public float getAmplitudeChangeDamperFactor() {
+        return decelerationAmplitudeDetector.getAmplitudeChangeDamperFactor();
+    }
 
-  protected abstract void onAccelerationTreshold(long timestamp, float amplitude);
+    public void setAmplitudeChangeDamperFactor(float factor) {
+        decelerationAmplitudeDetector.setAmplitudeChangeDamperFactor(factor);
+    }
 
-  protected abstract void onDropBelow(long timestamp, float maxVal);
+    public float getMinAmplitude() {
+        return decelerationAmplitudeDetector.getMinAmplitude();
+    }
 
-  protected abstract void onRiseAbove(long timestamp, float minVal);
-
-  public float getAmplitudeFiltering() {
-    return amplitudeFilter.getFilteringFactor();
-  }
-
-  public void setAmplitudeFiltering(float factor) {
-    amplitudeFilter.setFilteringFactor(factor);
-  }
-
-  public float getAmplitudeChangeAcceptFactor() {
-    return decelerationAmplitudeDetector.getAmplitudeChangeAcceptFactor();
-  }
-
-  public void setAmplitudeChangeAcceptFactor(float factor) {
-    decelerationAmplitudeDetector.setAmplitudeChangeAcceptFactor(factor);
-  }
-
-
-  public float getAmplitudeChangeDamperFactor() {
-    return decelerationAmplitudeDetector.getAmplitudeChangeDamperFactor();
-  }
-
-  public void setAmplitudeChangeDamperFactor(float factor) {
-    decelerationAmplitudeDetector.setAmplitudeChangeDamperFactor(factor);
-  }
-
-  public float getMinAmplitude() {
-    return decelerationAmplitudeDetector.getMinAmplitude();
-  }
-
-  public void setMinAmplitude(float minAmplitude) {
-    decelerationAmplitudeDetector.setMinAmplitude(minAmplitude * 1.2f);
-    accelerationAmplitudeDetector.setMinAmplitude(minAmplitude);
-  }
+    public void setMinAmplitude(float minAmplitude) {
+        decelerationAmplitudeDetector.setMinAmplitude(minAmplitude * 1.2f);
+        accelerationAmplitudeDetector.setMinAmplitude(minAmplitude);
+    }
 }

@@ -24,13 +24,14 @@ import org.nargila.robostroke.data.DataRecord;
 /**
  * consumer of stroke rate updates.
  * Stroke rate updates are provided in strokes per minute
- * @author tshalif
  *
+ * @author tshalif
  */
 public interface BusEventListener {
-  /**
-   * process stroke rate notification
-   * @param spm stroke rate value in strokes per minute
-   */
-  void onBusEvent(DataRecord event);
+    /**
+     * process stroke rate notification
+     *
+     * @param spm stroke rate value in strokes per minute
+     */
+    void onBusEvent(DataRecord event);
 }

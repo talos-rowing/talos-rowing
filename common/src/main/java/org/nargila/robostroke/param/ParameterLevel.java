@@ -22,8 +22,8 @@
 package org.nargila.robostroke.param;
 
 public enum ParameterLevel {
-  BASIC,
-  ADVANCED,
-  PRIVATE,
-  DEBUG
+    BASIC,
+    ADVANCED,
+    PRIVATE,
+    DEBUG
 }

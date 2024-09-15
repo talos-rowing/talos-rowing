@@ -19,6 +19,7 @@
 package org.nargila.robostroke.ui;
 
 public interface RSDrawable extends HasVisibility {
-  public void draw(RSCanvas canvas);
-  public void repaint();
+    public void draw(RSCanvas canvas);
+
+    public void repaint();
 }

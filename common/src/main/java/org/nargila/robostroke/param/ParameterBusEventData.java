@@ -20,48 +20,50 @@ package org.nargila.robostroke.param;
 
 /**
  * Data object used as payload for BusEvent.PARAMETER_CHANGE  events
- * @author tshalif
  *
+ * @author tshalif
  */
 public class ParameterBusEventData {
-  private static final String FIELD_SEP = "|";
+    private static final String FIELD_SEP = "|";
 
-  /**
-   * marks this parameter event as internal - i.e. it is not a replay event
-   */
-  public final boolean internal;
-  public String id;
-  public String value;
+    /**
+     * marks this parameter event as internal - i.e. it is not a replay event
+     */
+    public final boolean internal;
+    public String id;
+    public String value;
 
-  /**
-   * package private constructor for Parameter event created by ParameterService
-   * @param id parameter identifier
-   * @param value parameter value string serialized form
-   */
-  ParameterBusEventData(String id, String value) {
-    this.internal = true;
-    this.id = id;
-    this.value = value;
-  }
+    /**
+     * package private constructor for Parameter event created by ParameterService
+     *
+     * @param id    parameter identifier
+     * @param value parameter value string serialized form
+     */
+    ParameterBusEventData(String id, String value) {
+        this.internal = true;
+        this.id = id;
+        this.value = value;
+    }
 
-  /**
-   * public constructor for events generated during a replay of a recorded session
-   * @param s ParameterBusEventData string serialized form
-   */
-  public ParameterBusEventData(String s) {
-    internal = false;
-    deserialize(s);
-  }
+    /**
+     * public constructor for events generated during a replay of a recorded session
+     *
+     * @param s ParameterBusEventData string serialized form
+     */
+    public ParameterBusEventData(String s) {
+        internal = false;
+        deserialize(s);
+    }
 
-  @Override
-  public String toString() {
-    return id + FIELD_SEP + value;
-  }
+    @Override
+    public String toString() {
+        return id + FIELD_SEP + value;
+    }
 
-  private void deserialize(String s) {
-    String[] arr = s.split("\\" + FIELD_SEP);
+    private void deserialize(String s) {
+        String[] arr = s.split("\\" + FIELD_SEP);
 
-    id = arr[0];
-    value = arr[1];
-  }
+        id = arr[0];
+        value = arr[1];
+    }
 }

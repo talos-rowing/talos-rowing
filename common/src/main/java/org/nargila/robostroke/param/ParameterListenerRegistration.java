@@ -23,17 +23,17 @@ package org.nargila.robostroke.param;
 
 import org.nargila.robostroke.common.Pair;
 
-public class ParameterListenerRegistration extends Pair<String,ParameterChangeListener> {
+public class ParameterListenerRegistration extends Pair<String, ParameterChangeListener> {
 
-  public ParameterListenerRegistration(String paramId, ParameterChangeListener listener) {
-    super(paramId, listener);
-  }
+    public ParameterListenerRegistration(String paramId, ParameterChangeListener listener) {
+        super(paramId, listener);
+    }
 
-  public String getParamId() {
-    return first;
-  }
+    public String getParamId() {
+        return first;
+    }
 
-  public ParameterChangeListener getListener() {
-    return second;
-  }
+    public ParameterChangeListener getListener() {
+        return second;
+    }
 }

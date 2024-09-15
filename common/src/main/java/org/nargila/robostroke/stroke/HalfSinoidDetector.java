@@ -23,8 +23,8 @@ import org.nargila.robostroke.common.filter.LowpassFilter;
 
 /**
  * Detects half sinoid event with dynamic amplitude change adaptation
- * @author tshalif
  *
+ * @author tshalif
  */
 class HalfSinoidDetector {
     private static final float DEFAULT_AMPLITUDE_CHANGE_DAMP_FACTOR = .5f;
@@ -34,11 +34,11 @@ class HalfSinoidDetector {
 
     enum State {
         NONE,
-            ENTER,
-            TESHOLD_PASS,
-            VALID_EXIT,
-            INVALID_EXIT
-            }
+        ENTER,
+        TESHOLD_PASS,
+        VALID_EXIT,
+        INVALID_EXIT
+    }
 
     private State state = State.NONE;
 
@@ -48,8 +48,8 @@ class HalfSinoidDetector {
      */
     enum Dir {
         UP,
-            DOWN
-            }
+        DOWN
+    }
 
     private final Dir dir;
 
@@ -102,27 +102,29 @@ class HalfSinoidDetector {
 
     /**
      * checks either the acceleration value is inside the jurisdiction of this object
+     *
      * @param v acceleration value
      * @return true if insde, false if not
      */
     private boolean checkInside(float v) {
         switch (dir) {
-        case DOWN:
-            if (v < 0) {
-                return true;
-            }
-            break;
-        case UP:
-            if (v > 0) {
-                return true;
-            }
-            break;
+            case DOWN:
+                if (v < 0) {
+                    return true;
+                }
+                break;
+            case UP:
+                if (v > 0) {
+                    return true;
+                }
+                break;
         }
         return false;
     }
 
     /**
      * add acceleration value and return true if a stroke was detected
+     *
      * @param v stroke acceleration value
      * @return true if this added acceleration value <code>v</code> causes a detection of a stroke
      */
@@ -139,15 +141,15 @@ class HalfSinoidDetector {
             wasInside = true;
 
             switch (state) {
-            case NONE:
-                state = State.ENTER;
-                /* no break */
-            case ENTER:
-                if (maxVal > minAmplitude && maxVal > amplitudeDampedValue * amplitudeChangeAcceptFactor) {
-                    state = State.TESHOLD_PASS;
-                    retval = State.TESHOLD_PASS;
-                }
-                break;
+                case NONE:
+                    state = State.ENTER;
+                    /* no break */
+                case ENTER:
+                    if (maxVal > minAmplitude && maxVal > amplitudeDampedValue * amplitudeChangeAcceptFactor) {
+                        state = State.TESHOLD_PASS;
+                        retval = State.TESHOLD_PASS;
+                    }
+                    break;
             }
 
         } else if (wasInside) {
@@ -155,12 +157,12 @@ class HalfSinoidDetector {
             amplitudeDampedValue = amplitudeChangeDamper.filter(new float[]{maxVal})[0];
 
             switch (state) {
-            case TESHOLD_PASS:
-                retval = State.VALID_EXIT;
-                break;
-            default:
-                retval = State.INVALID_EXIT;
-                break;
+                case TESHOLD_PASS:
+                    retval = State.VALID_EXIT;
+                    break;
+                default:
+                    retval = State.INVALID_EXIT;
+                    break;
             }
 
             state = State.NONE;

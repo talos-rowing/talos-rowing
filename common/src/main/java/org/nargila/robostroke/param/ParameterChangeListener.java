@@ -19,5 +19,5 @@
 package org.nargila.robostroke.param;
 
 public interface ParameterChangeListener {
-  public void onParameterChanged(Parameter param);
+    public void onParameterChanged(Parameter param);
 }

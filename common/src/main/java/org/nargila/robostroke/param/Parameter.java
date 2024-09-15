@@ -24,114 +24,119 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Parameter object with param ID, value and default value
- * @author tshalif
  *
  * @param <T> data type of parameter value
+ * @author tshalif
  */
 public class Parameter {
 
-  private final ParameterInfo info;
+    private final ParameterInfo info;
 
-  private Object value;
-  private AtomicReference<Object> savedValue;
+    private Object value;
+    private AtomicReference<Object> savedValue;
 
-  ParameterService parameterService; // is set by ParameterService when this param instance is registered
+    ParameterService parameterService; // is set by ParameterService when this param instance is registered
 
-  public Parameter(ParameterInfo info) {
+    public Parameter(ParameterInfo info) {
 
-    this.info = info;
+        this.info = info;
 
-    value = info.getDefaultValue();
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T> T getValue() {
-    return (T) value;
-  }
-
-  /**
-   * save current value
-   */
-  public synchronized void saveValue() {
-    savedValue = new AtomicReference<Object>(this.value);
-  }
-
-  /**
-   * restore value from savedValue
-   */
-  public synchronized void restoreValue() {
-
-    if (savedValue != null) {
-      Object tmp = savedValue.get();
-      savedValue = null;
-      setValue(tmp);
-    }
-  }
-
-  public final void setValue(Object value) {
-    parameterService.setParam(this, value);
-  }
-
-  boolean setParameterValue(Object value) {
-
-    boolean hasChanged;
-
-    if (this.value == null || value == null) {
-      hasChanged = this.value != value;
-    } else {
-      hasChanged = !this.value.equals(value);
+        value = info.getDefaultValue();
     }
 
-    this.value = value;
-
-    return hasChanged;
-  }
-
-  public String getId() {
-    return info.getId();
-  }
-  public String getName() {
-    return info.getName();
-  }
-  public String getDescription() {
-    return info.getDescription();
-  }
-  public String getCategory() {
-    return info.getCategory();
-  }
-  public ParameterLevel getLevel() {
-    return info.getLevel();
-  }
-  @SuppressWarnings("unchecked")
-  public <T> T getDefaultValue() {
-    return (T) info.getDefaultValue();
-  }
-
-  @SuppressWarnings("unchecked")
-  public <T> T convertFromString(String val) {
-    return (T) info.convertFromString(val);
-  }
-
-  public String convertToString() {
-    return info.convertToString(value);
-  }
-
-  protected Object[] makeChoices() {
-    return info.makeChoices();
-  }
-
-  public final Object[] getChoices() {
-
-    LinkedHashSet<Object> res = new LinkedHashSet<Object>();
-    res.add(getDefaultValue());
-    res.add(getValue());
-
-    Object[] choices = makeChoices();
-
-    if (choices != null) {
-      res.addAll(Arrays.asList(choices));
+    @SuppressWarnings("unchecked")
+    public <T> T getValue() {
+        return (T) value;
     }
 
-    return res.toArray();
-  }
+    /**
+     * save current value
+     */
+    public synchronized void saveValue() {
+        savedValue = new AtomicReference<Object>(this.value);
+    }
+
+    /**
+     * restore value from savedValue
+     */
+    public synchronized void restoreValue() {
+
+        if (savedValue != null) {
+            Object tmp = savedValue.get();
+            savedValue = null;
+            setValue(tmp);
+        }
+    }
+
+    public final void setValue(Object value) {
+        parameterService.setParam(this, value);
+    }
+
+    boolean setParameterValue(Object value) {
+
+        boolean hasChanged;
+
+        if (this.value == null || value == null) {
+            hasChanged = this.value != value;
+        } else {
+            hasChanged = !this.value.equals(value);
+        }
+
+        this.value = value;
+
+        return hasChanged;
+    }
+
+    public String getId() {
+        return info.getId();
+    }
+
+    public String getName() {
+        return info.getName();
+    }
+
+    public String getDescription() {
+        return info.getDescription();
+    }
+
+    public String getCategory() {
+        return info.getCategory();
+    }
+
+    public ParameterLevel getLevel() {
+        return info.getLevel();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getDefaultValue() {
+        return (T) info.getDefaultValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T convertFromString(String val) {
+        return (T) info.convertFromString(val);
+    }
+
+    public String convertToString() {
+        return info.convertToString(value);
+    }
+
+    protected Object[] makeChoices() {
+        return info.makeChoices();
+    }
+
+    public final Object[] getChoices() {
+
+        LinkedHashSet<Object> res = new LinkedHashSet<Object>();
+        res.add(getDefaultValue());
+        res.add(getValue());
+
+        Object[] choices = makeChoices();
+
+        if (choices != null) {
+            res.addAll(Arrays.asList(choices));
+        }
+
+        return res.toArray();
+    }
 }

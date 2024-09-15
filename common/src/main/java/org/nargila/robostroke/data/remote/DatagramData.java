@@ -19,148 +19,148 @@
 
 package org.nargila.robostroke.data.remote;
 
+import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.nargila.robostroke.data.remote.DataRemote.DataRemoteError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class DatagramData {
 
-  private static final Logger logger = LoggerFactory.getLogger(DatagramData.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatagramData.class);
 
-  private String address;
+    private String address;
 
-  private int port;
+    private int port;
 
-  private Thread connectionThread;
+    private Thread connectionThread;
 
-  private boolean stopRequested;
+    private boolean stopRequested;
 
-  final DatagramSocketHelper dsh = new DatagramSocketHelper();
+    final DatagramSocketHelper dsh = new DatagramSocketHelper();
 
-  private DatagramSocket socket;
+    private DatagramSocket socket;
 
-  private final DatagramSocketType type;
+    private final DatagramSocketType type;
 
-  protected DatagramData(DatagramSocketType type, String address, int port) throws DataRemoteError {
-    logger.debug("initializing {} UDP {}:{}", type, address, port);
+    protected DatagramData(DatagramSocketType type, String address, int port) throws DataRemoteError {
+        logger.debug("initializing {} UDP {}:{}", type, address, port);
 
-    this.type = type;
-    this.address = address;
-    this.port = port;
-  }
-
-  public synchronized void stop() {
-
-    stopRequested = true;
-
-    if (socket != null) {
-      socket.close();
+        this.type = type;
+        this.address = address;
+        this.port = port;
     }
 
-    if (connectionThread != null) {
-      connectionThread.interrupt();
+    public synchronized void stop() {
 
-      try {
-        connectionThread.join();
-      } catch (InterruptedException e) {
-      }
+        stopRequested = true;
 
-      socket = null;
-    }
-
-    stopRequested = false;
-  }
-
-  public boolean isConnected() {
-    return !stopRequested && socket != null;
-  }
-
-
-  public synchronized void start() {
-
-    logger.debug("starting {} UDP {}:{}", this.type, this.address, this.port);
-
-    final String name = getClass().getSimpleName();
-    final Object startSync = this;
-
-    connectionThread = new Thread(name) {
-      public void run() {
-
-        while (!stopRequested) {
-          try {
-
-            if (socket == null) {
-              synchronized (startSync) {
-                try {
-
-                  socket = dsh.createSocket(type, address, port);
-
-                } finally {
-                  startSync.notifyAll();
-                }
-              }
-            }
-
-
-            processNextItem(dsh);
-
-          } catch (Exception e) {
-            if (!stopRequested) {
-              logger.warn("remote data reading error - receiver loop continues", e);
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException e1) {
-              }
-            }
-          }
+        if (socket != null) {
+            socket.close();
         }
-      }
-    };
 
-    synchronized (startSync) {
+        if (connectionThread != null) {
+            connectionThread.interrupt();
 
-      connectionThread.start();
+            try {
+                connectionThread.join();
+            } catch (InterruptedException e) {
+            }
 
-      try {
-        startSync.wait();
-      } catch (InterruptedException e) {
+            socket = null;
+        }
 
-      }
+        stopRequested = false;
     }
-  }
 
-  protected abstract void processNextItem(DatagramSocketHelper dsh) throws IOException;
-
-  private synchronized void restart() {
-
-    boolean alreadyStarted = socket != null;
-
-    if (alreadyStarted) {
-      stop();
-      start();
+    public boolean isConnected() {
+        return !stopRequested && socket != null;
     }
-  }
 
-  public void setPort(int port) {
-    this.port = port;
-    restart();
-  }
 
-  public void setAddress(String address) {
-    this.address = address;
-    restart();
-  }
+    public synchronized void start() {
 
-  public boolean isMulticast() throws DataRemoteError {
-    try {
-      return InetAddress.getByName(address).isMulticastAddress();
-    } catch (UnknownHostException e) {
-      throw new DataRemoteError(e);
+        logger.debug("starting {} UDP {}:{}", this.type, this.address, this.port);
+
+        final String name = getClass().getSimpleName();
+        final Object startSync = this;
+
+        connectionThread = new Thread(name) {
+            public void run() {
+
+                while (!stopRequested) {
+                    try {
+
+                        if (socket == null) {
+                            synchronized (startSync) {
+                                try {
+
+                                    socket = dsh.createSocket(type, address, port);
+
+                                } finally {
+                                    startSync.notifyAll();
+                                }
+                            }
+                        }
+
+
+                        processNextItem(dsh);
+
+                    } catch (Exception e) {
+                        if (!stopRequested) {
+                            logger.warn("remote data reading error - receiver loop continues", e);
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e1) {
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        synchronized (startSync) {
+
+            connectionThread.start();
+
+            try {
+                startSync.wait();
+            } catch (InterruptedException e) {
+
+            }
+        }
     }
-  }
+
+    protected abstract void processNextItem(DatagramSocketHelper dsh) throws IOException;
+
+    private synchronized void restart() {
+
+        boolean alreadyStarted = socket != null;
+
+        if (alreadyStarted) {
+            stop();
+            start();
+        }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+        restart();
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+        restart();
+    }
+
+    public boolean isMulticast() throws DataRemoteError {
+        try {
+            return InetAddress.getByName(address).isMulticastAddress();
+        } catch (UnknownHostException e) {
+            throw new DataRemoteError(e);
+        }
+    }
 }

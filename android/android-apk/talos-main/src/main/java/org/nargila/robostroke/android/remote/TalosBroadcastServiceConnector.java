@@ -19,92 +19,91 @@
 
 package org.nargila.robostroke.android.remote;
 
+import android.content.Intent;
 import org.nargila.robostroke.android.app.RoboStrokeActivity;
 import org.nargila.robostroke.data.remote.DataSender;
 import org.nargila.robostroke.data.remote.RemoteDataHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.content.Intent;
+public class TalosBroadcastServiceConnector implements DataSender {
 
-public class TalosBroadcastServiceConnector  implements DataSender {
+    private static final Logger logger = LoggerFactory.getLogger(TalosBroadcastServiceConnector.class);
 
-  private static final Logger logger = LoggerFactory.getLogger(TalosBroadcastServiceConnector.class);
+    private final RoboStrokeActivity owner;
+    private Intent service;
+    private boolean started;
+    private TalosRemoteServiceHelper helper;
 
-  private final RoboStrokeActivity owner;
-  private Intent service;
-  private boolean started;
-  private TalosRemoteServiceHelper helper;
-
-  public TalosBroadcastServiceConnector(RoboStrokeActivity owner) {
-    this.owner = owner;
-  }
-
-  @Override
-  public synchronized void start() throws DataRemoteError {
-
-    TalosRemoteServiceHelper helper;
-
-
-    try {
-      this.helper = helper = new TalosRemoteServiceHelper(owner, TalosRemoteServiceHelper.BROADCAST_SERVICE_ID);
-    } catch (ServiceNotExist e) {
-      throw new DataRemoteError(e);
+    public TalosBroadcastServiceConnector(RoboStrokeActivity owner) {
+        this.owner = owner;
     }
 
-    service = helper.service;
+    @Override
+    public synchronized void start() throws DataRemoteError {
 
-    int port = RemoteDataHelper.getPort(owner.getRoboStroke());
-    String host = RemoteDataHelper.getAddr(owner.getRoboStroke());
+        TalosRemoteServiceHelper helper;
 
-    logger.info("starting boardcast service to endpoint {}:{}", host, port);
 
-    service.putExtra("port", port);
-    service.putExtra("host", host);
+        try {
+            this.helper = helper = new TalosRemoteServiceHelper(owner, TalosRemoteServiceHelper.BROADCAST_SERVICE_ID);
+        } catch (ServiceNotExist e) {
+            throw new DataRemoteError(e);
+        }
 
-    owner.startService(service);
+        service = helper.service;
 
-    started = true;
-  }
+        int port = RemoteDataHelper.getPort(owner.getRoboStroke());
+        String host = RemoteDataHelper.getAddr(owner.getRoboStroke());
 
-  @Override
-  public synchronized void stop() {
+        logger.info("starting boardcast service to endpoint {}:{}", host, port);
 
-    if (started) {
-      owner.stopService(service);
+        service.putExtra("port", port);
+        service.putExtra("host", host);
 
-      started = false;
+        owner.startService(service);
+
+        started = true;
     }
-  }
 
+    @Override
+    public synchronized void stop() {
 
-  @Override
-  public void write(String data) {
+        if (started) {
+            owner.stopService(service);
 
-    if (started) {
-      Intent intent = helper.getServiceIntent();
-      intent.putExtra("data", data);
-      owner.sendBroadcast(intent);
+            started = false;
+        }
     }
-  }
 
-  @Override
-  public void setAddress(String address) {
-    restart();
-  }
 
-  @Override
-  public synchronized void setPort(int port) {
-    restart();
-  }
+    @Override
+    public void write(String data) {
 
-  private synchronized void restart() {
-    if (started) {
-      stop();
-      try {
-        start();
-      } catch (Exception e) {
-      }
+        if (started) {
+            Intent intent = helper.getServiceIntent();
+            intent.putExtra("data", data);
+            owner.sendBroadcast(intent);
+        }
     }
-  }
+
+    @Override
+    public void setAddress(String address) {
+        restart();
+    }
+
+    @Override
+    public synchronized void setPort(int port) {
+        restart();
+    }
+
+    private synchronized void restart() {
+        if (started) {
+            stop();
+            try {
+                start();
+            } catch (Exception e) {
+            }
+        }
+    }
 }

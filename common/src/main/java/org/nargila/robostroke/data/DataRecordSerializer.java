@@ -22,152 +22,152 @@ package org.nargila.robostroke.data;
 import org.nargila.robostroke.param.ParameterBusEventData;
 
 public abstract class DataRecordSerializer {
-  public static class BOOLEAN extends DataRecordSerializer {
+    public static class BOOLEAN extends DataRecordSerializer {
 
-    @Override
-    public Object doParse(String s) {
-      return Boolean.valueOf(s);
-    }
-  }
-
-  public static final class LONG extends DataRecordSerializer {
-
-    @Override
-    public Object doParse(String s) {
-      return Long.valueOf(s);
-    }
-  }
-
-  public static final class INT extends DataRecordSerializer {
-
-    @Override
-    public Object doParse(String s) {
-      return Integer.valueOf(s);
-    }
-  }
-
-  public static final class FLOAT extends DataRecordSerializer {
-
-    @Override
-    public Object doParse(String s) {
-      return Float.valueOf(s);
-    }
-  }
-
-  public static final class DOUBLE extends DataRecordSerializer {
-
-    @Override
-    public Object doParse(String s) {
-      return Double.valueOf(s);
-    }
-  }
-
-  public static final class FLOAT_ARR extends DataRecordSerializer {
-
-    private final String sep;
-
-    public FLOAT_ARR() {
-      this(",");
-    }
-
-    public FLOAT_ARR(String sep) {
-      this.sep = sep;
-    }
-
-    @Override
-    public Object doParse(String s) {
-      String[] sarr = s.split(sep);
-      float[] res = new float[sarr.length];
-
-      for (int i = 0; i < sarr.length; ++i) {
-        res[i] = Float.parseFloat(sarr[i]);
-      }
-      return res;
-    }
-
-    @Override
-    protected String doSerialize(Object data) {
-
-      String sdata = "";
-
-      int i = 0;
-      for (float f : ((float[]) data)) {
-        if (i++ != 0) {
-          sdata += sep;
+        @Override
+        public Object doParse(String s) {
+            return Boolean.valueOf(s);
         }
-        sdata += f;
-      }
-
-      return sdata;
-    }
-  }
-
-  public static final class DOUBLE_ARR extends DataRecordSerializer {
-
-    private final String sep;
-
-    public DOUBLE_ARR() {
-      this(",");
     }
 
-    public DOUBLE_ARR(String sep) {
-      this.sep = sep;
-    }
+    public static final class LONG extends DataRecordSerializer {
 
-    @Override
-    public Object doParse(String s) {
-      String[] sarr = s.split(sep);
-      double[] res = new double[sarr.length];
-
-      for (int i = 0; i < sarr.length; ++i) {
-        res[i] = Double.parseDouble(sarr[i]);
-      }
-      return res;
-    }
-
-    @Override
-    protected String doSerialize(Object data) {
-
-      String sdata = "";
-
-      int i = 0;
-      for (double f : ((double[]) data)) {
-        if (i++ != 0) {
-          sdata += sep;
+        @Override
+        public Object doParse(String s) {
+            return Long.valueOf(s);
         }
-        sdata += f;
-      }
-
-      return sdata;
     }
-  }
 
-  public static final class PARAMETER extends DataRecordSerializer {
-    @Override
-    public Object doParse(String s) {
-      return new ParameterBusEventData(s);
+    public static final class INT extends DataRecordSerializer {
+
+        @Override
+        public Object doParse(String s) {
+            return Integer.valueOf(s);
+        }
     }
-  }
 
-  public Object parse(String s) {
-    if (s.equals("null")) {
-      return null;
-    } else {
-      return doParse(s);
+    public static final class FLOAT extends DataRecordSerializer {
+
+        @Override
+        public Object doParse(String s) {
+            return Float.valueOf(s);
+        }
     }
-  }
 
-  public String serialize(Object data) {
-    if (data == null) {
-      return "null";
-    } else {
-      return doSerialize(data);
+    public static final class DOUBLE extends DataRecordSerializer {
+
+        @Override
+        public Object doParse(String s) {
+            return Double.valueOf(s);
+        }
     }
-  }
 
-  protected String doSerialize(Object data) {
-    return data.toString();
-  }
+    public static final class FLOAT_ARR extends DataRecordSerializer {
 
-  protected abstract Object doParse(String s);
+        private final String sep;
+
+        public FLOAT_ARR() {
+            this(",");
+        }
+
+        public FLOAT_ARR(String sep) {
+            this.sep = sep;
+        }
+
+        @Override
+        public Object doParse(String s) {
+            String[] sarr = s.split(sep);
+            float[] res = new float[sarr.length];
+
+            for (int i = 0; i < sarr.length; ++i) {
+                res[i] = Float.parseFloat(sarr[i]);
+            }
+            return res;
+        }
+
+        @Override
+        protected String doSerialize(Object data) {
+
+            String sdata = "";
+
+            int i = 0;
+            for (float f : ((float[]) data)) {
+                if (i++ != 0) {
+                    sdata += sep;
+                }
+                sdata += f;
+            }
+
+            return sdata;
+        }
+    }
+
+    public static final class DOUBLE_ARR extends DataRecordSerializer {
+
+        private final String sep;
+
+        public DOUBLE_ARR() {
+            this(",");
+        }
+
+        public DOUBLE_ARR(String sep) {
+            this.sep = sep;
+        }
+
+        @Override
+        public Object doParse(String s) {
+            String[] sarr = s.split(sep);
+            double[] res = new double[sarr.length];
+
+            for (int i = 0; i < sarr.length; ++i) {
+                res[i] = Double.parseDouble(sarr[i]);
+            }
+            return res;
+        }
+
+        @Override
+        protected String doSerialize(Object data) {
+
+            String sdata = "";
+
+            int i = 0;
+            for (double f : ((double[]) data)) {
+                if (i++ != 0) {
+                    sdata += sep;
+                }
+                sdata += f;
+            }
+
+            return sdata;
+        }
+    }
+
+    public static final class PARAMETER extends DataRecordSerializer {
+        @Override
+        public Object doParse(String s) {
+            return new ParameterBusEventData(s);
+        }
+    }
+
+    public Object parse(String s) {
+        if (s.equals("null")) {
+            return null;
+        } else {
+            return doParse(s);
+        }
+    }
+
+    public String serialize(Object data) {
+        if (data == null) {
+            return "null";
+        } else {
+            return doSerialize(data);
+        }
+    }
+
+    protected String doSerialize(Object data) {
+        return data.toString();
+    }
+
+    protected abstract Object doParse(String s);
 }

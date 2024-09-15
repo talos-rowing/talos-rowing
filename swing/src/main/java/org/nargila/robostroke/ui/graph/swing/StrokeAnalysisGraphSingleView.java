@@ -28,10 +28,10 @@ import org.nargila.robostroke.ui.swing.SwingUILiaison;
  * subclass of LineGraphView for setting acceleration specific parameters
  */
 public class StrokeAnalysisGraphSingleView extends SwingGraphViewBase<StrokeAnalysisGraphSingle> {
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
 
-  public StrokeAnalysisGraphSingleView(RoboStroke roboStroke) {
-    setGraph(new StrokeAnalysisGraphSingle(new SwingUILiaison(this), roboStroke));
-  }
+    public StrokeAnalysisGraphSingleView(RoboStroke roboStroke) {
+        setGraph(new StrokeAnalysisGraphSingle(new SwingUILiaison(this), roboStroke));
+    }
 }

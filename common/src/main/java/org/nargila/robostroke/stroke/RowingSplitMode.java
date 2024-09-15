@@ -19,8 +19,8 @@
 package org.nargila.robostroke.stroke;
 
 public enum RowingSplitMode {
-  AUTO,
-  SEMI_AUTO,
-  CONTINUOUS,
-  MANUAL
+    AUTO,
+    SEMI_AUTO,
+    CONTINUOUS,
+    MANUAL
 }

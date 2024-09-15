@@ -21,14 +21,15 @@ package org.nargila.robostroke.data;
 
 /**
  * An interface describing an object which can accept/process sensor data
- * @author tshalif
  *
+ * @author tshalif
  */
 public interface SensorDataSink {
-  /**
-   * Process sensor data event
-   * @param timestamp timestamp of event
-   * @param value sensor values
-   */
-  void onSensorData(long timestamp, Object value);
+    /**
+     * Process sensor data event
+     *
+     * @param timestamp timestamp of event
+     * @param value     sensor values
+     */
+    void onSensorData(long timestamp, Object value);
 }

@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
  */
 public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Static variables
     //
     public final static ClockTime NONE = new ClockTime(-1, TimeUnit.NANOSECONDS);
@@ -43,29 +43,28 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
     /**
      * Creates a new instance of Time
      *
-     * @param time the length of time this object represents.
+     * @param time  the length of time this object represents.
      * @param units the units <tt>time</tt> is expressed in.
      */
     private ClockTime(long time, TimeUnit units) {
-      setValue(units.toNanos(time));
+        setValue(units.toNanos(time));
     }
 
     /**
      * Creates a new instance from System.currentTimeMillis()
-     *
      */
     public ClockTime() {
         this(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
 
-
     private void setValue(long value) {
-    this.value = value;
-  }
+        this.value = value;
+    }
 
-  /**
+    /**
      * Creates a new ClockTime object for a microsecond value.
+     *
      * @param microseconds The microsecond value to represent.
      * @return The new ClockTime object.
      */
@@ -75,6 +74,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
     /**
      * Creates a new ClockTime object for a timestamp value.
+     *
      * @param timestamp timestamp inf spu format of HH:MM:SS,mmm
      * @return The new ClockTime object.
      */
@@ -84,6 +84,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
     /**
      * Creates a new ClockTime object for a millisecond value.
+     *
      * @param milliseconds The millisecond value to represent.
      * @return The new ClockTime object.
      */
@@ -93,6 +94,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
     /**
      * Creates a new ClockTime object for a nanosecond value.
+     *
      * @param nanoseconds The nanosecond value to represent.
      * @return The new ClockTime object.
      */
@@ -102,6 +104,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
     /**
      * Creates a new ClockTime object for a second value.
+     *
      * @param seconds The second value to represent.
      * @return The new ClockTime object.
      */
@@ -112,7 +115,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
     /**
      * Returns a new ClockTime object that represents the <tt>time</tt> value.
      *
-     * @param time the length of time this object represents, in value.
+     * @param time  the length of time this object represents, in value.
      * @param units the units <tt>time</tt> is expressed in.
      * @return The new ClockTime object.
      */
@@ -126,7 +129,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
         return new ClockTime(time, units);
     }
 
-     /**
+    /**
      * Returns a new ClockTime object that represents the <tt>timestamp</tt> value.
      *
      * @param timestamp timestamp inf spu format of HH:MM:SS,mmm
@@ -135,29 +138,29 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
     public static ClockTime valueOf(String timestamp) {
         //private static final Pattern SPU_TIMESTAMP_PATTERN = Pattern.compile("^([0-9]+):([0-9][0-9]):([0-9][0-9]),([0-9][0-9][0-9])$");
 
-      String[] ss = timestamp.split(",");
+        String[] ss = timestamp.split(",");
 
-      String[] tt = ss[0].split(":");
+        String[] tt = ss[0].split(":");
 
-      int hours = new Integer(tt[0]);
-      int minutes = new Integer(tt[1]);
-      int seconds = new Integer(tt[2]);
-      int millis = new Integer(ss[1]);
+        int hours = new Integer(tt[0]);
+        int minutes = new Integer(tt[1]);
+        int seconds = new Integer(tt[2]);
+        int millis = new Integer(ss[1]);
 
-      if (minutes > 59 || minutes < 0 || seconds > 59 || seconds < 0 || millis > 999 || millis < 0) {
+        if (minutes > 59 || minutes < 0 || seconds > 59 || seconds < 0 || millis > 999 || millis < 0) {
             throw new IllegalArgumentException("bad timestamp format " + timestamp);
         }
 
 
-      long ms =
-        TimeUnit.HOURS.toMillis(hours) +
-        TimeUnit.MINUTES.toMillis(minutes) +
-        TimeUnit.SECONDS.toMillis(seconds) + millis;
+        long ms =
+            TimeUnit.HOURS.toMillis(hours) +
+            TimeUnit.MINUTES.toMillis(minutes) +
+            TimeUnit.SECONDS.toMillis(seconds) + millis;
 
         return valueOf(ms, TimeUnit.MILLISECONDS);
     }
 
-   /**
+    /**
      * Get the hours component of the total time.
      *
      * @return The hours component of the total time.
@@ -264,17 +267,17 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
      */
     @Override
     public String toString() {
-      long hours = getHours();
-      long minutes = getMinutes();
-      long seconds = getSeconds();
-      long millis = getNanoSeconds() / 1000000;
+        long hours = getHours();
+        long minutes = getMinutes();
+        long seconds = getSeconds();
+        long millis = getNanoSeconds() / 1000000;
 
-      return new StringBuilder()
-        .append(hours > 9 ? "" : "0").append(getHours()).append(":")
-        .append(minutes > 9 ? "" : "0").append(minutes).append(":")
-        .append(seconds > 9 ? "" : "0").append(seconds).append(",")
-        .append(millis > 99 ? "" : (millis > 9 ? "0" : "00")).append(millis)
-        .toString();
+        return new StringBuilder()
+                .append(hours > 9 ? "" : "0").append(getHours()).append(":")
+                .append(minutes > 9 ? "" : "0").append(minutes).append(":")
+                .append(seconds > 9 ? "" : "0").append(seconds).append(",")
+                .append(millis > 99 ? "" : (millis > 9 ? "0" : "00")).append(millis)
+                .toString();
     }
 
     /**
@@ -300,7 +303,7 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
      */
     @Override
     public int hashCode() {
-        return (int)(value ^ (value >>> 32));
+        return (int) (value ^ (value >>> 32));
     }
 
 

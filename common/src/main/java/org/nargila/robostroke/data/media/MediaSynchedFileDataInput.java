@@ -1,12 +1,12 @@
 package org.nargila.robostroke.data.media;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.data.SynchedFileDataInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 
 public class MediaSynchedFileDataInput extends SynchedFileDataInput {
@@ -69,7 +69,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
     }
 
     public void skipTime(long ms) {
-        double pos = (double)(media.getTime() + ms) / media.getDuration();
+        double pos = (double) (media.getTime() + ms) / media.getDuration();
         setPos(pos);
     }
 
@@ -84,7 +84,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
 
     @Override
     protected double calcProgress() throws IOException {
-        return media.getDuration() == 0 ? 0.0 : (double)media.getTime() / media.getDuration();
+        return media.getDuration() == 0 ? 0.0 : (double) media.getTime() / media.getDuration();
     }
 
     @Override

@@ -19,19 +19,19 @@
 package org.nargila.robostroke.ui.graph;
 
 public class GraphMargines {
-  public int left, top, right, bottom;
+    public int left, top, right, bottom;
 
-  public GraphMargines(int left, int top, int right, int bottom) {
-    set(left, top, right, bottom);
-  }
+    public GraphMargines(int left, int top, int right, int bottom) {
+        set(left, top, right, bottom);
+    }
 
-  public void set(int left, int top, int right, int bottom) {
-    this.left = left;
-    this.top = top;
-    this.right = right;
-    this.bottom = bottom;
-  }
+    public void set(int left, int top, int right, int bottom) {
+        this.left = left;
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+    }
 
-  public GraphMargines() {
-  }
+    public GraphMargines() {
+    }
 }

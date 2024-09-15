@@ -19,156 +19,149 @@
 package org.nargila.robostroke.ui.swing;
 
 
-import java.awt.Canvas;
-import java.awt.Graphics;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.JFrame;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.nargila.robostroke.ui.PaintStyle;
-import org.nargila.robostroke.ui.RSPaint;
-import org.nargila.robostroke.ui.RSPath;
-import org.nargila.robostroke.ui.RSRect;
-import org.nargila.robostroke.ui.UILiaison;
+import org.nargila.robostroke.ui.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 
 public class SwingCanvasTest {
 
-  private interface Painter {
-    void paint(SwingCanvas canvas);
-  }
-
-
-
-  private UILiaison uiLiaison;
-  private Canvas impl;
-  private SwingCanvas canvas;
-  private JFrame frame;
-  private final RSPaint paint = new SwingPaint() {
-    {
-      setStyle(PaintStyle.FILL);
+    private interface Painter {
+        void paint(SwingCanvas canvas);
     }
-  };
 
-  private Painter painter;
 
-  @SuppressWarnings("serial")
-  @Before
-  public void setUp() throws Exception {
-
-    impl =  new Canvas() {
-      @Override
-      public void paint(Graphics g) {
-        painter.paint(new SwingCanvas(this, g));
-      }
+    private UILiaison uiLiaison;
+    private Canvas impl;
+    private SwingCanvas canvas;
+    private JFrame frame;
+    private final RSPaint paint = new SwingPaint() {
+        {
+            setStyle(PaintStyle.FILL);
+        }
     };
 
-    uiLiaison = new SwingUILiaison(impl);
-    canvas = new SwingCanvas(impl, null);
-    frame = new JFrame();
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private Painter painter;
 
-    impl.setSize(400, 400);
+    @SuppressWarnings("serial")
+    @Before
+    public void setUp() throws Exception {
 
-    frame.getContentPane().add(impl);
+        impl = new Canvas() {
+            @Override
+            public void paint(Graphics g) {
+                painter.paint(new SwingCanvas(this, g));
+            }
+        };
 
-    frame.pack();
+        uiLiaison = new SwingUILiaison(impl);
+        canvas = new SwingCanvas(impl, null);
+        frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    frame.setVisible(true);
-  }
+        impl.setSize(400, 400);
 
-  @After
-  public void tearDown() {
-    frame.setVisible(false);
-    frame.dispose();
-  }
+        frame.getContentPane().add(impl);
 
-  @Test
-  public void testDrawPath() throws Exception {
+        frame.pack();
 
-    final RSPath path = new SwingPath();
+        frame.setVisible(true);
+    }
 
-    RSRect r = canvas.getClipBounds();
+    @After
+    public void tearDown() {
+        frame.setVisible(false);
+        frame.dispose();
+    }
 
-    path.moveTo(20, 20);
+    @Test
+    public void testDrawPath() throws Exception {
 
-    path.lineTo(r.right - 20, 20);
-    path.lineTo(r.right - 20, r.bottom - 20);
-    path.moveTo(20, r.bottom - 20);
-    path.lineTo(20, 20);
+        final RSPath path = new SwingPath();
 
-    final RSPaint paint = new SwingPaint();
-    paint.setStyle(PaintStyle.STROKE);
-    paint.setStrokeWidth(5);
-    paint.setColor(uiLiaison.getRedColor());
-
-    painter = new Painter() {
-
-      @Override
-      public void paint(SwingCanvas canvas) {
-
-        canvas.drawPath(path, paint);
-      }
-    };
-
-    uiLiaison.repaint();
-
-    Thread.sleep(5000);
-
-  }
-
-  @Test
-  public void testDrawLine() throws Exception {
-
-    painter = new Painter() {
-
-      @Override
-      public void paint(SwingCanvas canvas) {
         RSRect r = canvas.getClipBounds();
-        r.left += 20;
-        r.top += 20;
-        r.right -= 20;
-        r.bottom -= 20;
 
-        int center = (r.bottom - r.top) / 2;
+        path.moveTo(20, 20);
 
-        RSPaint paint = new SwingPaint();
+        path.lineTo(r.right - 20, 20);
+        path.lineTo(r.right - 20, r.bottom - 20);
+        path.moveTo(20, r.bottom - 20);
+        path.lineTo(20, 20);
+
+        final RSPaint paint = new SwingPaint();
         paint.setStyle(PaintStyle.STROKE);
         paint.setStrokeWidth(5);
         paint.setColor(uiLiaison.getRedColor());
 
-        canvas.drawLine(r.left, center , r.right, center, paint);
-      }
-    };
+        painter = new Painter() {
 
-    uiLiaison.repaint();
+            @Override
+            public void paint(SwingCanvas canvas) {
 
-    Thread.sleep(5000);
+                canvas.drawPath(path, paint);
+            }
+        };
 
-  }
+        uiLiaison.repaint();
 
-  @Test
-  public void testDrawRect() throws InterruptedException, InvocationTargetException {
+        Thread.sleep(5000);
 
-    painter = new Painter() {
+    }
 
-      @Override
-      public void paint(SwingCanvas canvas) {
-        RSRect r = canvas.getClipBounds();
-        r.left += 20;
-        r.top += 20;
-        r.right -= 20;
-        r.bottom -= 20;
+    @Test
+    public void testDrawLine() throws Exception {
 
-        canvas.drawRect(r.left, r.top, r.right, r.bottom, paint);
-      }
-    };
+        painter = new Painter() {
 
-    uiLiaison.repaint();
+            @Override
+            public void paint(SwingCanvas canvas) {
+                RSRect r = canvas.getClipBounds();
+                r.left += 20;
+                r.top += 20;
+                r.right -= 20;
+                r.bottom -= 20;
 
-    Thread.sleep(5000);
+                int center = (r.bottom - r.top) / 2;
 
-  }
+                RSPaint paint = new SwingPaint();
+                paint.setStyle(PaintStyle.STROKE);
+                paint.setStrokeWidth(5);
+                paint.setColor(uiLiaison.getRedColor());
+
+                canvas.drawLine(r.left, center, r.right, center, paint);
+            }
+        };
+
+        uiLiaison.repaint();
+
+        Thread.sleep(5000);
+
+    }
+
+    @Test
+    public void testDrawRect() throws InterruptedException, InvocationTargetException {
+
+        painter = new Painter() {
+
+            @Override
+            public void paint(SwingCanvas canvas) {
+                RSRect r = canvas.getClipBounds();
+                r.left += 20;
+                r.top += 20;
+                r.right -= 20;
+                r.bottom -= 20;
+
+                canvas.drawRect(r.left, r.top, r.right, r.bottom, paint);
+            }
+        };
+
+        uiLiaison.repaint();
+
+        Thread.sleep(5000);
+
+    }
 }

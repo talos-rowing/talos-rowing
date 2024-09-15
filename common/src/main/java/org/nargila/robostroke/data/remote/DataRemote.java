@@ -5,27 +5,31 @@ import java.io.IOException;
 
 public interface DataRemote {
 
-  public class DataRemoteError extends IOException {
-    private static final long serialVersionUID = 1L;
+    public class DataRemoteError extends IOException {
+        private static final long serialVersionUID = 1L;
 
-    public DataRemoteError() {
-      super();
+        public DataRemoteError() {
+            super();
+        }
+
+        public DataRemoteError(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public DataRemoteError(String message) {
+            super(message);
+        }
+
+        public DataRemoteError(Throwable cause) {
+            super(cause);
+        }
     }
 
-    public DataRemoteError(String message, Throwable cause) {
-      super(message, cause);
-    }
+    void start() throws DataRemoteError;
 
-    public DataRemoteError(String message) {
-      super(message);
-    }
+    void stop();
 
-    public DataRemoteError(Throwable cause) {
-      super(cause);
-    }
-  }
-  void start() throws DataRemoteError;
-  void stop();
-  void setPort(int port);
-  void setAddress(String address);
+    void setPort(int port);
+
+    void setAddress(String address);
 }

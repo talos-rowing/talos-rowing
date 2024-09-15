@@ -18,149 +18,151 @@
  */
 package org.nargila.robostroke.ui.graph;
 
-import java.util.LinkedList;
-
 import org.nargila.robostroke.common.DoubleGenerator;
+
+import java.util.LinkedList;
 
 public class MultiXYSeries {
 
-  private final LinkedList<XYSeries> seriesList = new LinkedList<XYSeries>();
+    private final LinkedList<XYSeries> seriesList = new LinkedList<XYSeries>();
 
-  private double xRange = 0; // -n: stop at range, n: cyclical range, 0: grow
-  final XYSeries.XMode xMode;
-  private DoubleGenerator xRangeGenerator;
+    private double xRange = 0; // -n: stop at range, n: cyclical range, 0: grow
+    final XYSeries.XMode xMode;
+    private DoubleGenerator xRangeGenerator;
 
-  public MultiXYSeries(double xRange, XYSeries.XMode xMode) {
-    this.xMode = xMode;
-    setxRange(xRange);
-    clear();
-  }
-
-  public LinkedList<XYSeries> getSeries() {
-    return seriesList;
-  }
-
-
-  public synchronized double getMinY() {
-    double res = 0;
-
-    for (XYSeries ser: seriesList) {
-      if (ser.getItemCount() > 0 && !ser.isIndependantYAxis()) {
-        res = Math.min(res, ser.getMinY());
-      }
+    public MultiXYSeries(double xRange, XYSeries.XMode xMode) {
+        this.xMode = xMode;
+        setxRange(xRange);
+        clear();
     }
 
-    return res;
-  }
-
-  public void setxRangeGenerator(DoubleGenerator xRangeGenerator) {
-    this.xRangeGenerator = xRangeGenerator;
-  }
-
-  public synchronized double getMinX() {
-    double res = Double.MAX_VALUE;
-
-    for (XYSeries ser: seriesList) {
-      if (ser.getItemCount() > 0) {
-        res = Math.min(res, ser.getMinX());
-      }
+    public LinkedList<XYSeries> getSeries() {
+        return seriesList;
     }
 
-    return res;
-  }
 
-  public synchronized double getMaxX() {
-    double res = -Double.MAX_VALUE;
+    public synchronized double getMinY() {
+        double res = 0;
 
-    for (XYSeries ser: seriesList) {
-        if (ser.getItemCount() > 0) {
-      res = Math.max(res, ser.getMaxX());
+        for (XYSeries ser : seriesList) {
+            if (ser.getItemCount() > 0 && !ser.isIndependantYAxis()) {
+                res = Math.min(res, ser.getMinY());
+            }
+        }
+
+        return res;
+    }
+
+    public void setxRangeGenerator(DoubleGenerator xRangeGenerator) {
+        this.xRangeGenerator = xRangeGenerator;
+    }
+
+    public synchronized double getMinX() {
+        double res = Double.MAX_VALUE;
+
+        for (XYSeries ser : seriesList) {
+            if (ser.getItemCount() > 0) {
+                res = Math.min(res, ser.getMinX());
+            }
+        }
+
+        return res;
+    }
+
+    public synchronized double getMaxX() {
+        double res = -Double.MAX_VALUE;
+
+        for (XYSeries ser : seriesList) {
+            if (ser.getItemCount() > 0) {
+                res = Math.max(res, ser.getMaxX());
+            }
+        }
+
+        return res;
+    }
+
+    public synchronized double getMaxY() {
+        double res = 0;
+
+        for (XYSeries ser : seriesList) {
+            if (ser.getItemCount() > 0 && !ser.isIndependantYAxis()) {
+                res = Math.max(res, ser.getMaxY());
+            }
+        }
+
+        return res;
+    }
+
+
+    public double getxRange() {
+        return xRangeGenerator == null ? xRange : xRangeGenerator.get();
+    }
+
+
+    public synchronized void setxRange(double xRange) {
+        this.xRange = xRange;
+
+        for (XYSeries series : seriesList) {
+            series.setxRange(xRange);
         }
     }
 
-    return res;
-  }
 
-  public synchronized double getMaxY() {
-    double res = 0;
-
-    for (XYSeries ser: seriesList) {
-      if (ser.getItemCount() > 0 && !ser.isIndependantYAxis()) {
-        res = Math.max(res, ser.getMaxY());
-      }
+    public synchronized double getyRange() {
+        return Math.max(Math.abs(getMaxY()), Math.abs(getMinY())) * 2;
     }
 
-    return res;
-  }
-
-
-  public double getxRange() {
-    return xRangeGenerator == null ? xRange : xRangeGenerator.get();
-  }
-
-
-  public synchronized void setxRange(double xRange) {
-    this.xRange = xRange;
-
-    for (XYSeries series: seriesList) {
-      series.setxRange(xRange);
+    public synchronized XYSeries addSeries(XYSeries series) {
+        return addSeries(series, true);
     }
-  }
 
+    public synchronized XYSeries addSeries(XYSeries series, boolean proxied) {
+        seriesList.add(series);
+        series.setXMode(xMode);
+        series.setxRange(xRange);
 
-  public synchronized double getyRange() {
-    return Math.max(Math.abs(getMaxY()),  Math.abs(getMinY())) * 2;
-  }
+        if (!proxied) {
+            return series;
+        } else {
 
-  public synchronized XYSeries addSeries(XYSeries series) {
-    return addSeries(series, true);
-  }
+            final MultiXYSeries ms = this;
 
-  public synchronized XYSeries addSeries(XYSeries series, boolean proxied) {
-    seriesList.add(series);
-    series.setXMode(xMode);
-    series.setxRange(xRange);
+            return new XSeriesProxy(series) {
 
-    if (!proxied) {
-      return series;
-    } else {
+                @Override
+                public void add(double x, double y) {
+                    synchronized (ms) {
+                        super.add(x, y);
+                        ms.onAdd(x, y, impl);
+                    }
+                }
 
-      final MultiXYSeries ms = this;
-
-      return new XSeriesProxy(series) {
-
-        @Override
-        public void add(double x, double y) {
-          synchronized (ms) {
-            super.add(x, y);
-            ms.onAdd(x, y, impl);
-          }
+                @Override
+                public void remove(int index) {
+                    synchronized (ms) {
+                        super.remove(index);
+                        ms.onRemove(index, impl);
+                    }
+                }
+            };
         }
+    }
 
-        @Override
-        public void remove(int index) {
-          synchronized (ms) {
-            super.remove(index);
-            ms.onRemove(index, impl);
-          }
+    public synchronized void removeSeries(XYSeries series) {
+        seriesList.remove(series);
+    }
+
+
+    protected void onAdd(double x, double y, XYSeries series) {
+    }
+
+
+    protected void onRemove(int index, XYSeries series) {
+    }
+
+    public synchronized void clear() {
+        for (XYSeries series : seriesList) {
+            series.clear();
         }
-      };
     }
-  }
-
-  public synchronized void removeSeries(XYSeries series) {
-    seriesList.remove(series);
-  }
-
-
-  protected void onAdd(double x, double y, XYSeries series) {}
-
-
-  protected void onRemove(int index, XYSeries series) {}
-
-  public synchronized void clear() {
-    for (XYSeries series: seriesList) {
-      series.clear();
-    }
-  }
 }

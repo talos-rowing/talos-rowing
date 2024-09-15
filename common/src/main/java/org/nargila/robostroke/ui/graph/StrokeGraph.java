@@ -28,19 +28,19 @@ import org.nargila.robostroke.ui.graph.XYSeries.XMode;
  * subclass of LineGraphView for setting stroke specific parameters
  */
 public class StrokeGraph extends SensorGraphBase {
-  private static final float Y_RANGE = 4f;
+    private static final float Y_RANGE = 4f;
 
-  public StrokeGraph(UILiaison factory, float xRange, RoboStroke roboStroke)  {
-    super(factory, XMode.ROLLING, xRange, Y_RANGE, roboStroke);
-  }
+    public StrokeGraph(UILiaison factory, float xRange, RoboStroke roboStroke) {
+        super(factory, XMode.ROLLING, xRange, Y_RANGE, roboStroke);
+    }
 
-  @Override
-  protected synchronized void attachSensors(SensorDataSink lineDataSink) {
-    roboStroke.getStrokeRateScanner().addSensorDataSink(lineDataSink);
-  }
+    @Override
+    protected synchronized void attachSensors(SensorDataSink lineDataSink) {
+        roboStroke.getStrokeRateScanner().addSensorDataSink(lineDataSink);
+    }
 
-  @Override
-  protected void detachSensors(SensorDataSink lineDataSink) {
-    roboStroke.getStrokeRateScanner().removeSensorDataSink(lineDataSink);
-  }
+    @Override
+    protected void detachSensors(SensorDataSink lineDataSink) {
+        roboStroke.getStrokeRateScanner().removeSensorDataSink(lineDataSink);
+    }
 }

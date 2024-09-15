@@ -25,15 +25,15 @@ import org.nargila.robostroke.ui.graph.swing.StrokeGraphView;
 public class StrokeGraphViewTest extends GraphTestBase<StrokeGraphView> {
 
 
-  @Test
-  public void test() throws Exception {
-    startRs();
-  }
+    @Test
+    public void test() throws Exception {
+        startRs();
+    }
 
-  @Override
-  protected StrokeGraphView createGraph() {
-    return new StrokeGraphView(rs);
-  }
+    @Override
+    protected StrokeGraphView createGraph() {
+        return new StrokeGraphView(rs);
+    }
 
 
 }

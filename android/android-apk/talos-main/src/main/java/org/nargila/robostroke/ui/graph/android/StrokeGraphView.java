@@ -19,11 +19,10 @@
 
 package org.nargila.robostroke.ui.graph.android;
 
+import android.content.Context;
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.ui.android.AndroidUILiaison;
 import org.nargila.robostroke.ui.graph.StrokeGraph;
-
-import android.content.Context;
 
 /**
  * subclass of LineGraphView for setting stroke specific parameters
@@ -31,10 +30,10 @@ import android.content.Context;
 public class StrokeGraphView extends AndroidGraphViewBase<StrokeGraph> {
 
 
-  public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) {
+    public StrokeGraphView(Context context, float xRange, RoboStroke roboStroke) {
 
-    super(context);
+        super(context);
 
-    setGraph(new StrokeGraph(new AndroidUILiaison(this), xRange, roboStroke));
-  }
+        setGraph(new StrokeGraph(new AndroidUILiaison(this), xRange, roboStroke));
+    }
 }

@@ -19,7 +19,6 @@
 package org.nargila.robostroke.param;
 
 
-
 public interface ParameterListenerOwner {
-  ParameterListenerRegistration[] getListenerRegistrations();
+    ParameterListenerRegistration[] getListenerRegistrations();
 }

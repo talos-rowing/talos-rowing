@@ -18,8 +18,6 @@
  */
 package org.nargila.robostroke.android.common;
 
-import org.nargila.robostroke.android.app.R;
-
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.preference.DialogPreference;
@@ -29,133 +27,135 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import org.nargila.robostroke.android.app.R;
 
 public class SeekBarPreference extends DialogPreference {
 
-  private enum ValueType {
-    FLOAT,
-    INTEGER,
-  }
+    private enum ValueType {
+        FLOAT,
+        INTEGER,
+    }
 
-  private static final String XML_SCHEMA = "http://nargila.org/android";
-  private static final String XML_ANDROID = "http://schemas.android.com/apk/res/android";
-  private final Context context;
-  private final double minValue;
-  private final double maxValue;
-  private double value;
-  private final int seekRange;
-  private final double defaultValue;
-  private final String displayFormat;
-  private final ValueType valueType;
+    private static final String XML_SCHEMA = "http://nargila.org/android";
+    private static final String XML_ANDROID = "http://schemas.android.com/apk/res/android";
+    private final Context context;
+    private final double minValue;
+    private final double maxValue;
+    private double value;
+    private final int seekRange;
+    private final double defaultValue;
+    private final String displayFormat;
+    private final ValueType valueType;
 
-  public SeekBarPreference(Context context, AttributeSet attrs) {
-    super(context, attrs);
-    this.context = context;
+    public SeekBarPreference(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        this.context = context;
 
-    displayFormat = get(XML_SCHEMA, attrs, "displayFormat", "%.03f");
-    seekRange = attrs.getAttributeIntValue(XML_SCHEMA, "seekRange", 100);
-    minValue = Double.parseDouble(get(XML_SCHEMA, attrs, "minValue", 0+""));
-    maxValue = Double.parseDouble(get(XML_SCHEMA, attrs, "maxValue", (minValue + seekRange)+""));
-    defaultValue = Double.parseDouble(get(XML_ANDROID, attrs, "defaultValue", minValue+""));
-    valueType = ValueType.valueOf(get(XML_SCHEMA, attrs, "valueType", "FLOAT"));
-  }
+        displayFormat = get(XML_SCHEMA, attrs, "displayFormat", "%.03f");
+        seekRange = attrs.getAttributeIntValue(XML_SCHEMA, "seekRange", 100);
+        minValue = Double.parseDouble(get(XML_SCHEMA, attrs, "minValue", 0 + ""));
+        maxValue = Double.parseDouble(get(XML_SCHEMA, attrs, "maxValue", (minValue + seekRange) + ""));
+        defaultValue = Double.parseDouble(get(XML_ANDROID, attrs, "defaultValue", minValue + ""));
+        valueType = ValueType.valueOf(get(XML_SCHEMA, attrs, "valueType", "FLOAT"));
+    }
 
-  private String get(String namespace, AttributeSet attrs, String name, String defaultValue) {
-    String val = attrs.getAttributeValue(namespace, name);
+    private String get(String namespace, AttributeSet attrs, String name, String defaultValue) {
+        String val = attrs.getAttributeValue(namespace, name);
 
-    return null == val ? defaultValue : val;
-  }
+        return null == val ? defaultValue : val;
+    }
 
-  @Override
-  protected void onPrepareDialogBuilder(Builder builder) {
-    LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    View view = inflater.inflate(R.layout.seekbar_preference_dialog, null);
+    @Override
+    protected void onPrepareDialogBuilder(Builder builder) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.seekbar_preference_dialog, null);
 
-    final TextView text = (TextView) view.findViewById(R.id.text);
-    final SeekBar seekbar = (SeekBar) view.findViewById(R.id.seekbar);
-    final ImageView reset = (ImageView) view.findViewById(R.id.reset);
+        final TextView text = (TextView) view.findViewById(R.id.text);
+        final SeekBar seekbar = (SeekBar) view.findViewById(R.id.seekbar);
+        final ImageView reset = (ImageView) view.findViewById(R.id.reset);
 
-    seekbar.setMax(seekRange);
+        seekbar.setMax(seekRange);
 
-    value = Double.parseDouble(getPersistedString(defaultValue + ""));
+        value = Double.parseDouble(getPersistedString(defaultValue + ""));
 
-    text.setText(String.format(displayFormat, value));
-
-    reset.setOnClickListener(new View.OnClickListener() {
-
-      @Override
-      public void onClick(View v) {
-        seekbar.setProgress(calcProgress(defaultValue));
-        value = defaultValue;
         text.setText(String.format(displayFormat, value));
-        reset.setVisibility(View.INVISIBLE);
-      }
-    });
 
-    if (value == defaultValue) { // don't show reset button if defaultValue
-      reset.setVisibility(View.INVISIBLE);
-    }
+        reset.setOnClickListener(new View.OnClickListener() {
 
-    seekbar.setProgress(calcProgress(value));
+            @Override
+            public void onClick(View v) {
+                seekbar.setProgress(calcProgress(defaultValue));
+                value = defaultValue;
+                text.setText(String.format(displayFormat, value));
+                reset.setVisibility(View.INVISIBLE);
+            }
+        });
 
-    seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
-
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) {
-        // TODO Auto-generated method stub
-
-      }
-
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress,
-          boolean fromUser) {
-
-        if (fromUser) {
-          value = calcValue(progress);
-          text.setText(String.format(displayFormat, value));
-
-          if (value != defaultValue) { // display reset value when value changes
-            reset.setVisibility(View.VISIBLE);
-          }
+        if (value == defaultValue) { // don't show reset button if defaultValue
+            reset.setVisibility(View.INVISIBLE);
         }
-      }
-    });
 
-    builder.setView(view);
-    super.onPrepareDialogBuilder(builder);
-  }
-  private double calcValue(int progress) {
-    return ((double)progress / seekRange) * (maxValue - minValue) + minValue;
-  }
+        seekbar.setProgress(calcProgress(value));
 
-  private int calcProgress(double value) {
-    return (int) (seekRange * ((value - minValue) / (maxValue - minValue)));
-  }
+        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
-  @Override
-  protected void onDialogClosed(boolean positiveResult) {
-    if(positiveResult){
-      String sval;
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
 
-      switch (valueType) {
-      case INTEGER:
-        sval = "" + Math.round(value);
-        break;
-        default:
-          sval = ""+ value;
-      }
+            }
 
-      persistString(sval);
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
 
-      if (shouldCommit()) {
-        getEditor().commit();
-      }
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+
+                if (fromUser) {
+                    value = calcValue(progress);
+                    text.setText(String.format(displayFormat, value));
+
+                    if (value != defaultValue) { // display reset value when value changes
+                        reset.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+        builder.setView(view);
+        super.onPrepareDialogBuilder(builder);
     }
-  }
+
+    private double calcValue(int progress) {
+        return ((double) progress / seekRange) * (maxValue - minValue) + minValue;
+    }
+
+    private int calcProgress(double value) {
+        return (int) (seekRange * ((value - minValue) / (maxValue - minValue)));
+    }
+
+    @Override
+    protected void onDialogClosed(boolean positiveResult) {
+        if (positiveResult) {
+            String sval;
+
+            switch (valueType) {
+                case INTEGER:
+                    sval = "" + Math.round(value);
+                    break;
+                default:
+                    sval = "" + value;
+            }
+
+            persistString(sval);
+
+            if (shouldCommit()) {
+                getEditor().commit();
+            }
+        }
+    }
 }

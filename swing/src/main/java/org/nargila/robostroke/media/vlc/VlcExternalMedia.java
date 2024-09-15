@@ -1,17 +1,15 @@
 package org.nargila.robostroke.media.vlc;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.io.File;
-
 import org.nargila.robostroke.data.ClockProvider;
 import org.nargila.robostroke.data.SystemClockProvider;
 import org.nargila.robostroke.data.media.ExternalMedia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayer;
+
+import java.awt.*;
+import java.io.File;
 
 public class VlcExternalMedia implements ExternalMedia {
 
@@ -48,7 +46,6 @@ public class VlcExternalMedia implements ExternalMedia {
         container.add(playerComponent, BorderLayout.CENTER);
 
     }
-
 
 
     private void setDuration(long duration) {
@@ -117,7 +114,6 @@ public class VlcExternalMedia implements ExternalMedia {
     public boolean isPlaying() {
         return playerComponent.mediaPlayer.isPlaying();
     }
-
 
 
     @SuppressWarnings("serial")

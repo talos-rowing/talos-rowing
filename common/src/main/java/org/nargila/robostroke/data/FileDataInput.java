@@ -20,21 +20,21 @@
 
 package org.nargila.robostroke.data;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Locale;
-
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
 import org.nargila.robostroke.data.DataRecord.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Locale;
+
 /**
  * SensorDataInput implementation for replaying data from a file
- * @author tshalif
  *
+ * @author tshalif
  */
 public class FileDataInput extends RecordDataInput implements Runnable {
 
@@ -72,7 +72,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     private final String uuid;
 
-  private final Object seekLock = "";
+    private final Object seekLock = "";
 
     public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
         super(roboStroke);
@@ -176,35 +176,35 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     }
 
     public void setTime(long time) throws IOException {
-      synchronized (seekLock) {
+        synchronized (seekLock) {
 
-        reader.seek(0);
+            reader.seek(0);
 
-        String line;
+            String line;
 
-        while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
 
-          String[] vals = readRecordLine(line);
+                String[] vals = readRecordLine(line);
 
-          if (vals == null) {
-            continue;
-          }
+                if (vals == null) {
+                    continue;
+                }
 
-          long ts = Long.parseLong(vals[0]);
+                long ts = Long.parseLong(vals[0]);
 
-          long curTime = ts - firstTimestamp;
+                long curTime = ts - firstTimestamp;
 
-          if (curTime >= time) {
-            break;
-          }
+                if (curTime >= time) {
+                    break;
+                }
+            }
         }
-      }
     }
 
     private void seekPos(long pos) {
-      synchronized (seekLock) {
-        setPosRequested = pos;
-    }
+        synchronized (seekLock) {
+            setPosRequested = pos;
+        }
     }
 
     @Override
@@ -218,27 +218,27 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
                 long pos = reader.getFilePointer();
 
-                synchronized (seekLock ) {
+                synchronized (seekLock) {
 
-                  if (setPosRequested != -1) {
-                    pos = setPosRequested;
+                    if (setPosRequested != -1) {
+                        pos = setPosRequested;
 
 
-                    pos = Math.max(Math.min(reader.length() - 1, pos), 0);
-                    reader.seek(pos);
-                    reader.readLine();
-                    setPosRequested = -1;
+                        pos = Math.max(Math.min(reader.length() - 1, pos), 0);
+                        reader.seek(pos);
+                        reader.readLine();
+                        setPosRequested = -1;
 
-                    resetClockRequired = true;
+                        resetClockRequired = true;
 
-                    if (bus != null)
-                      bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
+                        if (bus != null)
+                            bus.fireEvent(DataRecord.Type.REPLAY_SKIPPED, null);
 
-                    continue;
-                  }
+                        continue;
+                    }
                 }
 
-        long currentTimeMillis = System.currentTimeMillis();
+                long currentTimeMillis = System.currentTimeMillis();
 
                 if (currentTimeMillis - lastProgressNotifyTime > 500) {
 
@@ -277,7 +277,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
     }
 
     protected double calcProgress() throws IOException {
-        return reader.getFilePointer() / (double)fileLength;
+        return reader.getFilePointer() / (double) fileLength;
     }
 
     public static Pair<Long /* record timestamp */, DataRecord> parseRecord(String line) {

@@ -20,5 +20,5 @@
 package org.nargila.robostroke.way;
 
 public interface DistanceResolver {
-  public float calcDistance(double[] loc1, double[] loc2);
+    public float calcDistance(double[] loc1, double[] loc2);
 }

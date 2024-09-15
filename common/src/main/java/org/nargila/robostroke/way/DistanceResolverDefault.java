@@ -24,17 +24,17 @@ import org.nargila.robostroke.data.DataIdx;
 
 /**
  * resolves GPS location distance diffs
- * @author tshalif
  *
+ * @author tshalif
  */
 public class DistanceResolverDefault implements DistanceResolver {
 
-  @Override
-  public float calcDistance(double[] loc1, double[] loc2) {
+    @Override
+    public float calcDistance(double[] loc1, double[] loc2) {
 
-    return (float) LocationUtil.distVincenty(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG],
-        loc2[DataIdx.GPS_LAT], loc2[DataIdx.GPS_LONG]);
+        return (float) LocationUtil.distVincenty(loc1[DataIdx.GPS_LAT], loc1[DataIdx.GPS_LONG],
+                loc2[DataIdx.GPS_LAT], loc2[DataIdx.GPS_LONG]);
 
-  }
+    }
 
 }

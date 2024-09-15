@@ -21,4 +21,5 @@
  */
 package org.nargila.robostroke.common;
 
-public final class SimpleLock {}
+public final class SimpleLock {
+}

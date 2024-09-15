@@ -31,188 +31,176 @@ import org.nargila.robostroke.ui.UILiaison;
  */
 public class StrokeAnalysisGraph implements UpdatableGraphBase {
 
-  private static final int MIN_STROKE_RATE = 10;
+    private static final int MIN_STROKE_RATE = 10;
 
-  private int cur = 0;
-  private int next = 1;
+    private int cur = 0;
+    private int next = 1;
 
-  private final StrokeAnalysisGraphSingle[] graphs;
+    private final StrokeAnalysisGraphSingle[] graphs;
 
-  private boolean aboveStrokeRateTreshold;
+    private boolean aboveStrokeRateTreshold;
 
-  private final RoboStroke roboStroke;
+    private final RoboStroke roboStroke;
 
-  private final UILiaison uiLiaision;
+    private final UILiaison uiLiaision;
 
-  public StrokeAnalysisGraph(UILiaison uiLiaision, RoboStroke roboStroke, StrokeAnalysisGraphSingle g1, StrokeAnalysisGraphSingle g2) {
+    public StrokeAnalysisGraph(UILiaison uiLiaision, RoboStroke roboStroke, StrokeAnalysisGraphSingle g1, StrokeAnalysisGraphSingle g2) {
 
-    this.uiLiaision = uiLiaision;
+        this.uiLiaision = uiLiaision;
 
-    this.roboStroke = roboStroke;
+        this.roboStroke = roboStroke;
 
-    graphs = new StrokeAnalysisGraphSingle[] {
-        g1,
-        g2
+        graphs = new StrokeAnalysisGraphSingle[]{
+                g1,
+                g2
+        };
+
+        graphs[next].setVisible(false);
+
+    }
+
+    private final SensorDataSink privateRollDataSink = new SensorDataSink() {
+
+        @Override
+        public void onSensorData(long timestamp, Object value) {
+            if (aboveStrokeRateTreshold) {
+                synchronized (graphs) {
+                    graphs[next].getRollSink().onSensorData(timestamp, value);
+                }
+            }
+        }
     };
 
-    graphs[next].setVisible(false);
+    private final SensorDataSink privateAccelDataSink = new SensorDataSink() {
 
-  }
-
-  private final SensorDataSink privateRollDataSink = new SensorDataSink() {
-
-    @Override
-    public void onSensorData(long timestamp, Object value) {
-      if (aboveStrokeRateTreshold) {
-        synchronized (graphs) {
-          graphs[next].getRollSink().onSensorData(timestamp, value);
-        }
-      }
-    }
-  };
-
-  private final SensorDataSink privateAccelDataSink = new SensorDataSink() {
-
-    @Override
-    public void onSensorData(long timestamp, Object value) {
-      if (aboveStrokeRateTreshold) {
-        synchronized (graphs) {
-          graphs[next].getAccelSink().onSensorData(timestamp, value);
-        }
-      }
-    }
-  };
-
-  protected boolean needReset;
-
-
-  private final BusEventListener privateBusListener = new BusEventListener() {
-
-    @Override
-    public void onBusEvent(DataRecord event) {
-      switch (event.type) {
-      case STROKE_RATE:
-        aboveStrokeRateTreshold =  (Integer)event.data > MIN_STROKE_RATE;
-        break;
-      case STROKE_POWER_END:
-        boolean hasPower = (Float)event.data > 0;
-
-        if (!hasPower) {
-          resetNext();
-        }
-
-        if (aboveStrokeRateTreshold) {
-          if (!needReset) {
-            synchronized (graphs) {
-
-
-              graphs[cur].reset();
-
-              if (cur == 0) {
-                cur = 1;
-                next = 0;
-              } else {
-                cur = 0;
-                next = 1;
-              }
-
-              graphs[next].setVisible(false);
-              graphs[cur].setVisible(true);
-              graphs[cur].repaint();
-
+        @Override
+        public void onSensorData(long timestamp, Object value) {
+            if (aboveStrokeRateTreshold) {
+                synchronized (graphs) {
+                    graphs[next].getAccelSink().onSensorData(timestamp, value);
+                }
             }
-          }
-
-          needReset = false;
         }
-      }
+    };
+
+    protected boolean needReset;
+
+
+    private final BusEventListener privateBusListener = new BusEventListener() {
+
+        @Override
+        public void onBusEvent(DataRecord event) {
+            switch (event.type) {
+                case STROKE_RATE:
+                    aboveStrokeRateTreshold = (Integer) event.data > MIN_STROKE_RATE;
+                    break;
+                case STROKE_POWER_END:
+                    boolean hasPower = (Float) event.data > 0;
+
+                    if (!hasPower) {
+                        resetNext();
+                    }
+
+                    if (aboveStrokeRateTreshold) {
+                        if (!needReset) {
+                            synchronized (graphs) {
+
+
+                                graphs[cur].reset();
+
+                                if (cur == 0) {
+                                    cur = 1;
+                                    next = 0;
+                                } else {
+                                    cur = 0;
+                                    next = 1;
+                                }
+
+                                graphs[next].setVisible(false);
+                                graphs[cur].setVisible(true);
+                                graphs[cur].repaint();
+
+                            }
+                        }
+
+                        needReset = false;
+                    }
+            }
+        }
+    };
+
+    private boolean disabled = true;
+
+    private boolean attached;
+
+    public void reset() {
+        graphs[cur].reset();
+        graphs[next].reset();
     }
-  };
-
-  private boolean disabled = true;
-
-  private boolean attached;
-
-  public void reset() {
-    graphs[cur].reset();
-    graphs[next].reset();
-  }
 
 
-
-
-  @Override
-  public boolean isDisabled() {
-    return disabled;
-  }
-
-  @Override
-  public synchronized void disableUpdate(boolean disable) {
-    if (this.disabled != disable) {
-      if (!disable) {
-        attachSensors();
-      } else {
-        resetNext();
-        detachSensors();
-      }
-
-      this.disabled = disable;
+    @Override
+    public boolean isDisabled() {
+        return disabled;
     }
-  }
 
+    @Override
+    public synchronized void disableUpdate(boolean disable) {
+        if (this.disabled != disable) {
+            if (!disable) {
+                attachSensors();
+            } else {
+                resetNext();
+                detachSensors();
+            }
 
-
-
-  private void detachSensors() {
-
-    if (attached) {
-      roboStroke.getAccelerationSource().removeSensorDataSink(privateAccelDataSink);
-      roboStroke.getOrientationSource().removeSensorDataSink(privateRollDataSink);
-      roboStroke.getBus().removeBusListener(privateBusListener);
-      attached = false;
+            this.disabled = disable;
+        }
     }
-  }
 
 
+    private void detachSensors() {
 
-
-  private void attachSensors() {
-    if (!attached) {
-      roboStroke.getBus().addBusListener(privateBusListener);
-      roboStroke.getAccelerationSource().addSensorDataSink(privateAccelDataSink);
-      roboStroke.getOrientationSource().addSensorDataSink(privateRollDataSink);
-
-      attached = true;
+        if (attached) {
+            roboStroke.getAccelerationSource().removeSensorDataSink(privateAccelDataSink);
+            roboStroke.getOrientationSource().removeSensorDataSink(privateRollDataSink);
+            roboStroke.getBus().removeBusListener(privateBusListener);
+            attached = false;
+        }
     }
-  }
 
 
-  private void resetNext() {
-    needReset = true;
-    graphs[next].reset();
-  }
+    private void attachSensors() {
+        if (!attached) {
+            roboStroke.getBus().addBusListener(privateBusListener);
+            roboStroke.getAccelerationSource().addSensorDataSink(privateAccelDataSink);
+            roboStroke.getOrientationSource().addSensorDataSink(privateRollDataSink);
+
+            attached = true;
+        }
+    }
 
 
+    private void resetNext() {
+        needReset = true;
+        graphs[next].reset();
+    }
 
 
-  @Override
-  public void draw(RSCanvas canvas) {
+    @Override
+    public void draw(RSCanvas canvas) {
 
-  }
-
-
+    }
 
 
-  @Override
-  public void setVisible(boolean visible) {
-    uiLiaision.setVisible(visible);
-  }
+    @Override
+    public void setVisible(boolean visible) {
+        uiLiaision.setVisible(visible);
+    }
 
 
-
-
-  @Override
-  public void repaint() {
-    uiLiaision.repaint();
-  }
+    @Override
+    public void repaint() {
+        uiLiaision.repaint();
+    }
 }

@@ -18,65 +18,65 @@
  */
 package org.nargila.robostroke.android.app;
 
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
-
-import org.nargila.robostroke.RoboStrokeEventBus;
-import org.nargila.robostroke.data.DataRecord.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import org.nargila.robostroke.RoboStrokeEventBus;
+import org.nargila.robostroke.data.DataRecord.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 public class HXMDataReceiver extends BroadcastReceiver implements RoboStrokeConstants {
 
-  private static final Logger logger = LoggerFactory.getLogger(HXMDataReceiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(HXMDataReceiver.class);
 
-  private final RoboStrokeEventBus bus;
+    private final RoboStrokeEventBus bus;
 
-  public HXMDataReceiver(RoboStrokeEventBus bus) {
-    this.bus = bus;
-  }
-  @Override
-  public void onReceive(Context context, Intent intent) {
-
-    Bundle data = intent.getExtras();
-
-    final String action = intent.getAction();
-
-    int bpm = -1;
-
-    try {
-      if (action.equals(BLE_SAMPLE_HRV_DATA_SERVICE)) {
-        final String dataUuid = data.getString(BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_CHARACTERISTIC_UUI);
-
-        if (dataUuid.equals(BLE_SAMPLE_HRV_HEART_RATE_DATA_UUID)) { // Heart rate data type
-          final String txt = data.getString(BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_TEXT);
-
-          StringTokenizer tok = new StringTokenizer(txt, "\n");
-
-          logger.info(txt);
-
-          while (tok.hasMoreElements()) {
-            String[] nv = tok.nextToken().split("=");
-            if ("heart rate".equals(nv[0])) {
-              bpm = (int)Double.parseDouble(nv[1]);
-              break;
-            }
-          }
-        }
-      }
-
-      if (bpm != -1) {
-        bus.fireEvent(Type.HEART_BPM, TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis()), bpm);
-      }
-
-    } catch (Exception e) {
-      logger.error("error in heart rate receiver", e);
+    public HXMDataReceiver(RoboStrokeEventBus bus) {
+        this.bus = bus;
     }
-  }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+
+        Bundle data = intent.getExtras();
+
+        final String action = intent.getAction();
+
+        int bpm = -1;
+
+        try {
+            if (action.equals(BLE_SAMPLE_HRV_DATA_SERVICE)) {
+                final String dataUuid = data.getString(BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_CHARACTERISTIC_UUI);
+
+                if (dataUuid.equals(BLE_SAMPLE_HRV_HEART_RATE_DATA_UUID)) { // Heart rate data type
+                    final String txt = data.getString(BLE_SAMPLE_HRV_DATA_SERVICE_EXTRA_TEXT);
+
+                    StringTokenizer tok = new StringTokenizer(txt, "\n");
+
+                    logger.info(txt);
+
+                    while (tok.hasMoreElements()) {
+                        String[] nv = tok.nextToken().split("=");
+                        if ("heart rate".equals(nv[0])) {
+                            bpm = (int) Double.parseDouble(nv[1]);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (bpm != -1) {
+                bus.fireEvent(Type.HEART_BPM, TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis()), bpm);
+            }
+
+        } catch (Exception e) {
+            logger.error("error in heart rate receiver", e);
+        }
+    }
 }

@@ -23,28 +23,28 @@ import java.io.IOException;
 
 public class DatagramDataReceiver extends DatagramData implements DataReceiver {
 
-  private Listener dataListener;
+    private Listener dataListener;
 
-  public DatagramDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
-    super(DatagramSocketType.RECEIVER, address, port);
+    public DatagramDataReceiver(String address, int port, Listener dataListener) throws DataRemoteError {
+        super(DatagramSocketType.RECEIVER, address, port);
 
-    this.dataListener = dataListener;
-  }
-
-
-  @Override
-  public void setListener(Listener dataListener) {
-    this.dataListener = dataListener;
-  }
-
-
-  @Override
-  protected void processNextItem(DatagramSocketHelper dsh) throws IOException {
-
-    String received = dsh.receiveData();
-
-    if (dataListener != null && received != null && !received.equals("")) {
-      dataListener.onDataReceived(received);
+        this.dataListener = dataListener;
     }
-  }
+
+
+    @Override
+    public void setListener(Listener dataListener) {
+        this.dataListener = dataListener;
+    }
+
+
+    @Override
+    protected void processNextItem(DatagramSocketHelper dsh) throws IOException {
+
+        String received = dsh.receiveData();
+
+        if (dataListener != null && received != null && !received.equals("")) {
+            dataListener.onDataReceived(received);
+        }
+    }
 }

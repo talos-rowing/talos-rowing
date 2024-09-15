@@ -24,58 +24,72 @@ package org.nargila.robostroke.data;
  * SensorDataInput interface.
  * This interface must be implemented
  * in order to get real sensor data from the device.
- * @author tshalif
  *
+ * @author tshalif
  */
 public interface SensorDataInput {
-  /**
-   * stop data input
-   */
-  public void stop();
-  /**
-   * start data input
-   */
-  public void start();
-  /**
-   * set an error listener
-   * @param errorListener listener
-   */
-  public void setErrorListener(ErrorListener errorListener);
-  /**
-   * get the row GPS data source
-   * @return sensor data source
-   */
-  public SensorDataSource getGPSDataSource();
-  /**
-   * get the row accelerometer data source
-   * @return sensor data source
-   */
-  public SensorDataSource getAccelerometerDataSource();
-  /**
-   * get the row orientation data source
-   * @return sensor data source
-   */
-  public SensorDataSource getOrientationDataSource();
+    /**
+     * stop data input
+     */
+    public void stop();
 
-  /**
-   * check either input data is seakable (i.e. replay mode)
-   * @return true if input can be rewind/forwarded
-   */
-  public boolean isSeekable();
-  /**
-   * seek/skip input depending on positive/negative value
-   * @param velocityX usually a value from a 'fling' event on the X axis
-   */
-  public void skipReplayTime(float velocityX);
-  /**
-   * Pause event input
-   * @param pause true to pause false to continue
-   */
-  public void setPaused(boolean pause);
+    /**
+     * start data input
+     */
+    public void start();
 
-  /**
-   * tell either this is a live sensor input from local device
-   */
-  public boolean isLocalSensorInput();
+    /**
+     * set an error listener
+     *
+     * @param errorListener listener
+     */
+    public void setErrorListener(ErrorListener errorListener);
+
+    /**
+     * get the row GPS data source
+     *
+     * @return sensor data source
+     */
+    public SensorDataSource getGPSDataSource();
+
+    /**
+     * get the row accelerometer data source
+     *
+     * @return sensor data source
+     */
+    public SensorDataSource getAccelerometerDataSource();
+
+    /**
+     * get the row orientation data source
+     *
+     * @return sensor data source
+     */
+    public SensorDataSource getOrientationDataSource();
+
+    /**
+     * check either input data is seakable (i.e. replay mode)
+     *
+     * @return true if input can be rewind/forwarded
+     */
+    public boolean isSeekable();
+
+    /**
+     * seek/skip input depending on positive/negative value
+     *
+     * @param velocityX usually a value from a 'fling' event on the X axis
+     */
+    public void skipReplayTime(float velocityX);
+
+    /**
+     * Pause event input
+     *
+     * @param pause true to pause false to continue
+     */
+    public void setPaused(boolean pause);
+
+    /**
+     * tell either this is a live sensor input from local device
+     */
+    public boolean isLocalSensorInput();
 
 }

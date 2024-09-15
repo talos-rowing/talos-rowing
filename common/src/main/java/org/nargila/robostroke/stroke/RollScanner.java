@@ -34,118 +34,117 @@ import org.nargila.robostroke.data.SensorDataInput;
  * and as data sink to {@link SensorDataInput#getOrientationDataSource()}
  *
  * @author tshalif
- *
  */
 public class RollScanner extends SensorDataFilter implements BusEventListener {
 
-  private static final float DEFAULT_TILT_DAMP_FACTOR = .01f;
+    private static final float DEFAULT_TILT_DAMP_FACTOR = .01f;
 
-  private final LowpassFilter tiltDamper = new LowpassFilter(DEFAULT_TILT_DAMP_FACTOR);
+    private final LowpassFilter tiltDamper = new LowpassFilter(DEFAULT_TILT_DAMP_FACTOR);
 
-  private float[] tiltDamperValues = {0,0,0};
+    private float[] tiltDamperValues = {0, 0, 0};
 
-  private boolean tiltFrozen;
+    private boolean tiltFrozen;
 
-  private boolean insideStrokePower;
+    private boolean insideStrokePower;
 
-  private static class Roll {
-    int sampleCount;
-    float accummulatedRoll;
-    float maxRoll;
+    private static class Roll {
+        int sampleCount;
+        float accummulatedRoll;
+        float maxRoll;
 
-    void add(float val) {
-      sampleCount++;
-      accummulatedRoll += val;
+        void add(float val) {
+            sampleCount++;
+            accummulatedRoll += val;
 
-      if (Math.abs(val) > Math.abs(maxRoll)) {
-        maxRoll = val;
-      }
+            if (Math.abs(val) > Math.abs(maxRoll)) {
+                maxRoll = val;
+            }
+        }
+
+        void reset() {
+            sampleCount = 0;
+            accummulatedRoll = 0;
+            maxRoll = 0;
+        }
+
+        float[] get() {
+            return new float[]{accummulatedRoll / sampleCount, maxRoll};
+        }
     }
 
-    void reset() {
-      sampleCount = 0;
-      accummulatedRoll = 0;
-      maxRoll = 0;
+    private final Roll strokeRoll = new Roll();
+    private final Roll recoveryRoll = new Roll();
+
+    private final RoboStrokeEventBus bus;
+
+    private boolean hadPower;
+
+    public RollScanner(RoboStrokeEventBus bus) {
+        this.bus = bus;
+
+        bus.addBusListener(this);
     }
 
-    float[] get() {
-      return new float[]{accummulatedRoll / sampleCount, maxRoll};
-    }
-  }
+    @Override
+    protected Object filterData(long timestamp, Object value) {
 
-  private final Roll strokeRoll = new Roll();
-  private final Roll recoveryRoll = new Roll();
+        float[] values = (float[]) value;
 
-  private final RoboStrokeEventBus bus;
+        float[] filtered = new float[values.length];
 
-  private boolean hadPower;
+        float unfilteredRoll = values[DataIdx.ORIENT_ROLL];
 
-  public RollScanner(RoboStrokeEventBus bus) {
-    this.bus = bus;
+        System.arraycopy(values, 0, filtered, 0, values.length);
 
-    bus.addBusListener(this);
-  }
+        float filteredRoll = unfilteredRoll - tiltDamperValues[DataIdx.ORIENT_ROLL];
 
-  @Override
-  protected Object filterData(long timestamp, Object value) {
+        filtered[DataIdx.ORIENT_ROLL] = filteredRoll;
 
-    float[] values = (float[]) value;
+        if (insideStrokePower) {
+            strokeRoll.add(filteredRoll);
+        } else {
+            recoveryRoll.add(filteredRoll);
+        }
 
-    float[] filtered = new float[values.length];
+        if (!tiltFrozen) {
+            tiltDamperValues = tiltDamper.filter(values);
+        }
 
-    float unfilteredRoll = values[DataIdx.ORIENT_ROLL];
-
-    System.arraycopy(values, 0, filtered, 0, values.length);
-
-    float filteredRoll = unfilteredRoll - tiltDamperValues[DataIdx.ORIENT_ROLL];
-
-    filtered[DataIdx.ORIENT_ROLL] = filteredRoll;
-
-    if (insideStrokePower) {
-      strokeRoll.add(filteredRoll);
-    } else {
-      recoveryRoll.add(filteredRoll);
+        return filtered;
     }
 
-    if (!tiltFrozen) {
-      tiltDamperValues  = tiltDamper.filter(values);
+    @Override
+    public void onBusEvent(DataRecord event) {
+        switch (event.type) {
+            case STROKE_POWER_START:
+                insideStrokePower = true;
+
+                if (hadPower) {
+                    bus.fireEvent(DataRecord.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
+                }
+
+                hadPower = false;
+                recoveryRoll.reset();
+                break;
+            case STROKE_POWER_END:
+                hadPower = (Float) event.data > 0;
+                insideStrokePower = false;
+
+                if (hadPower) {
+                    bus.fireEvent(DataRecord.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
+                }
+
+                strokeRoll.reset();
+                break;
+            case FREEZE_TILT:
+                tiltFrozen = (Boolean) event.data;
+                break;
+        }
     }
 
-    return filtered;
-  }
-
-  @Override
-  public void onBusEvent(DataRecord event) {
-    switch (event.type) {
-    case STROKE_POWER_START:
-      insideStrokePower = true;
-
-      if (hadPower) {
-        bus.fireEvent(DataRecord.Type.RECOVERY_ROLL, event.timestamp, recoveryRoll.get());
-      }
-
-      hadPower = false;
-      recoveryRoll.reset();
-      break;
-    case STROKE_POWER_END:
-      hadPower = (Float)event.data > 0;
-      insideStrokePower = false;
-
-      if (hadPower) {
-        bus.fireEvent(DataRecord.Type.STROKE_ROLL, event.timestamp, strokeRoll.get());
-      }
-
-      strokeRoll.reset();
-      break;
-    case FREEZE_TILT:
-      tiltFrozen = (Boolean)event.data;
-      break;
+    @Override
+    protected void finalize() throws Throwable {
+        bus.removeBusListener(this);
+        super.finalize();
     }
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    bus.removeBusListener(this);
-    super.finalize();
-  }
 }

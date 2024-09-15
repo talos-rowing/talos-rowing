@@ -19,35 +19,31 @@
 package org.nargila.robostroke.ui.swing;
 
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 import org.nargila.robostroke.ui.graph.swing.AccellGraphView;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class AccellGraphViewTest extends GraphTestBase<AccellGraphView> {
 
+    @Test
+    public void testEnableDisable() throws Exception {
 
-  @Test
-  public void testEnableDisable() throws Exception {
+        assertFalse(graph.isDisabled());
 
-    assertFalse(graph.isDisabled());
+        graph.disableUpdate(true);
 
-    graph.disableUpdate(true);
+        assertTrue(graph.isDisabled());
+    }
 
-    assertTrue(graph.isDisabled());
+    @Test
+    public void test() throws Exception {
+        startRs();
+    }
 
-  }
-
-  @Test
-  public void test() throws Exception {
-    startRs();
-  }
-
-  @Override
-  protected AccellGraphView createGraph() {
-    return new AccellGraphView(rs);
-  }
-
-
+    @Override
+    protected AccellGraphView createGraph() {
+        return new AccellGraphView(rs);
+    }
 }

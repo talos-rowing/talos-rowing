@@ -19,15 +19,15 @@
 package org.nargila.robostroke.common;
 
 public class NumberHelper {
-  public static double validRange(double x, double min, double max) {
-    return Math.min(max, Math.max(min, x));
-  }
+    public static double validRange(double x, double min, double max) {
+        return Math.min(max, Math.max(min, x));
+    }
 
-  public static float validRange(float x, float min, float max) {
-    return Math.min(max, Math.max(min, x));
-  }
+    public static float validRange(float x, float min, float max) {
+        return Math.min(max, Math.max(min, x));
+    }
 
-  public static long validRange(long x, long min, long max) {
-    return Math.min(max, Math.max(min, x));
-  }
+    public static long validRange(long x, long min, long max) {
+        return Math.min(max, Math.max(min, x));
+    }
 }

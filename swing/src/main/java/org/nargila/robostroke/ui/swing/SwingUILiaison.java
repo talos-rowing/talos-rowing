@@ -18,52 +18,51 @@
  */
 package org.nargila.robostroke.ui.swing;
 
-import java.awt.Color;
-import java.awt.Component;
-
 import org.nargila.robostroke.ui.RSPaint;
 import org.nargila.robostroke.ui.RSPath;
 import org.nargila.robostroke.ui.UILiaison;
 
+import java.awt.*;
+
 public class SwingUILiaison implements UILiaison {
 
-  private final Component canvas;
+    private final Component canvas;
 
-  public SwingUILiaison(Component canvas) {
-    this.canvas = canvas;
-  }
+    public SwingUILiaison(Component canvas) {
+        this.canvas = canvas;
+    }
 
 
-  public RSPaint createPaint() {
-    return new SwingPaint();
-  }
+    public RSPaint createPaint() {
+        return new SwingPaint();
+    }
 
-  public RSPath createPath() {
-    return new SwingPath();
-  }
+    public RSPath createPath() {
+        return new SwingPath();
+    }
 
-  public Object getComponent() {
-    return canvas;
-  }
+    public Object getComponent() {
+        return canvas;
+    }
 
-  public int getGreenColor() {
-    return Color.GREEN.getRGB();
-  }
+    public int getGreenColor() {
+        return Color.GREEN.getRGB();
+    }
 
-  public int getRedColor() {
-    return Color.RED.getRGB();
-  }
+    public int getRedColor() {
+        return Color.RED.getRGB();
+    }
 
-  public int getYellowColor() {
-    return Color.YELLOW.getRGB();
-  }
+    public int getYellowColor() {
+        return Color.YELLOW.getRGB();
+    }
 
-  public void repaint() {
-    canvas.repaint();
-  }
+    public void repaint() {
+        canvas.repaint();
+    }
 
-  @Override
-  public void setVisible(boolean visible) {
-    canvas.setVisible(visible);
-  }
+    @Override
+    public void setVisible(boolean visible) {
+        canvas.setVisible(visible);
+    }
 }

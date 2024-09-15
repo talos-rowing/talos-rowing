@@ -1,26 +1,18 @@
 package org.nargila.robostroke.media;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
+import org.nargila.robostroke.common.ClockTime;
+import org.nargila.robostroke.data.media.ExternalMedia;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.nargila.robostroke.common.ClockTime;
-import org.nargila.robostroke.data.media.ExternalMedia;
-import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 
 @SuppressWarnings("serial")
 public class FrameSteppingPlayerPanel extends JPanel {
@@ -87,7 +79,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         btnSkipBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mediaPlayer.setTime(mediaPlayer.getTime() -3000);
+                mediaPlayer.setTime(mediaPlayer.getTime() - 3000);
                 updateTime();
             }
         });
@@ -135,7 +127,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         long time = mediaPlayer.getTime();
         timeListener.onTimeChanged(time);
         lblTime.setText(ClockTime.fromMillis(time).toString());
-        double pos = (double)time / mediaPlayer.getDuration();
+        double pos = (double) time / mediaPlayer.getDuration();
         slider.setValue((int) (pos * slider.getMaximum()));
     }
 
@@ -191,7 +183,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
             public void onEvent(ExternalMedia.EventType event, Object data) {
                 switch (event) {
                     case TIME:
-                        timeListener.onTimeChanged((Long)data);
+                        timeListener.onTimeChanged((Long) data);
                         break;
                 }
             }
