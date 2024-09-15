@@ -359,8 +359,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
             try {
                 seekPos((long) (this.reader.getFilePointer() - (velocityX * SKIP_BYTES)));
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error(String.format(Locale.ENGLISH, "skipReplayTime: %s", e.getMessage()), e);
             }
         }
     }
