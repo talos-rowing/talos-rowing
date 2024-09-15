@@ -71,7 +71,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
 
     private final String uuid;
 
-	private Object seekLock = "";
+	private final Object seekLock = "";
     
     public FileDataInput(RoboStroke roboStroke, File dataFile) throws IOException {
         super(roboStroke);
