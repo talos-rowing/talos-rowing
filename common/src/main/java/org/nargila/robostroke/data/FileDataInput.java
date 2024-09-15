@@ -23,6 +23,7 @@ package org.nargila.robostroke.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Locale;
 
 import org.nargila.robostroke.RoboStroke;
 import org.nargila.robostroke.common.Pair;
@@ -269,7 +270,7 @@ public class FileDataInput extends RecordDataInput implements Runnable {
                 } catch (IOException e1) {
                     pos = -1;
                 }
-                logger.error(String.format("error while reading record from %s near byte offset %d [%s]", getDataFile(), pos, l), e);
+                logger.error(String.format(Locale.ENGLISH, "error while reading record from %s near byte offset %d [%s]", getDataFile(), pos, l), e);
                 continue;
             }
         }
