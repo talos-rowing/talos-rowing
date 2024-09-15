@@ -5,8 +5,8 @@ import org.nargila.robostroke.data.ClockProvider;
 public class MediaSynchedClockProvider implements ClockProvider {
 
     private final ExternalMedia media;
-    
- 
+
+
     public MediaSynchedClockProvider(ExternalMedia media) {
         this.media = media;
     }

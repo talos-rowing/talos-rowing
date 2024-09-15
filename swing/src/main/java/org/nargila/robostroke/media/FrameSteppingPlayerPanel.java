@@ -80,7 +80,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
                 }
             }
         });
-        
+
         panel_1.add(btnPlay);
 
         btnSkipBack = new JButton("-3");
@@ -120,7 +120,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         panel_3.add(lblTime);
 
         movieArea = new JPanel();
-        movieArea.setBackground(Color.BLACK);             
+        movieArea.setBackground(Color.BLACK);
 
         add(movieArea, BorderLayout.CENTER);
         movieArea.setLayout(new BorderLayout(0, 0));
@@ -128,7 +128,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
     }
 
     public void setTimeListener(TimeChangeListener listener) {
-        this.timeListener = listener;		
+        this.timeListener = listener;
     }
 
     private void updateTime() {
@@ -144,7 +144,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         final FrameSteppingPlayerPanel player = new FrameSteppingPlayerPanel();
 
         JFrame f = new JFrame("Test Player");
-        //	    f.setIconImage(new ImageIcon(MinimalTestPlayer.class.getResource("/icons/vlcj-logo.png")).getImage());
+        //      f.setIconImage(new ImageIcon(MinimalTestPlayer.class.getResource("/icons/vlcj-logo.png")).getImage());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addWindowListener(new WindowAdapter() {
@@ -186,7 +186,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
 
     public void play(String mrl) throws Exception {
         mediaPlayer = MediaPlayerFactory.createMediaPlayer(new File(mrl), movieArea, VideoEffect.NONE, new ExternalMedia.EventListener() {
-            
+
             @Override
             public void onEvent(ExternalMedia.EventType event, Object data) {
                 switch (event) {
@@ -196,14 +196,14 @@ public class FrameSteppingPlayerPanel extends JPanel {
                 }
             }
         });
-        
+
         mediaPlayer.start();
     }
 
     public void stop() {
         mediaPlayer.stop();
     }
-    
+
     public JPanel getMovieArea() {
         return movieArea;
     }

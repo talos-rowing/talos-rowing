@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2013 Tal Shalif
- * 
+ *
  * This file is part of Talos-Rowing.
- * 
+ *
  * Talos-Rowing is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Talos-Rowing is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -37,148 +37,148 @@ import android.net.wifi.WifiManager.MulticastLock;
 import android.os.IBinder;
 
 public abstract class TalosService extends Service {
- 
-	private static final Logger logger = LoggerFactory.getLogger(TalosService.class);
-	
-	private static int SERVICE_NOTIFICATION_ID = 1;
-	
-	private NotificationManager notificationManager;
 
-	protected int port;
+  private static final Logger logger = LoggerFactory.getLogger(TalosService.class);
 
-	protected String host;
-	
-	private DataRemote impl;
+  private static int SERVICE_NOTIFICATION_ID = 1;
 
-	private boolean started;
+  private NotificationManager notificationManager;
 
-	private MulticastLock multicastLock;
-	
+  protected int port;
 
-	protected TalosService() {
-	}
-	
-	@Override
-	public void onStart(Intent intent, int startId) {		
-	
-		super.onStart(intent, startId);
-		
-		port = intent.getIntExtra("port", SessionRecorderConstants.BROADCAST_PORT);
-		
-		host = intent.getStringExtra("host");
-		
-		if (host == null) {
-			host = SessionRecorderConstants.BROADCAST_HOST;
-		}
+  protected String host;
 
-		startService();
+  private DataRemote impl;
 
-	}
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null; // not using ipc... dont care about this method
-	}
-	
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		
-		notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		
-	}
-   
-	@Override
-	public void onDestroy() {
+  private boolean started;
 
-		stopService();
-		
-		notificationManager.cancel(SERVICE_NOTIFICATION_ID);
-		
-		super.onDestroy();
-	}
-	
-	
-	private synchronized void startService() {
+  private MulticastLock multicastLock;
 
-		if (!started) {
-			
-			logger.info("starting {} service", getClass().getSimpleName());
-			
-			try {
-				
-				impl = makeImpl(host, port);
-				
-				if (impl instanceof DatagramData) {
-					if (((DatagramData)impl).isMulticast()) {
-						
-						WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-						
-						multicastLock = wifi.createMulticastLock(getClass().getSimpleName());
-						multicastLock.setReferenceCounted(false);
-						multicastLock.acquire();
-					}
-				}
-				
-				impl.start();
-				
-			} catch (DataRemoteError e) {
-				String msg = "failed to start " + getClass().getSimpleName();
-				logger.error(msg, e);
-				statusNotify(msg, "error", "service start failed", true);
-				
-				return;
-			}
 
-			afterStart();
-			
-			started = true;
+  protected TalosService() {
+  }
 
-		}
-	}
-	
+  @Override
+  public void onStart(Intent intent, int startId) {
 
-	protected abstract DataRemote makeImpl(String host, int port) throws DataRemoteError;
-	
-	protected abstract void afterStart() ;
+    super.onStart(intent, startId);
 
-	protected abstract void beforeStop() ;
+    port = intent.getIntExtra("port", SessionRecorderConstants.BROADCAST_PORT);
 
-	public void statusNotify(String msg, String contentTitle, String tickerText, boolean error) {
-		
-		long when = System.currentTimeMillis();
+    host = intent.getStringExtra("host");
 
-		int icon = error ? R.drawable.icon : android.R.drawable.ic_dialog_alert;
-		Intent notificationIntent = new Intent(getClass().getName());
-		PendingIntent contentIntent = PendingIntent.getService(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+    if (host == null) {
+      host = SessionRecorderConstants.BROADCAST_HOST;
+    }
 
-		Notification notification = new Notification.Builder(this)
-				.setContentTitle(contentTitle)
-				.setSmallIcon(icon)
-				.setTicker(tickerText)
-				.setWhen(when)
-				.setContentText(msg)
-				.setContentIntent(contentIntent)
-				.build();
+    startService();
 
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
-		notificationManager.notify(SERVICE_NOTIFICATION_ID, notification);		
-	}
-	
+  }
+
+  @Override
+  public IBinder onBind(Intent intent) {
+    return null; // not using ipc... dont care about this method
+  }
+
+  @Override
+  public void onCreate() {
+    super.onCreate();
+
+    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+  }
+
+  @Override
+  public void onDestroy() {
+
+    stopService();
+
+    notificationManager.cancel(SERVICE_NOTIFICATION_ID);
+
+    super.onDestroy();
+  }
+
+
+  private synchronized void startService() {
+
+    if (!started) {
+
+      logger.info("starting {} service", getClass().getSimpleName());
+
+      try {
+
+        impl = makeImpl(host, port);
+
+        if (impl instanceof DatagramData) {
+          if (((DatagramData)impl).isMulticast()) {
+
+            WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+            multicastLock = wifi.createMulticastLock(getClass().getSimpleName());
+            multicastLock.setReferenceCounted(false);
+            multicastLock.acquire();
+          }
+        }
+
+        impl.start();
+
+      } catch (DataRemoteError e) {
+        String msg = "failed to start " + getClass().getSimpleName();
+        logger.error(msg, e);
+        statusNotify(msg, "error", "service start failed", true);
+
+        return;
+      }
+
+      afterStart();
+
+      started = true;
+
+    }
+  }
+
+
+  protected abstract DataRemote makeImpl(String host, int port) throws DataRemoteError;
+
+  protected abstract void afterStart() ;
+
+  protected abstract void beforeStop() ;
+
+  public void statusNotify(String msg, String contentTitle, String tickerText, boolean error) {
+
+    long when = System.currentTimeMillis();
+
+    int icon = error ? R.drawable.icon : android.R.drawable.ic_dialog_alert;
+    Intent notificationIntent = new Intent(getClass().getName());
+    PendingIntent contentIntent = PendingIntent.getService(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
+    Notification notification = new Notification.Builder(this)
+        .setContentTitle(contentTitle)
+        .setSmallIcon(icon)
+        .setTicker(tickerText)
+        .setWhen(when)
+        .setContentText(msg)
+        .setContentIntent(contentIntent)
+        .build();
+
+    notification.flags |= Notification.FLAG_ONGOING_EVENT;
+    notificationManager.notify(SERVICE_NOTIFICATION_ID, notification);
+  }
+
     private synchronized void stopService() {
-    	if (started) {
-    		try {
-				beforeStop();
-				impl.stop();
-			} catch (Exception e) {
-				logger.error("failed to stop " + getClass().getSimpleName(), e);
-			}
+      if (started) {
+        try {
+        beforeStop();
+        impl.stop();
+      } catch (Exception e) {
+        logger.error("failed to stop " + getClass().getSimpleName(), e);
+      }
 
-    		if (multicastLock != null) {
-    			multicastLock.release();
-    		}
-    		
-    		started = false;
-    	}			
+        if (multicastLock != null) {
+          multicastLock.release();
+        }
+
+        started = false;
+      }
     }
 }

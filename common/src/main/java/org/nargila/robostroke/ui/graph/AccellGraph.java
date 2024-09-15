@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2024 Tal Shalif
- * 
+ *
  * This file is part of Talos-Rowing.
- * 
+ *
  * Talos-Rowing is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Talos-Rowing is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,182 +34,182 @@ import org.nargila.robostroke.ui.graph.XYSeries.XMode;
  * subclass of LineGraphView for setting acceleration specific parameters
  */
 public class AccellGraph extends SensorGraphBase  {
-	/**
-	 * subclass of LineGraphView for setting stroke specific parameters
-	 */
-	private class RollGraphOverlay implements SensorDataSink {
-		private static final double ROLL_PANNEL_DIM_FACTOR = 0.60;
+  /**
+   * subclass of LineGraphView for setting stroke specific parameters
+   */
+  private class RollGraphOverlay implements SensorDataSink {
+    private static final double ROLL_PANNEL_DIM_FACTOR = 0.60;
 
-		private static final float Y_RANGE = 10f;
+    private static final float Y_RANGE = 10f;
 
-		private final int rollAccumSize = 2;
-		private int rollAccumCount;
-		private float rollAccum;
+    private final int rollAccumSize = 2;
+    private int rollAccumCount;
+    private float rollAccum;
 
-		private final LowpassFilter filter = new LowpassFilter(.5f);
+    private final LowpassFilter filter = new LowpassFilter(.5f);
 
-		private long rollAccumTimestamp;
+    private long rollAccumTimestamp;
 
-		private final MultiXYSeries multySeries;
-		private final XYSeries rollSeries;
-		private final CyclicArrayXYSeries rollPanelSeries;
-		private final RSPaint rollGraphPaint;
-		
-		private final RSPaint rollBackgroundPaint;
+    private final MultiXYSeries multySeries;
+    private final XYSeries rollSeries;
+    private final CyclicArrayXYSeries rollPanelSeries;
+    private final RSPaint rollGraphPaint;
 
-		private final CyclicArrayXYSeries rollSeriesImpl;
+    private final RSPaint rollBackgroundPaint;
 
-		RollGraphOverlay(double xRange, MultiXYSeries multySeries) {
+    private final CyclicArrayXYSeries rollSeriesImpl;
 
-			rollPanelSeries = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint()));
-			rollPanelSeries.setxRange(xRange);
+    RollGraphOverlay(double xRange, MultiXYSeries multySeries) {
 
-			this.multySeries = multySeries;
-			
-			{
-				rollBackgroundPaint = uiLiaison.createPaint();
-				rollBackgroundPaint.setStyle(PaintStyle.FILL);
-				rollBackgroundPaint.setAntiAlias(false);
-				rollBackgroundPaint.setStrokeWidth(0);
-			}
+      rollPanelSeries = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(uiLiaison.createPaint()));
+      rollPanelSeries.setxRange(xRange);
 
-			{
-				rollGraphPaint = uiLiaison.createPaint(); 
-				rollGraphPaint.setStyle(PaintStyle.STROKE);
-				rollGraphPaint.setColor(uiLiaison.getYellowColor());
-				rollGraphPaint.setAlpha(170);
-			}
-			
-			{
-				rollSeriesImpl = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(rollGraphPaint, null));
-				rollSeriesImpl.setIndependantYAxis(true);
-				rollSeriesImpl.setyAxisSize(Y_RANGE);
-			}
+      this.multySeries = multySeries;
 
-			rollSeries = multySeries.addSeries(rollSeriesImpl);
-		}
+      {
+        rollBackgroundPaint = uiLiaison.createPaint();
+        rollBackgroundPaint.setStyle(PaintStyle.FILL);
+        rollBackgroundPaint.setAntiAlias(false);
+        rollBackgroundPaint.setStrokeWidth(0);
+      }
 
-		void setXRange(double val) {
-			rollPanelSeries.setxRange(val);
-		}
+      {
+        rollGraphPaint = uiLiaison.createPaint();
+        rollGraphPaint.setStyle(PaintStyle.STROKE);
+        rollGraphPaint.setColor(uiLiaison.getYellowColor());
+        rollGraphPaint.setAlpha(170);
+      }
 
-		void drawRollPanels(RSCanvas canvas, RSRect rect, double xAxisSize) {
-			XYSeries ser = rollPanelSeries;
+      {
+        rollSeriesImpl = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(rollGraphPaint, null));
+        rollSeriesImpl.setIndependantYAxis(true);
+        rollSeriesImpl.setyAxisSize(Y_RANGE);
+      }
 
-			final int len = ser.getItemCount();
+      rollSeries = multySeries.addSeries(rollSeriesImpl);
+    }
 
-			if (len > 0) {
-				final int red = uiLiaison.getRedColor();
-				final int green = uiLiaison.getGreenColor();
+    void setXRange(double val) {
+      rollPanelSeries.setxRange(val);
+    }
 
-				final double maxYValue = Y_RANGE / 2;
-				final double scaleX = rect.width() / xAxisSize;
+    void drawRollPanels(RSCanvas canvas, RSRect rect, double xAxisSize) {
+      XYSeries ser = rollPanelSeries;
 
-				final double minX = multySeries.getMinX();
+      final int len = ser.getItemCount();
 
-				double startX = ser.getX(0);
-				double stopX;
+      if (len > 0) {
+        final int red = uiLiaison.getRedColor();
+        final int green = uiLiaison.getGreenColor();
 
-				for (int i = 1; i < len; ++i, startX = stopX) {
-					stopX = ser.getX(i);
+        final double maxYValue = Y_RANGE / 2;
+        final double scaleX = rect.width() / xAxisSize;
 
-					double avgY = Math.min(ser.getY(i), maxYValue);
+        final double minX = multySeries.getMinX();
 
-					int color = avgY > 0 ? green : red;
-					int alpha = (int) ((avgY / maxYValue) * 255 * ROLL_PANNEL_DIM_FACTOR);
+        double startX = ser.getX(0);
+        double stopX;
 
-					rollBackgroundPaint.setColor(color);
-					rollBackgroundPaint.setAlpha(Math.min(Math.abs(alpha), 255));
+        for (int i = 1; i < len; ++i, startX = stopX) {
+          stopX = ser.getX(i);
 
-					float left = (float) ((startX - minX) * scaleX);
-					float right = (float) (((stopX - minX) * scaleX));
+          double avgY = Math.min(ser.getY(i), maxYValue);
 
-					canvas.drawRect((int)left, rect.top, (int)right, rect.bottom, rollBackgroundPaint);
-				}
-			}
-		}
+          int color = avgY > 0 ? green : red;
+          int alpha = (int) ((avgY / maxYValue) * 255 * ROLL_PANNEL_DIM_FACTOR);
 
-		void reset() {
-			synchronized (multySeries) {
-				resetRollAccum();
-				rollPanelSeries.clear();
-			}
-		}
+          rollBackgroundPaint.setColor(color);
+          rollBackgroundPaint.setAlpha(Math.min(Math.abs(alpha), 255));
 
-		private void resetRollAccum() {
-			rollAccum = 0;
-			rollAccumCount = 0;
-		}
+          float left = (float) ((startX - minX) * scaleX);
+          float right = (float) (((stopX - minX) * scaleX));
 
-		@Override
-		public void onSensorData(long timestamp, Object value) {
-			
-			synchronized (multySeries) {
-				float[] values = (float[]) value;
+          canvas.drawRect((int)left, rect.top, (int)right, rect.bottom, rollBackgroundPaint);
+        }
+      }
+    }
 
-				float y = filter
-				.filter(new float[] { values[DataIdx.ORIENT_ROLL] })[0];
+    void reset() {
+      synchronized (multySeries) {
+        resetRollAccum();
+        rollPanelSeries.clear();
+      }
+    }
 
-				rollAccum += y;
+    private void resetRollAccum() {
+      rollAccum = 0;
+      rollAccumCount = 0;
+    }
 
-				if (rollAccumCount++ == 0) {
-					rollAccumTimestamp = timestamp;
-				}
+    @Override
+    public void onSensorData(long timestamp, Object value) {
 
-				if (rollAccumCount == rollAccumSize) {
-					rollPanelSeries.add(rollAccumTimestamp, rollAccum
-							/ rollAccumSize);
-					resetRollAccum();
-				}
+      synchronized (multySeries) {
+        float[] values = (float[]) value;
 
-				rollSeries.add(timestamp, y);
-			}
-			
-		}
-	}
+        float y = filter
+        .filter(new float[] { values[DataIdx.ORIENT_ROLL] })[0];
 
-	private static final float Y_SCALE = 8f;
-	private final RollGraphOverlay rollGraph;
+        rollAccum += y;
 
-	public AccellGraph(UILiaison factory, float xRange, RoboStroke roboStroke) {
-		super(factory, XMode.ROLLING, xRange, Y_SCALE, roboStroke);
+        if (rollAccumCount++ == 0) {
+          rollAccumTimestamp = timestamp;
+        }
 
-		rollGraph = new RollGraphOverlay(xRange, multySeries);
-	}
+        if (rollAccumCount == rollAccumSize) {
+          rollPanelSeries.add(rollAccumTimestamp, rollAccum
+              / rollAccumSize);
+          resetRollAccum();
+        }
 
-	@Override
-	public void setXRange(double val) {
-		rollGraph.setXRange(val);
-		super.setXRange(val);
-	}
+        rollSeries.add(timestamp, y);
+      }
 
-	@Override
-	protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize,
-			double yAxisSize) {
+    }
+  }
 
-		rollGraph.drawRollPanels(canvas, rect, xAxisSize);
+  private static final float Y_SCALE = 8f;
+  private final RollGraphOverlay rollGraph;
 
-		super.drawGraph(canvas, rect, xAxisSize, yAxisSize);
-	}
+  public AccellGraph(UILiaison factory, float xRange, RoboStroke roboStroke) {
+    super(factory, XMode.ROLLING, xRange, Y_SCALE, roboStroke);
 
-	@Override
-	public void reset() {
-		synchronized (multySeries) {
-			rollGraph.reset();
+    rollGraph = new RollGraphOverlay(xRange, multySeries);
+  }
 
-			super.reset();
-		}
-	}
+  @Override
+  public void setXRange(double val) {
+    rollGraph.setXRange(val);
+    super.setXRange(val);
+  }
 
-	@Override
-	protected void detachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationSource().removeSensorDataSink(lineDataSink);
-		roboStroke.getOrientationSource().removeSensorDataSink(rollGraph);
-	}
+  @Override
+  protected void drawGraph(RSCanvas canvas, RSRect rect, double xAxisSize,
+      double yAxisSize) {
 
-	@Override
-	protected void attachSensors(SensorDataSink lineDataSink) {
-		roboStroke.getAccelerationSource().addSensorDataSink(lineDataSink);
-		roboStroke.getOrientationSource().addSensorDataSink(rollGraph);
-	}
+    rollGraph.drawRollPanels(canvas, rect, xAxisSize);
+
+    super.drawGraph(canvas, rect, xAxisSize, yAxisSize);
+  }
+
+  @Override
+  public void reset() {
+    synchronized (multySeries) {
+      rollGraph.reset();
+
+      super.reset();
+    }
+  }
+
+  @Override
+  protected void detachSensors(SensorDataSink lineDataSink) {
+    roboStroke.getAccelerationSource().removeSensorDataSink(lineDataSink);
+    roboStroke.getOrientationSource().removeSensorDataSink(rollGraph);
+  }
+
+  @Override
+  protected void attachSensors(SensorDataSink lineDataSink) {
+    roboStroke.getAccelerationSource().addSensorDataSink(lineDataSink);
+    roboStroke.getOrientationSource().addSensorDataSink(rollGraph);
+  }
 }

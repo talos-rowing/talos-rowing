@@ -14,7 +14,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
     private static final Logger logger = LoggerFactory.getLogger(MediaSynchedFileDataInput.class);
 
     public static final String PROP_TIME_OFFSET = "timeOffset";
-    
+
     public static final String PROP_TALOS_DATA = "talosData";
 
     public static final String PROP_MEDIA_FILE = "mediaFile";
@@ -57,7 +57,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
     @Override
     public void stop() {
         logger.info("stopping media..");
-        media.stop();    	
+        media.stop();
         super.stop();
     }
 
@@ -83,7 +83,7 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
     }
 
     @Override
-    protected double calcProgress() throws IOException {    	
+    protected double calcProgress() throws IOException {
         return media.getDuration() == 0 ? 0.0 : (double)media.getTime() / media.getDuration();
     }
 
@@ -131,6 +131,6 @@ public class MediaSynchedFileDataInput extends SynchedFileDataInput {
     }
 
     public boolean step() {
-        return media.step();        
+        return media.step();
     }
 }

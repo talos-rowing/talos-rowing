@@ -38,15 +38,15 @@ public class VlcExternalMedia implements ExternalMedia {
     public VlcExternalMedia(File videoFile, Container container, VideoEffect videoEffect) throws Exception {
 
         VlcSetup.setupCheckVlc(container);
-                        
+
         this.videoFile = videoFile;
-        this.container = container;        
+        this.container = container;
         this.videoEffect = videoEffect;
 
         playerComponent = new VlcEmbeddedPlayer();
-        
+
         container.add(playerComponent, BorderLayout.CENTER);
-        
+
     }
 
 
@@ -72,7 +72,7 @@ public class VlcExternalMedia implements ExternalMedia {
 
     @Override
     public void start() {
-        playerComponent.start(videoFile);                
+        playerComponent.start(videoFile);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class VlcExternalMedia implements ExternalMedia {
     public void removeEventListener(EventListener listener) {
         listeners.removeListener(listener);
     }
-    
+
     @Override
     public long getDuration() {
         return duration;
@@ -119,41 +119,41 @@ public class VlcExternalMedia implements ExternalMedia {
     }
 
 
-    
+
     @SuppressWarnings("serial")
     private class VlcEmbeddedPlayer extends EmbeddedMediaPlayerComponent {
 
         private final ClockProvider clock = new ClockProvider() {
-            
+
             private final ClockProvider deadReconingClock = new SystemClockProvider() {
                 {
                     run();
                 }
             };
-            
+
             private long lastPlayTime;
-            
+
             @Override
             public void stop() {
-                // nothing to do                
+                // nothing to do
             }
-            
+
             @Override
             public void run() {
                 // nothing to do
             }
-            
+
             @Override
             public void reset(long initialTime) {
                 // nothing to do
-                
+
             }
-            
+
             @Override
             public long getTime() {
-                            
+
                 long playTime = mediaPlayer.getTime();
-                
+
                 if (!playing || playTime != lastPlayTime || rate < 0.5) {
                     lastPlayTime = playTime;
                     deadReconingClock.reset(0);
@@ -165,7 +165,7 @@ public class VlcExternalMedia implements ExternalMedia {
                     logger.info("dead reconing timestamp {} (diff={})", lastPlayTime + deadReconingTimeElapsed, deadReconingTimeElapsed);
                     return lastPlayTime + deadReconingTimeElapsed;
                 }
-                
+
                 return playTime;
             }
         };
@@ -216,11 +216,11 @@ public class VlcExternalMedia implements ExternalMedia {
                     break;
                 default:
                     transformation = null;
-                    break;                    
+                    break;
             }
 
 
-            String[] args = transformation == null ? new String[0] : new String[]{"--video-filter=transform", "--transform-type=" + transformation};  
+            String[] args = transformation == null ? new String[0] : new String[]{"--video-filter=transform", "--transform-type=" + transformation};
 
             mediaPlayer.setStandardMediaOptions(args);
             mediaPlayer.startMedia(file.getAbsolutePath());
@@ -236,7 +236,7 @@ public class VlcExternalMedia implements ExternalMedia {
         public void timeChanged(MediaPlayer mediaPlayer, long newTime) {
             listeners.dispatch(EventType.TIME, newTime);
         }
-        
+
         @Override
         public void paused(MediaPlayer mediaPlayer) {
             listeners.dispatch(EventType.TIME, getTime());

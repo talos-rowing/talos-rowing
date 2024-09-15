@@ -2,16 +2,16 @@ package org.nargila.robostroke.android.common;
 /**
  *               DO WHAT YOU WANT TO PUBLIC LICENSE
  *                    Version 2, December 2004
- * 
+ *
  * Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
- * 
+ *
  * Everyone is permitted to copy and distribute verbatim or modified
  * copies of this license document, and changing it is allowed as long
  * as the name is changed.
- * 
+ *
  *            DO WHAT YOU WANT TO PUBLIC LICENSE
  *   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- * 
+ *
  *  0. You just DO WHAT YOU WANT TO.
  */
 
@@ -27,7 +27,7 @@ import android.widget.TextView;
  * Text view that auto adjusts text size to fit within the view.
  * If the text size equals the minimum text size and still does not
  * fit, append with an ellipsis.
- * 
+ *
  * @author Chase Colburn
  * @since Apr 4, 2011
  */
@@ -262,7 +262,7 @@ public class AutoResizeTextView extends TextView {
         	while (textHeight > height && targetTextSize > mMinTextSize) {
         		targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
         		textHeight = getTextHeight(text, textPaint, width, targetTextSize);
-        	} 
+        	}
         } else if (textHeight < height && targetTextSize < mMaxTextSize) {
         	while (textHeight < height && targetTextSize < mMaxTextSize) {
         		targetTextSize = Math.min(targetTextSize + mResizeStep, mMaxTextSize);

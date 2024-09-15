@@ -1,18 +1,18 @@
 /*
  * Copyright (c) 2012 Tal Shalif
- * 
+ *
  * This file is part of Talos-Rowing.
- * 
+ *
  * Talos-Rowing is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Talos-Rowing is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -45,21 +45,21 @@ public class RollGraphOverlay implements SensorDataSink {
     private final XYSeries rollSeries;
     private final CyclicArrayXYSeries rollPanelSeries;
     private final RSPaint rollGraphPaint;
-		
+
     private final RSPaint rollBackgroundPaint;
 
     private final CyclicArrayXYSeries rollSeriesImpl;
 
-	private final UILiaison uiFactory;
+  private final UILiaison uiFactory;
 
     public RollGraphOverlay(UILiaison uiFactory, MultiXYSeries multySeries) {
 
-    	this.uiFactory = uiFactory;
+      this.uiFactory = uiFactory;
         rollPanelSeries = new CyclicArrayXYSeries(multySeries.xMode, new XYSeries.Renderer(uiFactory.createPaint()));
         rollPanelSeries.setxRange(multySeries.getxRange());
 
         this.multySeries = multySeries;
-			
+
         {
             rollBackgroundPaint = uiFactory.createPaint();
             rollBackgroundPaint.setStyle(PaintStyle.FILL);
@@ -68,12 +68,12 @@ public class RollGraphOverlay implements SensorDataSink {
         }
 
         {
-            rollGraphPaint = uiFactory.createPaint(); 
+            rollGraphPaint = uiFactory.createPaint();
             rollGraphPaint.setStyle(PaintStyle.STROKE);
             rollGraphPaint.setColor(uiFactory.getYellowColor());
             rollGraphPaint.setAlpha(170);
         }
-			
+
         {
             rollSeriesImpl = new CyclicArrayXYSeries(XMode.ROLLING, new XYSeries.Renderer(rollGraphPaint, null));
             rollSeriesImpl.setIndependantYAxis(true);
@@ -137,24 +137,24 @@ public class RollGraphOverlay implements SensorDataSink {
 
     @Override
     public void onSensorData(long timestamp, Object value) {
-    	synchronized (multySeries) {
-    		float[] values = (float[]) value;
+      synchronized (multySeries) {
+        float[] values = (float[]) value;
 
-    		float y = filter
-    		.filter(new float[] { values[DataIdx.ORIENT_ROLL] })[0];
+        float y = filter
+        .filter(new float[] { values[DataIdx.ORIENT_ROLL] })[0];
 
-    		rollAccum += y;
+        rollAccum += y;
 
-    		if (rollAccumCount++ == 0) {
-    			rollAccumTimestamp = timestamp;
-    		}
+        if (rollAccumCount++ == 0) {
+          rollAccumTimestamp = timestamp;
+        }
 
-    		if (rollAccumCount == rollAccumSize) {
-    			rollPanelSeries.add(rollAccumTimestamp, rollAccum / rollAccumSize);
-    			resetRollAccum();
-    		}
+        if (rollAccumCount == rollAccumSize) {
+          rollPanelSeries.add(rollAccumTimestamp, rollAccum / rollAccumSize);
+          resetRollAccum();
+        }
 
-    		rollSeries.add(timestamp, y);
-    	}
+        rollSeries.add(timestamp, y);
+      }
     }
 }

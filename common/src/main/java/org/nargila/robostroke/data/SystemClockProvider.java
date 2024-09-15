@@ -5,7 +5,7 @@ public class SystemClockProvider implements ClockProvider {
     private long systemTimeOffset;
     private long stopTime;
     private boolean stopped = true;
-    
+
     public SystemClockProvider() {
     }
 
@@ -19,9 +19,9 @@ public class SystemClockProvider implements ClockProvider {
         if (!stopped) {
             throw new IllegalStateException("timer is already running");
         }
-        
+
         reset(stopTime);
-        
+
         stopped = false;
     }
 
@@ -30,9 +30,9 @@ public class SystemClockProvider implements ClockProvider {
         if (stopped) {
             throw new IllegalStateException("timer is not running");
         }
-        
+
         stopTime = getTime();
-        
+
         stopped = true;
     }
 

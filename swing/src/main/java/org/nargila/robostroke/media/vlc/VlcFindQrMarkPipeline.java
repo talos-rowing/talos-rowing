@@ -23,22 +23,22 @@ import com.google.zxing.common.HybridBinarizer;
 
 public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
 
-	private static final Logger logger = LoggerFactory.getLogger(VlcFindQrMarkPipeline.class);
-	
-	private final AtomicReference<Exception> finishSync = new AtomicReference<Exception>();
-	
-	private String mark;
+  private static final Logger logger = LoggerFactory.getLogger(VlcFindQrMarkPipeline.class);
 
-	private ClockTime timestamp;
-	    
+  private final AtomicReference<Exception> finishSync = new AtomicReference<Exception>();
+
+  private String mark;
+
+  private ClockTime timestamp;
+
     private final DirectMediaPlayerComponent vlc;
 
-	private final File video;
+  private final File video;
 
-	private final MediaPlayer mp;
-	
-	public VlcFindQrMarkPipeline(File video) {	
-	    
+  private final MediaPlayer mp;
+
+  public VlcFindQrMarkPipeline(File video) {
+
         VlcSetup.setupCheckVlc(null);
 
         vlc = new BufferedImageMediaPlayer() {
@@ -50,35 +50,35 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
                     synchronized (finishSync) {
                         finishSync.notifyAll();
                     }
-                }           
+                }
             }
         };
-        
+
         this.video = video;
-		mp = vlc.getMediaPlayer();
-	}
-	
-	void start() {
-		mp.playMedia(video.getAbsolutePath());
-	}
-	
-	
-	@Override
+    mp = vlc.getMediaPlayer();
+  }
+
+  void start() {
+    mp.playMedia(video.getAbsolutePath());
+  }
+
+
+  @Override
     public void stop() {
-		
-		synchronized (finishSync) {
-			finishSync.notifyAll();
-		}
-	}
 
-	private void doStop() {
-//		mp.stop();
-		vlc.release();
-	}
-	
+    synchronized (finishSync) {
+      finishSync.notifyAll();
+    }
+  }
 
-	private boolean findQrCode(BufferedImage image, long time) {
-		
+  private void doStop() {
+//    mp.stop();
+    vlc.release();
+  }
+
+
+  private boolean findQrCode(BufferedImage image, long time) {
+
         if (mark == null) {
             LuminanceSource source = new BufferedImageLuminanceSource(image);
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
@@ -102,41 +102,41 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
             }
             return true;
         }
-        
-        return false;
-	}
-	
-	
-	@Override
-    public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
-		
-		synchronized (finishSync) {
-			start();
-			finishSync.wait(timeoutSeconds * 1000);
-		}
-		
-        logger.info("################ calling doStop()...");
-        
-		doStop();
-		
-        logger.info("################ done.");
-        
-		if (mark == null) {
-			
-			if (finishSync.get() != null) {
-				throw finishSync.get();
-			}
-			
-			throw new IllegalStateException("could not find QR sync mark in video within " + timeoutSeconds + " seconds");
-		}
-		
-		return Pair.create(new Integer(mark.split(":")[1]),timestamp.toMillis());
-	}
 
-	public static void main(String[] args) throws Exception {
-		
-		final VlcFindQrMarkPipeline qrFind = new VlcFindQrMarkPipeline(new File(args[0]));
-	    
-		qrFind.findMark(160);
-	}
+        return false;
+  }
+
+
+  @Override
+    public Pair<Integer,Long> findMark(int timeoutSeconds) throws Exception {
+
+    synchronized (finishSync) {
+      start();
+      finishSync.wait(timeoutSeconds * 1000);
+    }
+
+        logger.info("################ calling doStop()...");
+
+    doStop();
+
+        logger.info("################ done.");
+
+    if (mark == null) {
+
+      if (finishSync.get() != null) {
+        throw finishSync.get();
+      }
+
+      throw new IllegalStateException("could not find QR sync mark in video within " + timeoutSeconds + " seconds");
+    }
+
+    return Pair.create(new Integer(mark.split(":")[1]),timestamp.toMillis());
+  }
+
+  public static void main(String[] args) throws Exception {
+
+    final VlcFindQrMarkPipeline qrFind = new VlcFindQrMarkPipeline(new File(args[0]));
+
+    qrFind.findMark(160);
+  }
 }

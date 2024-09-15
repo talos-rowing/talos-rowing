@@ -17,7 +17,7 @@ public class MediaPlayerFactory {
     }
 
     public static FindQrMarkPipeline createFindQrMarkPipeline(File video) throws Exception {
-        
+
         switch (getFramework()) {
             case GST:
                 throw new AssertionError("GST support removed");
@@ -31,10 +31,10 @@ public class MediaPlayerFactory {
     private static MediaFramework getFramework() {
         return Settings.getInstance().getMediaFramework();
     }
-    
+
     public static ExternalMedia createMediaPlayer(File videoFile, Container container, VideoEffect videoEffect, EventListener eventListener) throws Exception {
         ExternalMedia res;
-        
+
         switch (getFramework()) {
             case GST:
                 throw new AssertionError("GST support removed");
@@ -43,10 +43,10 @@ public class MediaPlayerFactory {
                 break;
                 default:
                     throw new AssertionError("HDIGH!");
-        }        
-        
+        }
+
         res.addEventListener(eventListener);
-        
+
         return res;
     }
 }
