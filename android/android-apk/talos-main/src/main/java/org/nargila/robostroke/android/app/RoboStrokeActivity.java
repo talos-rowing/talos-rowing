@@ -119,7 +119,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
     final RoboStroke roboStroke =
             new RoboStroke(new AndroidLocationDistanceResolver(), new TalosBroadcastServiceConnector(this));
 
-    public NotificationHelper notificationHelper;
+    private NotificationHelper notificationHelper;
 
 
     private final ScreenStayupLock screenLock;
