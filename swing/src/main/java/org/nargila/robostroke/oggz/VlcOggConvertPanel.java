@@ -237,7 +237,7 @@ public abstract class VlcOggConvertPanel extends JPanel {
 
     protected boolean validateVlcExecutable(File vlc) {
 
-        boolean canExecute = vlc == null ? false : vlc.canExecute();
+        boolean canExecute = vlc != null && vlc.canExecute();
 
         logger.info("checking for vlc executable in {}: canExecute: {}", vlc, canExecute);
 

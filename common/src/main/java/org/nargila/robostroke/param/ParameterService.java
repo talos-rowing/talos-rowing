@@ -145,8 +145,9 @@ public class ParameterService {
     public synchronized void setParam(Parameter param, Object value) {
 
         // check either param is registered
-        if (getParam(param.getId()) != param) {
-            throw new IllegalArgumentException(String.format("parameter provided with id %s is not the same as the registered one"));
+        String id = param.getId();
+        if (getParam(id) != param) {
+            throw new IllegalArgumentException(String.format("parameter provided with id %s is not the same as the registered one", id));
         }
 
         try {

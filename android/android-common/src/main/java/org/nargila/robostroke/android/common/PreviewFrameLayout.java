@@ -59,7 +59,7 @@ public class PreviewFrameLayout extends FrameLayout {
         public void run() {
             try {
                 Thread.sleep(previewTime);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
 
             mainHanlder.post(new Runnable() {

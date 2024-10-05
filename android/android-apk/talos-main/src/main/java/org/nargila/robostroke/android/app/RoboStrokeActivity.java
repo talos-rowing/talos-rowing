@@ -1118,7 +1118,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
         try {
             roboStroke.setDataLogger(null);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         }
 
         try {

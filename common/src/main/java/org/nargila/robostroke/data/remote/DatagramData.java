@@ -67,7 +67,7 @@ public abstract class DatagramData {
 
             try {
                 connectionThread.join();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
 
             socket = null;
@@ -114,7 +114,7 @@ public abstract class DatagramData {
                             logger.warn("remote data reading error - receiver loop continues", e);
                             try {
                                 Thread.sleep(1000);
-                            } catch (InterruptedException e1) {
+                            } catch (InterruptedException ignored) {
                             }
                         }
                     }
@@ -128,8 +128,7 @@ public abstract class DatagramData {
 
             try {
                 startSync.wait();
-            } catch (InterruptedException e) {
-
+            } catch (InterruptedException ignored) {
             }
         }
     }

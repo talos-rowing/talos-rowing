@@ -7,7 +7,6 @@ import org.nargila.robostroke.common.ClockTime;
 
 public class TestProperties  {
 
-  @SuppressWarnings("serial")
   public static class NoSuchProperty extends IllegalArgumentException {
 
     public NoSuchProperty(String msg) {
@@ -57,7 +56,7 @@ public class TestProperties  {
     }
 
 
-    @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public <T> T v(String name, T defVal) {
         try {
           return (T) v(name, defVal.getClass());
@@ -76,7 +75,7 @@ public class TestProperties  {
         return v(caller, name, clazz);
     }
 
-    @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   private <T> T v(String caller, String name, Class<T> clazz) {
 
       String[] candidates = {

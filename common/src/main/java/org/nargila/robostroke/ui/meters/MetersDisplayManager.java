@@ -390,7 +390,7 @@ public class MetersDisplayManager implements SensorDataSink {
         lastTime = startTime = splitTimeStart = 0;
         accumulatedDistance = 0;
 
-        splitTimerOn = RowingSplitMode.CONTINUOUS == queryRowingMode() ? true : false;
+        splitTimerOn = queryRowingMode() == RowingSplitMode.CONTINUOUS;
 
         updateTime(lastTime, true);
         updateCount(true);

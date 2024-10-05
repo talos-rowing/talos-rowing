@@ -106,7 +106,7 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
 
         synchronized (finishSync) {
             start();
-            finishSync.wait(timeoutSeconds * 1000);
+            finishSync.wait(timeoutSeconds * 1000L);
         }
 
         logger.info("################ calling doStop()...");

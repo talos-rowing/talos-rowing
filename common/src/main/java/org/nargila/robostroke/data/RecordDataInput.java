@@ -58,7 +58,7 @@ public abstract class RecordDataInput extends SensorDataInputBase {
                 try {
                     DataRecord record = queue.take();
                     sensorDataSource.pushData(record.timestamp, record.data);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
         }

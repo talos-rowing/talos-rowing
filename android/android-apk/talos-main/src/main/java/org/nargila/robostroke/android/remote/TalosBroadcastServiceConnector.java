@@ -102,7 +102,7 @@ public class TalosBroadcastServiceConnector implements DataSender {
             stop();
             try {
                 start();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }
     }
