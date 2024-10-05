@@ -124,7 +124,7 @@ public class VlcFindQrMarkPipeline implements FindQrMarkPipeline {
             throw new IllegalStateException("could not find QR sync mark in video within " + timeoutSeconds + " seconds");
         }
 
-        return Pair.create(new Integer(mark.split(":")[1]), timestamp.toMillis());
+        return Pair.create(Integer.valueOf(mark.split(":")[1]), timestamp.toMillis());
     }
 
     public static void main(String[] args) throws Exception {

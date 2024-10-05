@@ -34,7 +34,6 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
     private final JButton btnSelectTalos;
     private final JButton btnSelectOutput;
     private final JTextField resultTalos;
-    private final JLabel statusLine;
     private final JProgressBar progressBar;
     private JFileChooser fc;
     private final AtomicReference<File> resultTalosConfFile = new AtomicReference<>();
@@ -51,7 +50,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
     private boolean canceled;
     private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<>();
 
-    private final JComboBox cbxVideoEfects;
+    private final JComboBox<VideoEffect> cbxVideoEfects;
 
     private final JButton btnManual;
 
@@ -135,7 +134,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         springLayout.putConstraint(SpringLayout.EAST, progressBar, -25, SpringLayout.EAST, this);
         add(progressBar);
 
-        statusLine = new JLabel("");
+        JLabel statusLine = new JLabel("");
         springLayout.putConstraint(SpringLayout.SOUTH, statusLine, -117, SpringLayout.SOUTH, this);
         springLayout.putConstraint(SpringLayout.NORTH, progressBar, 6, SpringLayout.SOUTH, statusLine);
         springLayout.putConstraint(SpringLayout.WEST, statusLine, 21, SpringLayout.WEST, this);
@@ -223,7 +222,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         springLayout.putConstraint(SpringLayout.EAST, lblVideoEvects, 0, SpringLayout.EAST, btnSelectMedia);
         add(lblVideoEvects);
 
-        cbxVideoEfects = new JComboBox();
+        cbxVideoEfects = new JComboBox<>();
         cbxVideoEfects.setEnabled(false);
         cbxVideoEfects.addItemListener(new ItemListener() {
             @Override

@@ -70,11 +70,11 @@ public class LowpassFilter extends PassFilterBase {
 
         while ((l = in.readLine()) != null && !l.equals("")) {
             String[] vals = l.split(" +");
-            int x = new Integer(vals[0]);
-            float[] yy = {new Float(vals[1])};
+            int x = Integer.parseInt(vals[0]);
+            float[] yy = {Float.parseFloat(vals[1])};
 
             float y = filter.filter(yy)[0];
-            System.out.println("" + x + " " + y);
+            System.out.println(x + " " + y);
         }
     }
 }

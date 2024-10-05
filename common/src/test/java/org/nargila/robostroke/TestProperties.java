@@ -104,13 +104,13 @@ public class TestProperties  {
         if (clazz == ClockTime.class) {
             res = ClockTime.fromString(val);
         } else if (clazz == Long.class) {
-            res = new Long(val);
+            res = Long.valueOf(val);
         } else if (clazz == Integer.class) {
-            res = new Integer(val);
+            res = Integer.valueOf(val);
         } else if (clazz == String.class) {
             res = val;
         } else if (clazz == Double.class) {
-            res = new Double(val);
+            res = Double.valueOf(val);
         } else {
            throw new AssertionError("unhandled template class " + clazz.getName());
         }

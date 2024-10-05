@@ -22,6 +22,7 @@ package org.nargila.robostroke.data.version;
 import org.nargila.robostroke.data.SessionRecorderConstants;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 
 public abstract class DataVersionConverter {
 
@@ -64,13 +65,13 @@ public abstract class DataVersionConverter {
 
             int idx = line.lastIndexOf(" ");
 
-            return new Integer(line.substring(idx + 1, line.length() - SessionRecorderConstants.END_OF_RECORD.length()));
+            return Integer.parseInt(line.substring(idx + 1, line.length() - SessionRecorderConstants.END_OF_RECORD.length()));
         } catch (IOException e) {
             throw new ConverterError("error getting data file version", e);
         } finally {
             if (reader != null) try {
                 reader.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
     }
@@ -107,13 +108,11 @@ public abstract class DataVersionConverter {
 
             Class<DataVersionConverter> clazz = (Class<DataVersionConverter>) Class.forName(DataVersionConverter.class.getPackage().getName() + ".impl.DataVersionConverter_" + ver);
 
-            return clazz.newInstance();
+            return  clazz.getDeclaredConstructor().newInstance();
 
         } catch (ClassNotFoundException e) {
             throw new ConverterError("no converter found for version " + ver);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
@@ -124,7 +123,7 @@ public abstract class DataVersionConverter {
 
     private static class DataVersionConverterChain extends DataVersionConverter {
 
-        private DataVersionConverter[] converters;
+        private final DataVersionConverter[] converters;
 
         private DataVersionConverterChain(DataVersionConverter[] converters) {
             this.converters = converters;
@@ -194,12 +193,12 @@ public abstract class DataVersionConverter {
 
             try {
                 in.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
 
             try {
                 out.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
 
             if (res != input) {

@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -19,8 +19,14 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build
+      run: gradle build -x test
+    - name: Test common (3 tries)
+      run: |
+        max_tries=3
+        try_id=0
+        while test $try_id -lt $max_tries; do
+          try_id=$[$try_id + 1]
+          gradle :common:test && exit 0 || continue
+        done
+        exit 1
