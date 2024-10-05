@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<dimen name="font_padding">5sp</dimen>
 	<dimen name="font_large_resize_max">250sp</dimen>
 	<dimen name="font_x_large_resize_max">350sp</dimen>
 	<dimen name="auto_resize_margin_top">-15sp</dimen>

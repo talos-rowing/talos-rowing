@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/heart" />
 
-    <org.nargila.robostroke.android.common.AutoResizeTextView
+    <TextView
         android:id="@+id/bpm"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -17,6 +17,7 @@
         android:layout_marginTop="@dimen/auto_resize_margin_top"
         android:gravity="center"
         android:text="0"
+        android:autoSizeTextType="uniform"
         android:textColor="#ffffff"
         android:textSize="@dimen/font_x_large_resize_max"
         android:textStyle="bold"

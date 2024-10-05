@@ -43,6 +43,10 @@ import android.text.format.DateFormat;
 import android.view.*;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.*;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import org.acra.ACRA;
 import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
@@ -115,7 +119,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
     final RoboStroke roboStroke =
             new RoboStroke(new AndroidLocationDistanceResolver(), new TalosBroadcastServiceConnector(this));
 
-    public NotificationHelper notificationHelper;
+    private NotificationHelper notificationHelper;
 
 
     private final ScreenStayupLock screenLock;
@@ -136,6 +140,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
     private RecordSyncLeaderDialog recordLeaderDialog;
 
     static AlertDialog m_AlertDlg;
+    private WindowInsetsControllerCompat windowInsetsController;
 
     private class SessionFileHandler {
 
@@ -691,6 +696,41 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
                 getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
 
         checkLocationPermissionAndStart();
+
+        setupFullscreenMode();
+    }
+
+    /**
+     * Configures the activity to operate in fullscreen mode by hiding the navigation bars. It sets up an
+     * OnApplyWindowInsetsListener to show or hide the action bar based on the visibility of the navigation bars.
+     * Additionally, it configures a click listener on the main view to toggle the visibility of the navigation bars
+     * and action bar.
+     */
+    private void setupFullscreenMode() {
+        windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars());
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+            getWindow().getDecorView(),
+            (view, windowInsets) -> {
+                if (windowInsets.isVisible(WindowInsetsCompat.Type.navigationBars())) {
+                    getActionBar().show();
+                } else {
+                    getActionBar().hide();
+                }
+                return ViewCompat.onApplyWindowInsets(view, windowInsets);
+            }
+        );
+
+        View mainView = findViewById(R.id.main_layout); // Make sure to replace with your main view id
+        mainView.setOnClickListener((View v) -> {
+            if (getActionBar().isShowing()) {
+                windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars());
+            } else {
+                windowInsetsController.show(WindowInsetsCompat.Type.navigationBars());
+            }
+        });
     }
 
     private void checkLocationPermissionAndStart() {

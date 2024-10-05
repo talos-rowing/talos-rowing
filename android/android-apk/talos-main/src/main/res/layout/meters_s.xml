@@ -46,17 +46,19 @@
                         android:textColor="#ffffff"
                         android:textSize="32dp" />
 
-                    <org.nargila.robostroke.android.common.AutoResizeTextView
+                    <TextView
                         android:textSize="@dimen/font_large_resize_max"
                         android:id="@+id/speed"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:layout_marginTop="@dimen/auto_resize_margin_top"
-        		        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"                        
+                        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
                         android:layout_weight=".4"
                         android:gravity="center"
                         android:text="0:00"
-                        
+                        android:autoSizeTextType="uniform"
+                        android:paddingHorizontal="@dimen/font_padding"
+                        android:lines="1"
                         android:textColor="#ffffff"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -121,16 +123,18 @@
                         android:textColor="#ffffff"
                         android:textSize="32dp" />
 
-                    <org.nargila.robostroke.android.common.AutoResizeTextView
+                    <TextView
                         android:textSize="@dimen/font_large_resize_max"
                         android:id="@+id/spm"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:layout_weight=".4"
                         android:layout_marginTop="@dimen/auto_resize_margin_top"
-        		        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"                        
+                        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
                         android:gravity="center"
                         android:text="00"
+                        android:autoSizeTextType="uniform"
+                        android:lines="1"
                         android:textColor="#ffffff"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -205,17 +209,19 @@
                         android:textColor="#ffffff"
                         android:textSize="32dp" />
 
-                    <org.nargila.robostroke.android.common.AutoResizeTextView
+                    <TextView
                         android:id="@+id/distance_main"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:layout_weight=".4"
                         android:layout_marginTop="@dimen/auto_resize_margin_top"
-        		        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"                        
+                        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
                         android:gravity="center"
-                        android:text="0"
+                        android:text="00"
+                        android:autoSizeTextType="uniform"
+                        android:lines="1"
                         android:textColor="#ffffff"
-                        android:textSize="@dimen/font_large_resize_max"
+                        android:paddingHorizontal="@dimen/font_padding"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -306,17 +312,20 @@
 
                     </LinearLayout>
 
-                    <org.nargila.robostroke.android.common.AutoResizeTextView
+                    <TextView
                         android:id="@+id/split_time"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:layout_weight=".4"
                         android:gravity="center"
                         android:layout_marginTop="@dimen/auto_resize_margin_top"
-        		        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
+                        android:layout_marginBottom="@dimen/auto_resize_margin_bottom"
                         android:text="0:0"
+                        android:autoSizeTextType="uniform"
+                        android:lines="1"
                         android:textColor="#ffffff"
                         android:textSize="@dimen/font_x_large_resize_max"
+                        android:paddingHorizontal="@dimen/font_padding"
                         android:textStyle="bold" />
                 </LinearLayout>
 

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "org.nargila.robostroke.android.app"
-        minSdk = 26
+        minSdk = 30
         targetSdk = 34
         versionCode = 332
         versionName = "0.9.7.332"
@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.core:core:1.13.1")
     implementation("de.mindpipe.android:android-logging-log4j:1.0.3")
     implementation("org.slf4j:slf4j-log4j12:1.7.21")
     implementation("ch.acra:acra:4.4.0")
