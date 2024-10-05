@@ -142,10 +142,10 @@ public final class ClockTime implements Comparable<ClockTime>, Serializable {
 
         String[] tt = ss[0].split(":");
 
-        int hours = new Integer(tt[0]);
-        int minutes = new Integer(tt[1]);
-        int seconds = new Integer(tt[2]);
-        int millis = new Integer(ss[1]);
+        int hours = Integer.parseInt(tt[0]);
+        int minutes = Integer.parseInt(tt[1]);
+        int seconds = Integer.parseInt(tt[2]);
+        int millis = Integer.parseInt(ss[1]);
 
         if (minutes > 59 || minutes < 0 || seconds > 59 || seconds < 0 || millis > 999 || millis < 0) {
             throw new IllegalArgumentException("bad timestamp format " + timestamp);

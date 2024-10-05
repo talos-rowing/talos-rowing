@@ -254,9 +254,9 @@ public enum ParamKeys implements ParameterInfo {
         } else if (defaultValue instanceof Long) {
             return Long.valueOf(val);
         } else if (defaultValue instanceof Float) {
-            return new Float(val);
+            return Float.valueOf(val);
         } else if (defaultValue instanceof Double) {
-            return new Double(val);
+            return Double.valueOf(val);
         } else {
             throw new IllegalStateException("don't know how to convert from string for parameter data of type " + defaultValue.getClass());
         }

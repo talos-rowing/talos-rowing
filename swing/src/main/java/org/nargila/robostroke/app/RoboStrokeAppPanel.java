@@ -676,8 +676,8 @@ public class RoboStrokeAppPanel extends JPanel {
             }
         }
 
-        long synchTimeOffset = new Long(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "0"));
-        int synchMarkId = new Integer(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "1"));
+        long synchTimeOffset = Long.parseLong(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "0"));
+        int synchMarkId = Integer.parseInt(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "1"));
         File mediaFile = validateFileProperty(mediaConf, MediaSynchedFileDataInput.PROP_MEDIA_FILE);
 
         VideoEffect videoEffect = VideoEffect.valueOf(mediaConf.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, "NONE"));

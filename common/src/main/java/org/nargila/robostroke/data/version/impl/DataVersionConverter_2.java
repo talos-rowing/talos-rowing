@@ -72,7 +72,7 @@ public class DataVersionConverter_2 extends DataVersionConverter {
 
                     try {
 
-                        long timestamp = new Long(ss[0]);
+                        long timestamp = Long.parseLong(ss[0]);
 
                         String type = ss[1];
 
@@ -83,7 +83,7 @@ public class DataVersionConverter_2 extends DataVersionConverter {
 
                             int i = 0;
                             for (String s : fields) {
-                                values[i++] = new Double(s);
+                                values[i++] = Double.parseDouble(s);
                             }
                             if (lastValues == null) {
                                 lastValues = values;

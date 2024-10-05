@@ -73,7 +73,7 @@ public class ParameterServiceTest {
 
         @Override
         public Object convertFromString(String val) {
-            return new Boolean(val);
+            return Boolean.valueOf(val);
         }
 
         @Override
@@ -126,7 +126,7 @@ public class ParameterServiceTest {
 
         @Override
         public Object convertFromString(String val) {
-            return new Integer(val);
+            return Integer.valueOf(val);
         }
 
         @Override
@@ -179,7 +179,7 @@ public class ParameterServiceTest {
 
         @Override
         public Object convertFromString(String val) {
-            return new Float(val);
+            return Float.valueOf(val);
         }
 
         @Override
