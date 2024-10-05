@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.nargila.robostroke.android.app" android:versionCode="332"
+          xmlns:tools="http://schemas.android.com/tools" android:versionCode="332"
           android:sharedUserId="talos.rowing" android:sharedUserLabel="@string/sharedUserLabel" 
           android:versionName="0.9.7.332">
   
-  <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="9"/>
-  
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="34"/>
+
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                   android:maxSdkVersion="32"/>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
-  
+
   <application android:icon="@drawable/icon" android:label="@string/app_name"
                android:name=".MyApp" >
     <activity android:name=".RoboStrokeActivity"
               android:configChanges="orientation"
               android:screenOrientation="nosensor"
+              android:theme="@style/AppTheme"
               android:launchMode="singleInstance"
-              android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-              android:label="@string/app_name">
+              android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
-      <intent-filter>
+      <intent-filter  tools:ignore="AppLinkUrlError">
         <category android:name="android.intent.category.DEFAULT" />
         <action android:name="android.intent.action.VIEW" />
         <data android:mimeType="application/vnd.robostroke.session" />
@@ -40,6 +43,10 @@
               android:launchMode="singleInstance"
               android:excludeFromRecents="true"
               android:finishOnTaskLaunch="true" />
+
+    <provider android:name=".SessionContentProvider"
+              android:authorities="org.nargila.robostroke.android.app.SessionFileProvider"
+              android:exported="true" />
   </application>
 
 </manifest>

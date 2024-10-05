@@ -1,18 +1,18 @@
 package org.nargila.robostroke.android.common;
 /**
- *               DO WHAT YOU WANT TO PUBLIC LICENSE
- *                    Version 2, December 2004
- * 
+ * DO WHAT YOU WANT TO PUBLIC LICENSE
+ * Version 2, December 2004
+ * <p>
  * Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
- * 
+ * <p>
  * Everyone is permitted to copy and distribute verbatim or modified
  * copies of this license document, and changing it is allowed as long
  * as the name is changed.
- * 
- *            DO WHAT YOU WANT TO PUBLIC LICENSE
- *   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- * 
- *  0. You just DO WHAT YOU WANT TO.
+ * <p>
+ * DO WHAT YOU WANT TO PUBLIC LICENSE
+ * TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ * <p>
+ * 0. You just DO WHAT YOU WANT TO.
  */
 
 import android.content.Context;
@@ -27,7 +27,7 @@ import android.widget.TextView;
  * Text view that auto adjusts text size to fit within the view.
  * If the text size equals the minimum text size and still does not
  * fit, append with an ellipsis.
- * 
+ *
  * @author Chase Colburn
  * @since Apr 4, 2011
  */
@@ -68,7 +68,7 @@ public class AutoResizeTextView extends TextView {
     // Add ellipsis to text that overflows at the smallest text size
     private boolean mAddEllipsis = true;
 
-	private float mResizeStep = 4f;
+    private float mResizeStep = 4f;
 
     // Default constructor override
     public AutoResizeTextView(Context context) {
@@ -199,9 +199,9 @@ public class AutoResizeTextView extends TextView {
      * Reset the text to the original size
      */
     public void resetTextSize() {
-    	
-    	mTextSize = Math.max(mTextSize, mMinTextSize);
-    	
+
+        mTextSize = Math.max(mTextSize, mMinTextSize);
+
         if (mTextSize > 0) {
             super.setTextSize(TypedValue.COMPLEX_UNIT_PX, mTextSize);
             mMaxTextSize = mTextSize;
@@ -214,7 +214,7 @@ public class AutoResizeTextView extends TextView {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed || mNeedsResize) {
-        	resizeText();
+            resizeText();
         }
         super.onLayout(changed, left, top, right, bottom);
     }
@@ -258,16 +258,16 @@ public class AutoResizeTextView extends TextView {
 
 
         if (textHeight > height && targetTextSize > mMinTextSize) {
-        	// Until we either fit within our text view or we had reached our min text size, incrementally try smaller sizes
-        	while (textHeight > height && targetTextSize > mMinTextSize) {
-        		targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
-        		textHeight = getTextHeight(text, textPaint, width, targetTextSize);
-        	} 
+            // Until we either fit within our text view or we had reached our min text size, incrementally try smaller sizes
+            while (textHeight > height && targetTextSize > mMinTextSize) {
+                targetTextSize = Math.max(targetTextSize - mResizeStep, mMinTextSize);
+                textHeight = getTextHeight(text, textPaint, width, targetTextSize);
+            }
         } else if (textHeight < height && targetTextSize < mMaxTextSize) {
-        	while (textHeight < height && targetTextSize < mMaxTextSize) {
-        		targetTextSize = Math.min(targetTextSize + mResizeStep, mMaxTextSize);
-        		textHeight = getTextHeight(text, textPaint, width, targetTextSize);
-        	}         	
+            while (textHeight < height && targetTextSize < mMaxTextSize) {
+                targetTextSize = Math.min(targetTextSize + mResizeStep, mMaxTextSize);
+                textHeight = getTextHeight(text, textPaint, width, targetTextSize);
+            }
         }
 
 

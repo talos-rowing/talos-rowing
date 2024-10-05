@@ -162,7 +162,7 @@
 				<ListPreference android:title="Sensor Delay"
 					android:key="org.nargila.talos.rowing.android.sensor.sensorUpdateDelay"
 					android:persistent="true"
-					android:defaultValue="30"
+					android:defaultValue="20"
 					android:summary="Time in millis between each sensor update - 0 means as fast as possible (requires restart)"
 					android:entries="@array/sensor_update_delay_display"
 					android:entryValues="@array/sensor_update_delay"/>								

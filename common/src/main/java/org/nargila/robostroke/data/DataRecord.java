@@ -1,25 +1,23 @@
 /*
- * Copyright (c) 2011 Tal Shalif
- * 
+ * Copyright (c) 2024 Tal Shalif
+ *
  * This file is part of Talos-Rowing.
- * 
+ *
  * Talos-Rowing is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Talos-Rowing is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.nargila.robostroke.data;
-
-
 
 
 public class DataRecord {
@@ -40,9 +38,9 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* tag, countdown */
-                return new Object[] {tokens[0], new Integer(tokens[1])};
-            }			
-        }), 
+                return new Object[]{tokens[0], new Integer(tokens[1])};
+            }
+        }),
         STROKE_DROP_BELOW_ZERO,
         STROKE_RISE_ABOVE_ZERO,
         STROKE_POWER_START,
@@ -59,8 +57,8 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-                return new Object[] {new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
-            }			
+                return new Object[]{new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
+            }
         }),
         ROWING_START_TRIGGERED,
         ROWING_START(false, new DataRecordSerializer.LONG()),
@@ -71,7 +69,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"power"};
+                return new String[]{"power"};
             }
 
             @Override
@@ -84,23 +82,23 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"stroke_rate"};
+                return new String[]{"stroke_rate"};
             }
 
             @Override
             public Object[] exportData(Object data) {
                 return new Object[]{data};
             }
-        }, new DataRecordSerializer.INT()), 
-        STROKE_DECELERATION_TRESHOLD, 
-        STROKE_ACCELERATION_TRESHOLD, 
+        }, new DataRecordSerializer.INT()),
+        STROKE_DECELERATION_TRESHOLD,
+        STROKE_ACCELERATION_TRESHOLD,
         STROKE_ROLL(false, new DataRecordSerializer.FLOAT_ARR()),
-        RECOVERY_ROLL(false, new DataRecordSerializer.FLOAT_ARR()), 
+        RECOVERY_ROLL(false, new DataRecordSerializer.FLOAT_ARR()),
         ACCEL(true, false, new DataExporter() {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"x", "y", "z"};
+                return new String[]{"x", "y", "z"};
             }
 
             @Override
@@ -116,7 +114,7 @@ public class DataRecord {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"azimuth", "pitch", "roll"};
+                return new String[]{"azimuth", "pitch", "roll"};
             }
 
             @Override
@@ -127,12 +125,12 @@ public class DataRecord {
                 return new Object[]{fdata[0], fdata[1], fdata[2]};
 
             }
-        }, new DataRecordSerializer.FLOAT_ARR()), 
+        }, new DataRecordSerializer.FLOAT_ARR()),
         GPS(true, false, new DataExporter() {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"lat", "long", "alt", "speed", "bearing", "accuracy"};
+                return new String[]{"lat", "long", "alt", "speed", "bearing", "accuracy"};
             }
 
             @Override
@@ -143,12 +141,12 @@ public class DataRecord {
                 return new Object[]{ddata[0], ddata[1], ddata[2], ddata[3], ddata[4], ddata[5]};
 
             }
-        }, new DataRecordSerializer.DOUBLE_ARR()), 
+        }, new DataRecordSerializer.DOUBLE_ARR()),
         WAY(false, true, new DataExporter() {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"distance", "speed", "accuracy"};
+                return new String[]{"distance", "speed", "accuracy"};
             }
 
             @Override
@@ -159,13 +157,13 @@ public class DataRecord {
                 return new Object[]{ddata[0], ddata[1], ddata[2]};
 
             }
-        }, new DataRecordSerializer.DOUBLE_ARR()), 
+        }, new DataRecordSerializer.DOUBLE_ARR()),
         ACCUM_DISTANCE(true, new DataRecordSerializer.DOUBLE()),
-        FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()), 
-        HEART_BPM(true, new DataRecordSerializer.INT()), 
+        FREEZE_TILT(true, new DataRecordSerializer.BOOLEAN()),
+        HEART_BPM(true, new DataRecordSerializer.INT()),
         IMMEDIATE_DISTANCE_REQUESTED,
-        BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()), 				
-        ROWING_START_DISTANCE(false, new DistanceEventSerializer()), 
+        BOOKMARKED_DISTANCE(false, new DistanceEventSerializer()),
+        ROWING_START_DISTANCE(false, new DistanceEventSerializer()),
         CRASH_STACK,
         INPUT_START,
         INPUT_STOP,
@@ -186,12 +184,13 @@ public class DataRecord {
             @Override
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
-                return new Object[] {new Long(tokens[0]), new Float(tokens[1])};
+                return new Object[]{new Long(tokens[0]), new Float(tokens[1])};
             }
         }
 
         public interface DataExporter {
             String[] getColumnNames();
+
             Object[] exportData(Object data);
         }
 
@@ -221,7 +220,7 @@ public class DataRecord {
 
         public DataExporter getDataExporter() {
             return dataExporter;
-        }		
+        }
     }
 
     public final Type type;
@@ -271,10 +270,10 @@ public class DataRecord {
             return create(type, timestamp, data);
         } else {
             throw new UnsupportedOperationException(
-                    String
-                    .format(
+                    String.format(
                             "StrokeEvent type %s does not have a serializer configured",
-                            type));
+                            type
+                    ));
         }
     }
 }

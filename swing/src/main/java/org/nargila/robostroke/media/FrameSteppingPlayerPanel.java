@@ -1,26 +1,18 @@
 package org.nargila.robostroke.media;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
+import org.nargila.robostroke.common.ClockTime;
+import org.nargila.robostroke.data.media.ExternalMedia;
+import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.nargila.robostroke.common.ClockTime;
-import org.nargila.robostroke.data.media.ExternalMedia;
-import org.nargila.robostroke.data.media.ExternalMedia.VideoEffect;
 
 @SuppressWarnings("serial")
 public class FrameSteppingPlayerPanel extends JPanel {
@@ -80,14 +72,14 @@ public class FrameSteppingPlayerPanel extends JPanel {
                 }
             }
         });
-        
+
         panel_1.add(btnPlay);
 
         btnSkipBack = new JButton("-3");
         btnSkipBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mediaPlayer.setTime(mediaPlayer.getTime() -3000);
+                mediaPlayer.setTime(mediaPlayer.getTime() - 3000);
                 updateTime();
             }
         });
@@ -120,7 +112,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         panel_3.add(lblTime);
 
         movieArea = new JPanel();
-        movieArea.setBackground(Color.BLACK);             
+        movieArea.setBackground(Color.BLACK);
 
         add(movieArea, BorderLayout.CENTER);
         movieArea.setLayout(new BorderLayout(0, 0));
@@ -128,14 +120,14 @@ public class FrameSteppingPlayerPanel extends JPanel {
     }
 
     public void setTimeListener(TimeChangeListener listener) {
-        this.timeListener = listener;		
+        this.timeListener = listener;
     }
 
     private void updateTime() {
         long time = mediaPlayer.getTime();
         timeListener.onTimeChanged(time);
         lblTime.setText(ClockTime.fromMillis(time).toString());
-        double pos = (double)time / mediaPlayer.getDuration();
+        double pos = (double) time / mediaPlayer.getDuration();
         slider.setValue((int) (pos * slider.getMaximum()));
     }
 
@@ -144,7 +136,7 @@ public class FrameSteppingPlayerPanel extends JPanel {
         final FrameSteppingPlayerPanel player = new FrameSteppingPlayerPanel();
 
         JFrame f = new JFrame("Test Player");
-        //	    f.setIconImage(new ImageIcon(MinimalTestPlayer.class.getResource("/icons/vlcj-logo.png")).getImage());
+        //      f.setIconImage(new ImageIcon(MinimalTestPlayer.class.getResource("/icons/vlcj-logo.png")).getImage());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addWindowListener(new WindowAdapter() {
@@ -186,24 +178,24 @@ public class FrameSteppingPlayerPanel extends JPanel {
 
     public void play(String mrl) throws Exception {
         mediaPlayer = MediaPlayerFactory.createMediaPlayer(new File(mrl), movieArea, VideoEffect.NONE, new ExternalMedia.EventListener() {
-            
+
             @Override
             public void onEvent(ExternalMedia.EventType event, Object data) {
                 switch (event) {
                     case TIME:
-                        timeListener.onTimeChanged((Long)data);
+                        timeListener.onTimeChanged((Long) data);
                         break;
                 }
             }
         });
-        
+
         mediaPlayer.start();
     }
 
     public void stop() {
         mediaPlayer.stop();
     }
-    
+
     public JPanel getMovieArea() {
         return movieArea;
     }

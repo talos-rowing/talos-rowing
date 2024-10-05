@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:robostroke="http://nargila.org/ns/robostroke"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:robostroke="http://nargila.org/ns/robostroke"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent" 
   android:id="@+id/main_layout"
   android:background="#000000">
-
-	<LinearLayout 
+	<LinearLayout
 	  android:orientation="vertical" android:layout_width="fill_parent"
 	  android:layout_height="fill_parent" 
 	  android:background="#ffffff">
@@ -20,7 +20,7 @@
 					layout="@layout/meters_m"  android:visibility="gone"
 					android:layout_height="fill_parent"/>
 	   </FrameLayout>   
-	   
+
 		<LinearLayout android:id="@+id/graph_container" android:layout_width="fill_parent"
 			android:orientation="vertical" android:layout_height="fill_parent" android:layout_weight=".5">
 			<FrameLayout android:layout_width="fill_parent"

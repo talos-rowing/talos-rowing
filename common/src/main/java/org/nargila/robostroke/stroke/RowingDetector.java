@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2011 Tal Shalif
- * 
+ * Copyright (c) 2024 Tal Shalif
+ *
  * This file is part of Talos-Rowing.
- * 
+ *
  * Talos-Rowing is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Talos-Rowing is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Talos-Rowing.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -38,54 +38,54 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Rowing detectror. Generates rowing activity start/stop events based on value of parameter PARAM_ROWING_MODE
- * @author tshalif
  *
+ * @author tshalif
  */
 public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
 
-	private static final Logger logger = LoggerFactory.getLogger(RowingDetector.class);
-	
+    private static final Logger logger = LoggerFactory.getLogger(RowingDetector.class);
+
     private final ParameterListenerRegistration[] listenerRegistrations = {
 
-        new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId(), new ParameterChangeListener() {
-                                
+            new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId(), new ParameterChangeListener() {
+
                 @Override
                 public void onParameterChanged(Parameter param) {
-                    paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer)param.getValue());                                 
+                    paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer) param.getValue());
                 }
             }),
-        new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId(), new ParameterChangeListener() {
-                                
+            new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId(), new ParameterChangeListener() {
+
                 @Override
                 public void onParameterChanged(Parameter param) {
-                    paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer)param.getValue());                                     
+                    paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) param.getValue());
                 }
             }),
-        new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_MODE.getId(), new ParameterChangeListener() {
-                                
+            new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_MODE.getId(), new ParameterChangeListener() {
+
                 @Override
                 public void onParameterChanged(Parameter param) {
-                    rowingMode = RowingSplitMode.valueOf((String) param.getValue());                        
+                    rowingMode = RowingSplitMode.valueOf((String) param.getValue());
                 }
             }),
-        new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId(), new ParameterChangeListener() {
-                                
+            new ParameterListenerRegistration(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId(), new ParameterChangeListener() {
+
                 @Override
                 public void onParameterChanged(Parameter param) {
-                    paramStartMinAmplitude = (Float)param.getValue();                                       
+                    paramStartMinAmplitude = (Float) param.getValue();
                 }
             }),
-			new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId(), new ParameterChangeListener() {
-				
-				@Override
-				public void onParameterChanged(Parameter param) {
-					rateChangeAcceptFactor = (Float)param.getValue();					
-				}
-			})
+            new ParameterListenerRegistration(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId(), new ParameterChangeListener() {
+
+                @Override
+                public void onParameterChanged(Parameter param) {
+                    rateChangeAcceptFactor = (Float) param.getValue();
+                }
+            })
     };
-                
+
     private RowingSplitMode rowingMode;
-        
+
     private long paramStopTimeout;
 
     private float paramStartMinAmplitude;
@@ -93,27 +93,27 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
     private long paramRestartWaitTime;
 
     private final RoboStrokeEventBus bus;
-        
+
     private boolean rowing;
 
-	private Float rateChangeAcceptFactor;
-	
-	private int spm;
-	
+    private Float rateChangeAcceptFactor;
+
+    private int spm;
+
     private static class SplitData {
-                                
+
         private int strokeCount;
-                
+
         private long lastStrokeEndTimestamp;
-                
+
         private long lastTimestamp;
-                
+
         private long rowingStartTimestamp;
 
         private long rowingStoppedTimestamp;
-                
+
         private Pair<Long /* timestamp */, Float /* distance */> lastDistance;
-                
+
         private Pair<Long, Float> startDistance;
 
 
@@ -123,9 +123,8 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
             startDistance = lastDistance = null;
         }
     }
-        
 
-        
+
     private boolean hasAmplitude;
 
     private boolean manuallyTriggered;
@@ -134,85 +133,85 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
     private final ParameterService params;
 
     private final SplitData splitData = new SplitData();
-                
+
     public RowingDetector(RoboStroke roboStroke) {
-                
-                
+
+
         ParameterService params = roboStroke.getParameters();
-                
+
         this.params = params;
 
         rowingMode = RowingSplitMode.valueOf((String) params.getValue(ParamKeys.PARAM_ROWING_MODE.getId()));
-                
+
         paramStopTimeout = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_STOP_TIMEOUT.getId()));
 
-        paramStartMinAmplitude = (Float)params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId());
+        paramStartMinAmplitude = (Float) params.getValue(ParamKeys.PARAM_ROWING_START_AMPLITUDE_TRESHOLD.getId());
 
         paramRestartWaitTime = TimeUnit.SECONDS.toNanos((Integer) params.getValue(ParamKeys.PARAM_ROWING_RESTART_WAIT_TIME.getId()));
 
-		rateChangeAcceptFactor = (Float) params.getValue(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId());
+        rateChangeAcceptFactor = (Float) params.getValue(ParamKeys.PARAM_STROKE_RATE_RATE_CHANGE_ACCEPT_FACTOR.getId());
 
-		bus = roboStroke.getBus();
-                
+        bus = roboStroke.getBus();
+
         bus.addBusListener(new BusEventListener() {
-                        
 
-                @Override
-                public void onBusEvent(DataRecord event) {
-                    switch (event.type) {
+
+            @Override
+            public void onBusEvent(DataRecord event) {
+                switch (event.type) {
                     case STROKE_DROP_BELOW_ZERO:
                         if (rowing) {
                             if (hasAmplitude) {
 
                                 long timestamp = event.timestamp;
 
-                                long msDiff = (timestamp - splitData.lastStrokeEndTimestamp) / 1000000;                                                 
+                                long msDiff = (timestamp - splitData.lastStrokeEndTimestamp) / 1000000;
 
                                 if (msDiff > 0) { // was: msDiff > 1000 - disallow stroke rate above 60
-                                	
-                                	if (spm > 0 && msDiff < (rateChangeAcceptFactor * (60000 / spm))) {   // check for 'double' stroke
-                                		logger.warn("### ignoring drop-below-zero event because it happend {}ms after a previous one", msDiff);
-                                	} else {
-                                		splitData.strokeCount++;
-                                		bus.fireEvent(Type.ROWING_COUNT, timestamp, splitData.strokeCount);                                                     
-                                		splitData.lastStrokeEndTimestamp = timestamp;
-                                	}
+
+                                    if (spm > 0 && msDiff < (rateChangeAcceptFactor * (60000 / spm))) {   // check for 'double' stroke
+                                        logger.warn("### ignoring drop-below-zero event because it happend {}ms after a previous one", msDiff);
+                                    } else {
+                                        splitData.strokeCount++;
+                                        bus.fireEvent(Type.ROWING_COUNT, timestamp, splitData.strokeCount);
+                                        splitData.lastStrokeEndTimestamp = timestamp;
+                                    }
                                 }
-                            }                                                                                               
+                            }
                         }
-                                        
+
                         hasAmplitude = false;
-                                        
+
                         break;
-                                        
+
                     case ROWING_START_TRIGGERED:
                         manuallyTriggered = true;
                         break;
                     case BOOKMARKED_DISTANCE:
-                                        
+
                         Object[] values = (Object[]) event.data;
-                                        
-                        splitData.lastDistance = Pair.create((Long)values[0], (Float)values[1]);
+
+                        splitData.lastDistance = Pair.create((Long) values[0], (Float) values[1]);
 
                         if (rowing && splitData.startDistance == null) {
                             splitData.startDistance = splitData.lastDistance;
-                            bus.fireEvent(Type.ROWING_START_DISTANCE, event.timestamp, splitData.startDistance.first, splitData.startDistance.second);      
+                            bus.fireEvent(Type.ROWING_START_DISTANCE, event.timestamp, splitData.startDistance.first, splitData.startDistance.second);
                         }
 
                         break;
                     case STROKE_RATE:
-                    	spm = (Integer) event.data;
-                    	break;
-                    }
+                        spm = (Integer) event.data;
+                        break;
                 }
-            });
-                
+            }
+        });
+
         params.addListeners(this);
     }
-        
+
     @Override
     public void onSensorData(long timestamp, Object value) {
-                
+
         backtimeProtection(timestamp);
 
         float[] values = (float[]) value;
@@ -220,78 +219,78 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
         final boolean validAmplitude = amplitude > paramStartMinAmplitude;
 
         hasAmplitude = hasAmplitude || validAmplitude;
-                
+
         if (!rowing) {
-                        
+
             boolean enableNextStart = true;
             boolean forceStart = false;
-                        
+
             switch (rowingMode) {
-            case CONTINUOUS:
-                forceStart = true;
-                break;
-            case MANUAL:
-                forceStart = manuallyTriggered;
-                enableNextStart = false;
-                break;
-            case SEMI_AUTO:
-                enableNextStart = manuallyTriggered;
-                break;
-            case AUTO:
-                enableNextStart = true;
-                break;                                  
+                case CONTINUOUS:
+                    forceStart = true;
+                    break;
+                case MANUAL:
+                    forceStart = manuallyTriggered;
+                    enableNextStart = false;
+                    break;
+                case SEMI_AUTO:
+                    enableNextStart = manuallyTriggered;
+                    break;
+                case AUTO:
+                    enableNextStart = true;
+                    break;
             }
-                        
-            if (forceStart || 
-                (enableNextStart && validAmplitude && 
-                 (timestamp > (splitData.rowingStoppedTimestamp + paramRestartWaitTime)))) {
+
+            if (forceStart ||
+                    (enableNextStart && validAmplitude &&
+                            (timestamp > (splitData.rowingStoppedTimestamp + paramRestartWaitTime)))) {
                 startRowing(timestamp);
-            }                       
+            }
         } else {
-                                
+
             boolean enableStop = true;
             boolean forceStop = false;
-                        
+
             switch (rowingMode) {
-            case MANUAL:
-                forceStop = manuallyTriggered;
-                /* no break; */
-            case CONTINUOUS:
-                enableStop = false;
-                break;
+                case MANUAL:
+                    forceStop = manuallyTriggered;
+                    /* no break; */
+                case CONTINUOUS:
+                    enableStop = false;
+                    break;
             }
 
             if (forceStop || (enableStop && timestamp > (splitData.lastStrokeEndTimestamp + paramStopTimeout))) {
                 stopRowing(timestamp);
             }
         }
-                
+
         splitData.lastTimestamp = timestamp;
     }
 
     private void stopRowing(long timestamp) {
         rowing = hasAmplitude = false;
-                
+
         float distance = splitData.lastDistance != null ? splitData.lastDistance.second : 0.0f;
         long travelTime = splitData.lastDistance != null ? splitData.lastDistance.first : 0;
-                
-        long stopTimestamp = (rowingMode == RowingSplitMode.MANUAL) ? timestamp : splitData.lastStrokeEndTimestamp;             
-                
+
+        long stopTimestamp = (rowingMode == RowingSplitMode.MANUAL) ? timestamp : splitData.lastStrokeEndTimestamp;
+
         /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-        bus.fireEvent(Type.ROWING_STOP, timestamp, stopTimestamp, distance, (stopTimestamp -  splitData.rowingStartTimestamp), travelTime, splitData.strokeCount);
-                
+        bus.fireEvent(Type.ROWING_STOP, timestamp, stopTimestamp, distance, (stopTimestamp - splitData.rowingStartTimestamp), travelTime, splitData.strokeCount);
+
         splitData.rowingStoppedTimestamp = timestamp;
-                
+
         manuallyTriggered = false;
     }
 
     private void startRowing(final long timestamp) {
         rowing = true;
-                
+
         splitData.reset(timestamp);
-                
+
         bus.fireEvent(Type.ROWING_START, timestamp, timestamp);
-                
+
         manuallyTriggered = false;
     }
 
@@ -304,9 +303,10 @@ public class RowingDetector implements SensorDataSink, ParameterListenerOwner {
     public ParameterListenerRegistration[] getListenerRegistrations() {
         return listenerRegistrations;
     }
+
     @Override
     protected void finalize() throws Throwable {
         params.removeListeners(this);
         super.finalize();
-    }       
+    }
 }

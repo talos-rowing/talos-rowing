@@ -7,32 +7,32 @@ import org.nargila.robostroke.common.ClockTime;
 
 public class TestProperties  {
 
-	@SuppressWarnings("serial")
-	public static class NoSuchProperty extends IllegalArgumentException {
+  @SuppressWarnings("serial")
+  public static class NoSuchProperty extends IllegalArgumentException {
 
-		public NoSuchProperty(String msg) {
-			super(msg);
-		}
-	}
-	
+    public NoSuchProperty(String msg) {
+      super(msg);
+    }
+  }
+
     private final String testName;
     private final Properties testProperties = new Properties();
-    
+
     public TestProperties() throws Exception {
-    	this.testName = getClass().getSimpleName();
-    	String propFileName = testName + ".properties";
-		InputStream resourceAsStream = getClass().getResourceAsStream(propFileName);
-		
-		if (resourceAsStream == null) {
-			throw new Exception("test property file " + propFileName + " not found (package " + getClass().getPackage().getName() + ")");
-		}
-		
-		testProperties.load(resourceAsStream);
+      this.testName = getClass().getSimpleName();
+      String propFileName = testName + ".properties";
+    InputStream resourceAsStream = getClass().getResourceAsStream(propFileName);
+
+    if (resourceAsStream == null) {
+      throw new Exception("test property file " + propFileName + " not found (package " + getClass().getPackage().getName() + ")");
     }
-    
-    
+
+    testProperties.load(resourceAsStream);
+    }
+
+
     public static String getCallingMethodName() {
-    	return getCallingMethodName(null);
+      return getCallingMethodName(null);
     }
 
     public static String getCallingMethodName(String callee) {
@@ -49,7 +49,7 @@ public class TestProperties  {
             if (nextIsCaller) {
                 return s.getMethodName();
             }
-            
+
             nextIsCaller = s.getMethodName().equals(callee);
         }
 
@@ -58,11 +58,11 @@ public class TestProperties  {
 
 
     @SuppressWarnings("unchecked")
-	public <T> T v(String name, T defVal) {
+  public <T> T v(String name, T defVal) {
         try {
-        	return (T) v(name, defVal.getClass());
+          return (T) v(name, defVal.getClass());
         } catch (NoSuchProperty p) {
-        	return defVal;
+          return defVal;
         }
     }
 
@@ -77,28 +77,28 @@ public class TestProperties  {
     }
 
     @SuppressWarnings("unchecked")
-	private <T> T v(String caller, String name, Class<T> clazz) {
+  private <T> T v(String caller, String name, Class<T> clazz) {
 
-    	String[] candidates = {
-    			caller + "." + name,
-    			name
-    	};
-    	
-    	String val = null;
-    	
-    	for (String varName: candidates) {
+      String[] candidates = {
+          caller + "." + name,
+          name
+      };
 
-    		val = testProperties.getProperty(varName);
+      String val = null;
 
-    		if (val != null) {
-    			break;
-    		}
-    	}
-    	
-    	if (val == null) {
-    		throw new NoSuchProperty("test property " + name + " was not found in " + testName + " for caller '" + caller + "'");
-    	}
-    	
+      for (String varName: candidates) {
+
+        val = testProperties.getProperty(varName);
+
+        if (val != null) {
+          break;
+        }
+      }
+
+      if (val == null) {
+        throw new NoSuchProperty("test property " + name + " was not found in " + testName + " for caller '" + caller + "'");
+      }
+
         Object res;
 
         if (clazz == ClockTime.class) {
