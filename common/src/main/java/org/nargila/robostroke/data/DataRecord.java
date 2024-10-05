@@ -38,7 +38,7 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* tag, countdown */
-                return new Object[]{tokens[0], new Integer(tokens[1])};
+                return new Object[]{tokens[0], Integer.valueOf(tokens[1])};
             }
         }),
         STROKE_DROP_BELOW_ZERO,
@@ -57,7 +57,7 @@ public class DataRecord {
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
                 /* stopTimestamp, distance, splitTime, travelTime, strokeCount */
-                return new Object[]{new Long(tokens[0]), new Float(tokens[1]), new Long(tokens[2]), new Long(tokens[3]), new Integer(tokens[4])};
+                return new Object[]{Long.valueOf(tokens[0]), Float.valueOf(tokens[1]), Long.valueOf(tokens[2]), Long.valueOf(tokens[3]), Integer.valueOf(tokens[4])};
             }
         }),
         ROWING_START_TRIGGERED,
@@ -184,7 +184,7 @@ public class DataRecord {
             @Override
             public Object doParse(String s) {
                 String[] tokens = s.split(",");
-                return new Object[]{new Long(tokens[0]), new Float(tokens[1])};
+                return new Object[]{Long.valueOf(tokens[0]), Float.valueOf(tokens[1])};
             }
         }
 

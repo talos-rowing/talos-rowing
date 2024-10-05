@@ -290,7 +290,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
         if (syncTime != null) {
 
-            int markId = syncTime.first == null ? 1 : new Integer(syncTime.first.split(":")[1]);
+            int markId = syncTime.first == null ? 1 : Integer.parseInt(syncTime.first.split(":")[1]);
 
             setSynchData(Pair.create(markId, syncTime.second.toMillis()));
         }
@@ -333,7 +333,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
             @Override
             public void run() {
 
-                final AtomicReference<Pair<Integer, Long>> res = new AtomicReference<Pair<Integer, Long>>();
+                final AtomicReference<Pair<Integer, Long>> res = new AtomicReference<>();
 
                 try {
                     if (error.get() != null) {
@@ -537,8 +537,8 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
                 cbxVideoEfects.setSelectedItem(VideoEffect.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_VIDEO_EFFECT, VideoEffect.NONE.name())));
 
                 setSynchData(Pair.create(
-                        new Integer(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "-1")),
-                        new Long(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "-1"))));
+                        Integer.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_SYCH_MARK_ID, "-1")),
+                        Long.valueOf(props.getProperty(MediaSynchedFileDataInput.PROP_TIME_OFFSET, "-1"))));
 
 
                 setPathItem(props.getProperty(MediaSynchedFileDataInput.PROP_TALOS_DATA, null), talosFile, inputTalos, true);
