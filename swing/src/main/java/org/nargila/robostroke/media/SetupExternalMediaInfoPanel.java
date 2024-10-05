@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
-@SuppressWarnings("serial")
 public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
     private static final String MEDIA_CONFIG_FILE_SUFFIX = ".trsm";
@@ -38,11 +37,11 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
     private final JLabel statusLine;
     private final JProgressBar progressBar;
     private JFileChooser fc;
-    private final AtomicReference<File> resultTalosConfFile = new AtomicReference<File>();
-    private final AtomicReference<File> talosFile = new AtomicReference<File>();
-    private final AtomicReference<File> mediaFile = new AtomicReference<File>();
+    private final AtomicReference<File> resultTalosConfFile = new AtomicReference<>();
+    private final AtomicReference<File> talosFile = new AtomicReference<>();
+    private final AtomicReference<File> mediaFile = new AtomicReference<>();
 
-    private final AtomicReference<Exception> error = new AtomicReference<Exception>();
+    private final AtomicReference<Exception> error = new AtomicReference<>();
 
     private final JFormattedTextField textTimeOffset;
     private final JFormattedTextField textMarkId;
@@ -50,7 +49,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
     private final JButton btnDetect;
     private FindQrMarkPipeline findQr;
     private boolean canceled;
-    private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<Pair<Integer, Long>>();
+    private final AtomicReference<Pair<Integer, Long>> syncData = new AtomicReference<>();
 
     private final JComboBox cbxVideoEfects;
 
@@ -67,12 +66,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         btnSelectMedia = new JButton("Select Media");
         springLayout.putConstraint(SpringLayout.NORTH, btnSelectMedia, 22, SpringLayout.NORTH, this);
         springLayout.putConstraint(SpringLayout.WEST, btnSelectMedia, 21, SpringLayout.WEST, this);
-        btnSelectMedia.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                chooseMediaFile();
-            }
-        });
+        btnSelectMedia.addActionListener(e -> chooseMediaFile());
         add(btnSelectMedia);
 
         inputOgg = new JTextField();
@@ -87,12 +81,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         btnSelectTalos = new JButton("Select Talos");
         springLayout.putConstraint(SpringLayout.WEST, btnSelectTalos, 0, SpringLayout.WEST, btnSelectMedia);
         springLayout.putConstraint(SpringLayout.EAST, btnSelectTalos, 0, SpringLayout.EAST, btnSelectMedia);
-        btnSelectTalos.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                chooseTalosFile();
-            }
-        });
+        btnSelectTalos.addActionListener(e -> chooseTalosFile());
         add(btnSelectTalos);
 
         inputTalos = new JTextField();
@@ -106,12 +95,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         cancelBtn = new JButton("Cancel");
         springLayout.putConstraint(SpringLayout.WEST, cancelBtn, 100, SpringLayout.WEST, this);
         springLayout.putConstraint(SpringLayout.EAST, cancelBtn, 181, SpringLayout.WEST, this);
-        cancelBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancel();
-            }
-        });
+        cancelBtn.addActionListener(e -> cancel());
         springLayout.putConstraint(SpringLayout.NORTH, cancelBtn, -64, SpringLayout.SOUTH, this);
         springLayout.putConstraint(SpringLayout.SOUTH, cancelBtn, -31, SpringLayout.SOUTH, this);
         add(cancelBtn);
@@ -119,12 +103,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         saveBtn = new JButton("Save");
         springLayout.putConstraint(SpringLayout.SOUTH, saveBtn, -31, SpringLayout.SOUTH, this);
         saveBtn.setEnabled(false);
-        saveBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onSave();
-            }
-        });
+        saveBtn.addActionListener(e -> onSave());
         springLayout.putConstraint(SpringLayout.WEST, saveBtn, -148, SpringLayout.EAST, this);
         springLayout.putConstraint(SpringLayout.EAST, saveBtn, -67, SpringLayout.EAST, this);
         add(saveBtn);
@@ -134,12 +113,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         springLayout.putConstraint(SpringLayout.SOUTH, btnSelectTalos, -6, SpringLayout.NORTH, btnSelectOutput);
         springLayout.putConstraint(SpringLayout.SOUTH, inputTalos, -6, SpringLayout.NORTH, btnSelectOutput);
         springLayout.putConstraint(SpringLayout.WEST, btnSelectOutput, 21, SpringLayout.WEST, this);
-        btnSelectOutput.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                chooseOutputFile();
-            }
-        });
+        btnSelectOutput.addActionListener(e -> chooseOutputFile());
         add(btnSelectOutput);
 
         resultTalos = new JTextField();
@@ -489,7 +463,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
         boolean enable = haveMedia && haveTalosFile && haveConfFile && haveSyncData;
 
         logger.info("can save: {} (mediaFile: {}, talosFile: {}, resultTalosConfFile:{}, syncData: {})",
-                new Object[]{enable, haveMedia, haveTalosFile, haveConfFile, haveSyncData});
+                enable, haveMedia, haveTalosFile, haveConfFile, haveSyncData);
 
         btnDetect.setEnabled(haveMedia);
         btnManual.setEnabled(haveMedia);
