@@ -531,12 +531,7 @@ public abstract class SetupExternalMediaInfoPanel extends JPanel {
 
         @Override
         public boolean accept(File f) {
-
-            if (f.isDirectory()) {
-                return true;
-            } else {
-                return true;
-            }
+            return !f.isDirectory();
         }
     };
 
