@@ -71,11 +71,11 @@ public abstract class DataConverter<IN extends Closeable, OUT extends Closeable>
 
             if (in != null) try {
                 in.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             if (out != null) try {
                 out.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
 
             onFinish();

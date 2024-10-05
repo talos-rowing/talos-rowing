@@ -141,13 +141,13 @@ class DataExporter {
 
             if (reader != null) try {
                 reader.close();
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
 
             for (Pair<File, BufferedWriter> outInfo : outputMap.values()) {
                 try {
                     outInfo.second.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 outInfo.first.delete();
             }

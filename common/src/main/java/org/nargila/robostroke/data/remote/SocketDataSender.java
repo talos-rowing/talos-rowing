@@ -54,7 +54,7 @@ public class SocketDataSender implements DataSender {
 
             try {
                 s.close();
-            } catch (IOException e1) {
+            } catch (IOException ignored) {
             }
 
         } catch (IOException e) {
@@ -99,7 +99,7 @@ public class SocketDataSender implements DataSender {
                         while (!s.isClosed()) {
                             try {
                                 Thread.sleep(10);
-                            } catch (InterruptedException e) {
+                            } catch (InterruptedException ignored) {
                             }
                         }
 
@@ -122,20 +122,20 @@ public class SocketDataSender implements DataSender {
         if (socket != null) {
             try {
                 socket.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
 
             if (s != null) {
                 try {
                     s.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
         }
 
         try {
             listenThread.join();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
     }
 

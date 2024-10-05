@@ -44,7 +44,7 @@ class ReplayFileList {
             if (idx != -1) {
                 Date date;
                 try {
-                    date = new Date(new Long(name.substring(0, idx)));
+                    date = new Date(Long.parseLong(name.substring(0, idx)));
                 } catch (NumberFormatException e) {
                     fileNameErrors = true;
                     continue;
