@@ -4,16 +4,16 @@ This privacy policy applies to the Talos Rowing app (hereby referred to as "Appl
 
 ## What information does the Application obtain and how is it used?
 
-The application uses precise location information while in use for the purpose
-of displaying real time rowing information to the user. The application does
+The Application uses precise location information while in use for the purpose
+of displaying real time rowing information to the user. The Application does
 not share the information with neither the Service Provider nor any third party.
-The user may instruct the application to save rowing session recordings to device
+The user may instruct the Application to save rowing session recordings to device
 storage and later replay those recordings on the device itself or share them with anyone
 at their will.
 
 ## Does the Application collect precise real time location information of the device?
 
-This application uses the device precise location service while in use, but does not
+This Application uses the device precise location service while in use, but does not
 share it with neither the Service Provider nor any other third party.
 
 Please also see information regarding session recordings in the
