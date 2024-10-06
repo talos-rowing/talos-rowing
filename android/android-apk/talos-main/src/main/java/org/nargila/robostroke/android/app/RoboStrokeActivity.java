@@ -20,7 +20,6 @@
 package org.nargila.robostroke.android.app;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,7 +30,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -77,7 +75,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * AndroidRoboStroke application entry point and main activity/
+ * AndroidRoboStroke application entry point and main activity
  */
 public class RoboStrokeActivity extends Activity implements RoboStrokeConstants, ParameterListenerOwner {
 
@@ -490,8 +488,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
                 if (runnable == null) {
                     try {
                         res.wait();
-                    } catch (InterruptedException e) {
-                        // ignore exception
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }
