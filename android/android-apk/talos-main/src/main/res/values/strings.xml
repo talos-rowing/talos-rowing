@@ -26,9 +26,28 @@
 		\n
     	\nAndroid Version ${VERSION}
     	\n
-    	\nCopyright &#169; 2016 Tal Shalif
+    	\nCopyright &#169; 2024 Tal Shalif
     	\n
     	\nUse at your own risk.</string>
+    <string name="about_location_permission_title">
+        About Location Permission
+    </string>
+    <string name="about_location_permission_message">
+    	Talos Rowing needs access to your device GPS in order to show rowing speed and distance.
+        \n
+        \n
+        After closing this window, a system dialog will appear asking you either you want to grant Talos Rowing location and fine location access.
+    </string>
+    <string name="missing_location_permission_title">
+        Missing Location Permission
+    </string>
+    <string name="missing_location_permission_message">
+    	You are seeing this message because it appears you have previously denied
+        Talos Rowing the Location permission.
+        You can fix this by going to the device permission manager and granting Talos Rowing the Location permission.
+        You may also uninstall and re-install the application, but then you will lose all previous Talos Rowing
+        settings and data.
+    </string>
     <string name="talos_remote_missing">
         Talos Remote required
     </string>

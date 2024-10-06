@@ -20,7 +20,6 @@
 package org.nargila.robostroke.android.app;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,7 +30,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -77,7 +75,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * AndroidRoboStroke application entry point and main activity/
+ * AndroidRoboStroke application entry point and main activity
  */
 public class RoboStrokeActivity extends Activity implements RoboStrokeConstants, ParameterListenerOwner {
 
@@ -92,7 +90,8 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
     private static final int HIGHLIGHT_PADDING_SIZE = 5;
 
     private static final Logger logger = LoggerFactory.getLogger(RoboStrokeActivity.class);
-    public static final int LOCATION_PERMISSION_REQUEST_CODE = 42;
+
+    private final RoboStrokePermissionsHelper permissionsHelper;
 
     private final ParameterListenerRegistration[] listenerRegistrations = {
             new ParameterListenerRegistration(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), new ParameterChangeListener() {
@@ -489,8 +488,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
                 if (runnable == null) {
                     try {
                         res.wait();
-                    } catch (InterruptedException e) {
-                        // ignore exception
+                    } catch (InterruptedException ignored) {
                     }
                 }
             }
@@ -594,6 +592,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
     private DataInputInfo dataInputInfo = new DataInputInfo();
 
     public RoboStrokeActivity() {
+        this.permissionsHelper = new RoboStrokePermissionsHelper(this, this::startProcessing);
 
         screenLock = new ScreenStayupLock(this, getClass().getSimpleName());
 
@@ -663,6 +662,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
         graphPanelDisplayManager.init();
 
+        permissionsHelper.acquireLocationPermission();
+    }
+
+    private void startProcessing() {
         roboStroke.getAccelerationSource().addSensorDataSink(metersDisplayManager);
 
         View.OnClickListener recordingClickListener = new View.OnClickListener() {
@@ -690,9 +693,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
         roboStroke.getParameters().setParam(ParamKeys.PARAM_SENSOR_ORIENTATION_LANDSCAPE.getId(),
                 getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
 
-        checkLocationPermissionAndStart();
 
         setupFullscreenMode();
+
+        start(new DataInputInfo());
     }
 
     /**
@@ -728,19 +732,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
         });
     }
 
-    private void checkLocationPermissionAndStart() {
-        if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            start(new DataInputInfo());
-        } else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            checkLocationPermissionAndStart();
-        }
+        permissionsHelper.onRequestPermissionsResult(requestCode);
     }
 
     @Override
