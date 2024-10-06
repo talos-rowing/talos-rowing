@@ -51,7 +51,6 @@ android {
 dependencies {
     implementation("de.mindpipe.android:android-logging-log4j:1.0.3")
     implementation("org.slf4j:slf4j-log4j12:1.7.21")
-    implementation("ch.acra:acra:4.4.0")
     implementation(project(":common"))
     implementation(project(":android-common"))
     testImplementation(libs.junit)

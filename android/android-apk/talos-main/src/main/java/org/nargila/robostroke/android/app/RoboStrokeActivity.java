@@ -47,7 +47,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import org.acra.ACRA;
 import org.apache.log4j.Level;
 import org.nargila.robostroke.ParamKeys;
 import org.nargila.robostroke.RoboStroke;
@@ -596,8 +595,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
     public RoboStrokeActivity() {
 
-        Thread.setDefaultUncaughtExceptionHandler(new ErrorHandler(this));
-
         screenLock = new ScreenStayupLock(this, getClass().getSimpleName());
 
         roboStroke.getParameters().addListeners(this);
@@ -648,8 +645,6 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
         notificationHelper = new NotificationHelper(this, R.drawable.icon_small322);
 
-
-        ACRA.getErrorReporter().putCustomData("uuid", preferencesHelper.getUUID());
 
         roboStroke.setErrorListener(new ErrorListener() {
 
