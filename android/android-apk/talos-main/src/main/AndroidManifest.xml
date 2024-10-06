@@ -36,13 +36,7 @@
 
     <activity android:name=".Preferences" android:configChanges="orientation|keyboardHidden"
               android:excludeFromRecents="true" android:taskAffinity=""
-              android:label="Preferences" />    
-    
-    <activity android:name="org.acra.CrashReportDialog"
-              android:theme="@android:style/Theme.Dialog"
-              android:launchMode="singleInstance"
-              android:excludeFromRecents="true"
-              android:finishOnTaskLaunch="true" />
+              android:label="Preferences" />
 
     <provider android:name=".SessionContentProvider"
               android:authorities="org.nargila.robostroke.android.app.SessionFileProvider"
