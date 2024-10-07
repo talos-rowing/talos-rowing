@@ -635,9 +635,9 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
         preferencesHelper = new PreferencesHelper(this); // handles preferences -> parameter synchronization
 
         if (preferencesHelper.getPref(PreferencesHelper.PREFERENCE_KEY_PREFERENCES_LOG, false)) {
-            ConfigureLog4J.configure(Level.DEBUG, "talos-main");
+            ConfigureLog4J.configure(Level.DEBUG, FileHelper.getDir(this, ROBOSTROKE_DATA_DIR), "talos-main");
         } else {
-            ConfigureLog4J.configure(null);
+            ConfigureLog4J.configure(null, null);
         }
 
         setContentView(R.layout.main);
