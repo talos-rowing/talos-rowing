@@ -13,16 +13,16 @@ public class ConfigureLog4J {
 
     private static File logFilePath;
 
-    public static void configure(String name) {
-        configure(Level.WARN, name);
+    public static void configure(File dir, String name) {
+        configure(Level.WARN, dir, name);
     }
 
-    public static void configure(Level rootLevel, String name) {
+    public static void configure(Level rootLevel, File dir, String name) {
 
         final LogConfigurator logConfigurator = new LogConfigurator();
 
-        if (name != null && Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            logFilePath = new File(Environment.getExternalStorageDirectory() + File.separator + name + ".log");
+        if (dir != null && name != null) {
+            logFilePath = new File(dir, name + ".log");
             logFilePath.delete();
             logConfigurator.setFileName(logFilePath.getAbsolutePath());
             logConfigurator.setUseFileAppender(true);
