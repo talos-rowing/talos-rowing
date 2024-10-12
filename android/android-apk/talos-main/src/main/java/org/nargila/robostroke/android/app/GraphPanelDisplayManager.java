@@ -221,7 +221,7 @@ public class GraphPanelDisplayManager {
             undisplayedViews.add(viewInfo);
         }
 
-        prefs.edit().putInt("slot." + slotInfo.pos, newView.pos).commit();
+        prefs.edit().putInt("slot." + slotInfo.pos, newView.pos).apply();
     }
 
 
@@ -244,7 +244,7 @@ public class GraphPanelDisplayManager {
             slotInfo.item.removeAllViews();
             slotInfo.item.setVisibility(View.GONE);
 
-            prefs.edit().remove("slot." + slotInfo.pos).commit();
+            prefs.edit().remove("slot." + slotInfo.pos).apply();
         }
     }
 
@@ -344,7 +344,7 @@ public class GraphPanelDisplayManager {
 
             prefEdit.clear();
             prefEdit.putBoolean(PENDING_SLOT_RESET_KEY, false);
-            prefEdit.commit();
+            prefEdit.apply();
         }
 
 
@@ -451,7 +451,7 @@ public class GraphPanelDisplayManager {
         if (firstRun) {
 
             nextSlotCount(null);
-            prefs.edit().putBoolean("firstRun", false).commit();
+            prefs.edit().putBoolean("firstRun", false).apply();
 
         } else {
 
@@ -512,6 +512,6 @@ public class GraphPanelDisplayManager {
     }
 
     public void resetNextRun() {
-        prefs.edit().putBoolean(PENDING_SLOT_RESET_KEY, true).commit();
+        prefs.edit().putBoolean(PENDING_SLOT_RESET_KEY, true).apply();
     }
 }

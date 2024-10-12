@@ -19,7 +19,6 @@
 package org.nargila.robostroke.android.app;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import org.nargila.robostroke.ParamKeys;
@@ -64,23 +63,32 @@ public class PreferencesHelper {
                                               String key) {
             setParameterFromPreferences(key);
 
-            if (key.equals(PREFERENCE_KEY_HRM_ENABLE)) {
-                owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, true), true);
-            } else if (key.equals(PREFERENCE_KEY_PREFERENCES_RESET)) {
-                preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, true).commit();
-                owner.graphPanelDisplayManager.resetNextRun();
-            } else if (key.equals(METERS_RESET_ON_START_PREFERENCE_KEY)) {
-                owner.metersDisplayManager.setResetOnStart(preferences.getBoolean(METERS_RESET_ON_START_PREFERENCE_KEY, true));
-            } else if (key.equals(METERS_LAYOUT_MODE_KEY)) {
-                String defaultValue = owner.getString(R.string.defaults_layout_meter_mode);
-                String val = preferences.getString(METERS_LAYOUT_MODE_KEY, defaultValue);
-                owner.metersDisplayManager.setLayoutMode(val);
-            } else if (key.equals(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE)) {
-                owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
-            } else if (key.equals(GRAPHS_SHOW_PREFERENCE_KEY)) {
-                boolean defaultValue = new Boolean(owner.getString(R.string.defaults_layout_show_graphs));
-                boolean val = preferences.getBoolean(GRAPHS_SHOW_PREFERENCE_KEY, defaultValue);
-                owner.graphPanelDisplayManager.setShowGraphs(val);
+            switch (key) {
+                case PREFERENCE_KEY_HRM_ENABLE:
+                    owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, true), true);
+                    break;
+                case PREFERENCE_KEY_PREFERENCES_RESET:
+                    preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, true).apply();
+                    owner.graphPanelDisplayManager.resetNextRun();
+                    break;
+                case METERS_RESET_ON_START_PREFERENCE_KEY:
+                    owner.metersDisplayManager.setResetOnStart(preferences.getBoolean(METERS_RESET_ON_START_PREFERENCE_KEY, true));
+                    break;
+                case METERS_LAYOUT_MODE_KEY: {
+                    String defaultValue = owner.getString(R.string.defaults_layout_meter_mode);
+                    String val = preferences.getString(METERS_LAYOUT_MODE_KEY, defaultValue);
+                    owner.metersDisplayManager.setLayoutMode(val);
+                    break;
+                }
+                case PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE:
+                    owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
+                    break;
+                case GRAPHS_SHOW_PREFERENCE_KEY: {
+                    boolean defaultValue = Boolean.parseBoolean(owner.getString(R.string.defaults_layout_show_graphs));
+                    boolean val = preferences.getBoolean(GRAPHS_SHOW_PREFERENCE_KEY, defaultValue);
+                    owner.graphPanelDisplayManager.setShowGraphs(val);
+                    break;
+                }
             }
         }
     };
@@ -88,20 +96,25 @@ public class PreferencesHelper {
     private final RoboStrokeActivity owner;
 
     private final String uuid;
+    private final ParameterChangeListener orientationReversedListener;
 
     public PreferencesHelper(RoboStrokeActivity owner) {
         this.owner = owner;
 
         preferences = PreferenceManager.getDefaultSharedPreferences(owner);
+        orientationReversedListener = new ParameterChangeListener() {
+
+            @Override
+            public void onParameterChanged(Parameter param) {
+                preferences.edit().putBoolean(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), (Boolean) param.getValue()).apply();
+            }
+        };
 
         { // create UUID, if no exist
             String tmpUuid = preferences.getString("uuid", null);
             uuid = tmpUuid == null ? UUID.randomUUID().toString() : tmpUuid;
         }
-
-        resetPreferencesIfNeeded();
-
-        initializePrefs();
+        ensureUUIDExists();
     }
 
     public void init() {
@@ -110,9 +123,9 @@ public class PreferencesHelper {
         attachPreferencesListener();
     }
 
-    private void resetPreferencesIfNeeded() {
+    public void resetPreferencesIfNeeded(Runnable onDone) {
 
-        boolean firstRun = preferences.getString(TALOS_APP_VERSION_KEY, "").equals("");
+        boolean firstRun = preferences.getString(TALOS_APP_VERSION_KEY, "").isEmpty();
         boolean newVersion = !preferences.getString(TALOS_APP_VERSION_KEY, "").equals(owner.getVersion());
         boolean resetRequested = preferences.getBoolean(PREFERENCES_VERSION_RESET_KEY, false);
 
@@ -123,53 +136,44 @@ public class PreferencesHelper {
 
             @Override
             public void run() {
-                preferences.edit().putBoolean(PREFERENCE_KEY_PREFERENCES_RESET, false).commit();
-                preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, false).commit();
-                preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).commit();
+                preferences.edit().putBoolean(PREFERENCE_KEY_PREFERENCES_RESET, false).apply();
+                preferences.edit().putBoolean(PREFERENCES_VERSION_RESET_KEY, false).apply();
+                preferences.edit().putString(TALOS_APP_VERSION_KEY, owner.getVersion()).apply();
+                if (newVersion) {
+                    owner.showAbout();
+                }
+                if (onDone != null) {
+                    onDone.run();
+                }
             }
         };
 
-        if (newVersion) {
-            owner.showAbout();
-        }
-
         if (resetPending) {
-
             new AlertDialog.Builder(owner)
                     .setMessage(R.string.preference_reset_dialog_message)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            preferences.edit().clear().commit();
-                            runAtEnd.run();
-                        }
+                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> {
+                        dettachPreferencesListener();
+                        preferences.edit().clear().apply();
+                        init();
                     })
-                    .setNeutralButton(R.string.no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            runAtEnd.run();
-                        }
-                    })
-                    .setOnCancelListener(new DialogInterface.OnCancelListener() {
-
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            runAtEnd.run();
-                        }
+                    .setOnDismissListener(l -> {
+                        runAtEnd.run();
                     })
                     .show();
 
+        } else {
+            runAtEnd.run();
         }
-
-        runAtEnd.run();
     }
 
     public String getUUID() {
         return uuid;
     }
 
-    private void initializePrefs() {
+    private void ensureUUIDExists() {
 
         if (preferences.getString("uuid", null) == null) {
-            preferences.edit().putString("uuid", uuid).commit();
+            preferences.edit().putString("uuid", uuid).apply();
         }
     }
 
@@ -200,7 +204,7 @@ public class PreferencesHelper {
             onSharedPreferenceChangeListener.onSharedPreferenceChanged(preferences, key);
         }
 
-        owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, true), false);
+        owner.graphPanelDisplayManager.setEnableHrm(preferences.getBoolean(PREFERENCE_KEY_HRM_ENABLE, false), false);
         owner.setLandscapeLayout(preferences.getBoolean(PREFERENCE_KEY_LAYOUT_MODE_LANDSCAPE, false));
     }
 
@@ -213,18 +217,19 @@ public class PreferencesHelper {
     }
 
     private void attachPreferencesListener() {
-
         preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
-        owner.getRoboStroke().getParameters().addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), new ParameterChangeListener() {
+        owner.getRoboStroke().getParameters().addListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), orientationReversedListener);
+    }
 
-            @Override
-            public void onParameterChanged(Parameter param) {
-                preferences.edit().putBoolean(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), (Boolean) param.getValue()).commit();
-            }
-        });
+    private void dettachPreferencesListener() {
+        preferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        owner.getRoboStroke().getParameters().removeListener(ParamKeys.PARAM_SENSOR_ORIENTATION_REVERSED.getId(), orientationReversedListener);
     }
 
     private void setParameterFromPreferences(String key) {
+        if (key == null) {
+            return;
+        }
         if (key.startsWith("org.nargila.talos.rowing") && !key.startsWith("org.nargila.talos.rowing.android")) {
             logger.info("setting back-end parameter {} >>", key);
 

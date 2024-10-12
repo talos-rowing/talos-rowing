@@ -154,7 +154,7 @@ public class SeekBarPreference extends DialogPreference {
             persistString(sval);
 
             if (shouldCommit()) {
-                getEditor().commit();
+                getEditor().apply();
             }
         }
     }

@@ -662,7 +662,7 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
         graphPanelDisplayManager.init();
 
-        permissionsHelper.acquireLocationPermission();
+        preferencesHelper.resetPreferencesIfNeeded(permissionsHelper::acquireLocationPermission);
     }
 
     private void startProcessing() {
@@ -1160,10 +1160,10 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
         boolean isRemote = dataInputInfo.inputType == DataInputInfo.InputType.REMOTE;
 
         menu.findItem(R.id.menu_replay_start).setVisible(enableStart);
-        menu.findItem(R.id.menu_broadcast_stop).setVisible(isBroadcasting);
-        menu.findItem(R.id.menu_broadcast_start).setVisible(!isBroadcasting && !isRemote);
-        menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn && !isBroadcasting);
         menu.findItem(R.id.menu_record_start).setVisible(enableStart);
+//        menu.findItem(R.id.menu_broadcast_stop).setVisible(isBroadcasting);
+//        menu.findItem(R.id.menu_broadcast_start).setVisible(!isBroadcasting && !isRemote);
+//        menu.findItem(R.id.menu_remote_start).setVisible(!replay && !recordingOn && !isBroadcasting);
         menu.findItem(R.id.menu_replay_stop).setVisible(replay || recordingOn);
 
         final boolean canShareSession = replay && dataInputInfo.inputType == DataInputInfo.InputType.FILE;
@@ -1202,24 +1202,24 @@ public class RoboStrokeActivity extends Activity implements RoboStrokeConstants,
 
                 return true;
 
-            case R.id.menu_remote_start:
-                int port = Integer.valueOf(preferencesHelper.getPref("org.nargila.talos.rowing.session.broadcast.port", SessionRecorderConstants.BROADCAST_PORT + ""));
-                String host = preferencesHelper.getPref("org.nargila.talos.rowing.android.session.remote.host", SessionRecorderConstants.BROADCAST_HOST);
-                restart(new DataInputInfo(host, port));
-                break;
-
-            case R.id.menu_broadcast_start:
-                roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), true);
-                break;
-            case R.id.menu_broadcast_stop:
-                roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), false);
-                break;
             case R.id.menu_record_start:
                 if (recheckExternalStorage()) {
                     roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_RECORDING_ON.getId(), true);
                 }
 
                 break;
+//            case R.id.menu_remote_start:
+//                int port = Integer.valueOf(preferencesHelper.getPref("org.nargila.talos.rowing.session.broadcast.port", SessionRecorderConstants.BROADCAST_PORT + ""));
+//                String host = preferencesHelper.getPref("org.nargila.talos.rowing.android.session.remote.host", SessionRecorderConstants.BROADCAST_HOST);
+//                restart(new DataInputInfo(host, port));
+//                break;
+//
+//            case R.id.menu_broadcast_start:
+//                roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), true);
+//                break;
+//            case R.id.menu_broadcast_stop:
+//                roboStroke.getParameters().setParam(ParamKeys.PARAM_SESSION_BROADCAST_ON.getId(), false);
+//                break;
 
             case R.id.menu_replay_stop:
                 if (isReplaying()) {
