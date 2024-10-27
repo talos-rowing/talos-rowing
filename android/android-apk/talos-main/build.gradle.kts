@@ -29,6 +29,16 @@ android {
             )
         }
     }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("v2") {
+            dimension = "version"
+            applicationIdSuffix = ".v2"
+            versionNameSuffix = "-v2"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
