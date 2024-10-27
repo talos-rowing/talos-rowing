@@ -11,8 +11,8 @@ android {
         applicationId = "org.nargila.robostroke.android.app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 332
-        versionName = "0.9.7.332"
+        versionCode = 338
+        versionName = "0.9.9.338"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
