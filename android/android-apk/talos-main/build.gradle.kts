@@ -11,8 +11,8 @@ android {
         applicationId = "org.nargila.robostroke.android.app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 332
-        versionName = "0.9.7.332"
+        versionCode = 338
+        versionName = "0.9.9.338"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -29,6 +29,16 @@ android {
             )
         }
     }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("v2") {
+            dimension = "version"
+            applicationIdSuffix = ".v2"
+            versionNameSuffix = "-v2"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
