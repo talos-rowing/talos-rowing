@@ -1,7 +1,16 @@
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.4")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25")
+    }
 }
+
+apply(plugin = "com.android.application")
+apply(plugin = "org.jetbrains.kotlin.android")
 
 android {
     namespace = "org.nargila.robostroke.android.remote"
@@ -53,5 +62,5 @@ dependencies {
     implementation("org.slf4j:slf4j-log4j12:1.7.21")
     implementation(project(":common"))
     implementation(project(":android-common"))
-    testImplementation(libs.junit)
+    testImplementation("junit:junit:4.13.2")
 }
