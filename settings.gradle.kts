@@ -26,9 +26,10 @@ plugins {
 rootProject.name = "Talos Rowing"
 include(":common")
 include(":swing")
-include(":android-common")
-include(":talos-main")
-include(":talos-remote")
-project(":android-common").projectDir = file("android/android-common")
-project(":talos-main").projectDir = file("android/android-apk/talos-main")
-project(":talos-remote").projectDir = file("android/android-apk/talos-remote")
+// Temporarily disabled Android modules due to missing Android SDK
+// include(":android-common")
+// include(":talos-main")
+// include(":talos-remote")
+// project(":android-common").projectDir = file("android/android-common")
+// project(":talos-main").projectDir = file("android/android-apk/talos-main")
+// project(":talos-remote").projectDir = file("android/android-apk/talos-remote")
