@@ -1,7 +1,16 @@
-plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.1.4")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25")
+    }
 }
+
+apply(plugin = "com.android.library")
+apply(plugin = "org.jetbrains.kotlin.android")
 
 android {
     namespace = "org.nargila.robostroke.common"
