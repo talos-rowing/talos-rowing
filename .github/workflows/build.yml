@@ -20,13 +20,13 @@ jobs:
         distribution: 'temurin'
         cache: gradle
     - name: Build with Gradle
-      run: gradle build -x test
+      run: ./gradlew build -x test
     - name: Test common (3 tries)
       run: |
         max_tries=3
         try_id=0
         while test $try_id -lt $max_tries; do
           try_id=$[$try_id + 1]
-          gradle :common:test && exit 0 || continue
+          ./gradlew :common:test && exit 0 || continue
         done
         exit 1
